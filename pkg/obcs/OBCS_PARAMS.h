@@ -72,6 +72,13 @@ C                      (overrides Orlanski and other boundary values)
 C OBCSprintDiags   :: print boundary values to STDOUT (def=true)
 C OBCSfixTopo      :: check and adjust topography for problematic gradients
 C                     across boundaries (def=true)
+C OBCS_Cont_uvice_N/S/E/W
+C                  :: Create continuity of the velocity at the open 
+C                     boundary conditions, the sea-ice go out of the
+C                     modeling domain (not periodic)
+C OBCS_Cont_seaice_N/S/E/W
+C                  :: Create continuity of the seaice characteristics (thickness, 
+C                     concentration, snow) at the open boundary conditions, 
 
       COMMON /OBC_PARM_L/
      & useOrlanskiNorth,useOrlanskiSouth,
@@ -87,7 +94,11 @@ C                     across boundaries (def=true)
      & OBCSsponge_Theta, OBCSsponge_Salt, useLinearSponge,
      & useOBCSbalance, useOBCStides, useOBCSprescribe,
      & OBCSprintDiags,
-     & OBCSfixTopo
+     & OBCSfixTopo,
+     & OBCS_Cont_uvice_N,OBCS_Cont_uvice_S,
+     & OBCS_Cont_uvice_E,OBCS_Cont_uvice_W,
+     & OBCS_Cont_seaice_N,OBCS_Cont_seaice_S,
+     & OBCS_Cont_seaice_E,OBCS_Cont_seaice_W
       LOGICAL useOrlanskiNorth
       LOGICAL useOrlanskiSouth
       LOGICAL useOrlanskiEast
@@ -115,6 +126,14 @@ C                     across boundaries (def=true)
       LOGICAL useOBCSprescribe
       LOGICAL OBCSprintDiags
       LOGICAL OBCSfixTopo
+      LOGICAL OBCS_Cont_uvice_N
+      LOGICAL OBCS_Cont_uvice_S
+      LOGICAL OBCS_Cont_uvice_E
+      LOGICAL OBCS_Cont_uvice_W
+      LOGICAL OBCS_Cont_seaice_N
+      LOGICAL OBCS_Cont_seaice_S
+      LOGICAL OBCS_Cont_seaice_E
+      LOGICAL OBCS_Cont_seaice_W
 
 C--   COMMON /OBC_PARM_R/ OBCS real-type parameter
 C OBCS_balanceFacN/S/E/W  :: weighting factor for balancing OB normal flow

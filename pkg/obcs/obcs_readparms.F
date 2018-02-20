@@ -171,7 +171,11 @@ C     retired parameters
      &          useOBCSYearlyFields, OBCSfixTopo,
      &          OBCS_uvApplyFac,
      &          OBCS_monitorFreq, OBCS_monSelect, OBCSprintDiags,
-     &          tidalPeriod
+     &          tidalPeriod,
+     &          OBCS_Cont_uvice_N,OBCS_Cont_uvice_S,
+     &          OBCS_Cont_uvice_E,OBCS_Cont_uvice_W,
+     &          OBCS_Cont_seaice_N,OBCS_Cont_seaice_S,
+     &          OBCS_Cont_seaice_E,OBCS_Cont_seaice_W
 
 #ifdef ALLOW_ORLANSKI
       NAMELIST /OBCS_PARM02/
@@ -265,6 +269,14 @@ C--   Default flags and values for OBCS
       OBCSsponge_VatEW   =.TRUE.
       OBCSsponge_Theta   =.TRUE.
       OBCSsponge_Salt    =.TRUE.
+      OBCS_Cont_uvice_N  =.FALSE.
+      OBCS_Cont_uvice_S  =.FALSE.
+      OBCS_Cont_uvice_E  =.FALSE.
+      OBCS_Cont_uvice_W  =.FALSE.
+      OBCS_Cont_seaice_N =.FALSE.
+      OBCS_Cont_seaice_S =.FALSE.
+      OBCS_Cont_seaice_E =.FALSE.
+      OBCS_Cont_seaice_W =.FALSE.
       useLinearSponge    =.FALSE.
       useOBCSbalance     =.FALSE.
       OBCS_balanceFacN   = 1. _d 0

@@ -20,8 +20,8 @@ C     | written by Martin Losch, Mar 2006                        |
 C     *==========================================================*
       IMPLICIT NONE
 #ifdef ETA_SMOOTH_MIN
-      _RL SMOOTHMIN_RL
-      EXTERNAL SMOOTHMIN_RL
+      _RL SMOOTH_MIN
+      EXTERNAL SMOOTH_MIN
 #endif /* ETA_SMOOTH_MIN */
 
 C     === Global variables ===
@@ -182,7 +182,6 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDDO
 #ifdef SEAICE_ALLOW_TEM
-        SEAICEmcC=SEAICEmcMU*tnsFac*SEAICE_strength
         IF ( SEAICEuseTEM ) THEN
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
@@ -194,6 +193,7 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
 #else
            etaDen = SQRT(MAX(deltaMinSq,etaDen))
 #endif /* SEAICE_DELTA_SMOOTHREG */
+           SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
            etaMax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
      &     -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
 #ifdef ETA_SMOOTH_MIN

@@ -152,6 +152,7 @@ C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
           argTmp = exp(-1. _d 0/(deltaCreg*SEAICE_zetaMaxFac))
           zeta (I,J,bi,bj) = ZMAX(I,J,bi,bj)
      &         *(1. _d 0 - argTmp)/(1. _d 0 + argTmp)
+     &         *(1. _d 0 + tnsFac(I,J,bi,bj) )
 #else
           zeta (I,J,bi,bj) = HALF*( press0(I,J,bi,bj) 
      &         * ( 1. _d 0 + tnsFac(I,J,bi,bj) )

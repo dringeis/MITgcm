@@ -2,6 +2,7 @@
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
 #endif
+#define ETA_SMOOTH_MIN
 
 CBOP
 CStartOfInterface
@@ -18,6 +19,10 @@ C     *==========================================================*
 C     | written by Martin Losch, Mar 2006                        |
 C     *==========================================================*
       IMPLICIT NONE
+#ifdef ETA_SMOOTH_MIN
+      _RL SMOOTHMIN_RL
+      EXTERNAL SMOOTHMIN_RL
+#endif /* ETA_SMOOTH_MIN */
 
 C     === Global variables ===
 #include "SIZE.h"
@@ -70,7 +75,7 @@ C     em            - e11-e22 (abbreviation)
       _RL recip_e2, deltaCreg, deltaCsq, deltaMinSq, tmp, ep, em
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #ifdef SEAICE_ALLOW_TEM
-      _RL etaMax, etaDen
+      _RL etaMax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
       INTEGER k
       _RL sumNorm, maskZ
@@ -177,16 +182,25 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDDO
 #ifdef SEAICE_ALLOW_TEM
+        SEAICEmcC=SEAICEmcMU*tnsFac*SEAICE_strength
         IF ( SEAICEuseTEM ) THEN
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
            etaDen = em*em + 4. _d 0 * e12Csq(i,j)
+#ifdef SEAICE_DELTA_SMOOTHREG
+           etaDen = SQRT(deltaMinSq + etaDen)
+#else
            etaDen = SQRT(MAX(deltaMinSq,etaDen))
-           etaMax = ( 0.5 _d 0*press(I,J,bi,bj)-zeta(I,J,bi,bj)*ep
-     &          )/etaDen
+#endif /* SEAICE_DELTA_SMOOTHREG */
+           etaMax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
+     &     -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
+#ifdef ETA_SMOOTH_MIN
+           eta(I,J,bi,bj) = SMOOTH_MIN(eta(I,J,bi,bj),etaMax)
+#else
            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etaMax)
+#endif /* ETA_SMOOTH_MIN */
           ENDDO
          ENDDO
         ENDIF
@@ -224,3 +238,53 @@ C     about the no-slip boundary conditions
 #endif /* SEAICE_ALLOW_DYNAMICS and SEAICE_CGRID */
       RETURN
       END
+
+
+#ifdef ETA_SMOOTH_MIN
+
+      _RL FUNCTION SMOOTH_MIN( a, b )
+
+      IMPLICIT NONE
+
+      _RL a, b
+
+      _RL SMOOTH_ABS
+      EXTERNAL SMOOTH_ABS
+
+      SMOOTH_MIN = .5*( a+b - SMOOTH_ABS(a-b) )
+
+      RETURN
+      END
+
+      _RL FUNCTION SMOOTH_ABS( x )
+
+      IMPLICIT NONE
+C     === Global variables ===
+#include "SIZE.h"
+#include "EEPARAMS.h"
+#include "PARAMS.h"
+C     input parameter
+      _RL x
+c     local variable
+      _RL sf,rsf
+      
+      IF ( smoothAbsFuncRange .LT. 0.0 ) THEN
+c     limit of smoothMin(a,b) = min(a,b)
+         SMOOTH_ABS = ABS(x)
+      ELSE
+         IF ( smoothAbsFuncRange .NE. 0.0 ) THEN
+            sf  = 1.D0/smoothAbsFuncRange
+            rsf = smoothAbsFuncRange
+         ELSE
+c     limit of smoothMin(a,b) = min(a,b)
+            sf  = 0.D0
+            rsf = 0.D0 
+         ENDIF
+c
+        SMOOTH_ABS = log((exp(x*sf)+exp(-x*sf)))*rsf
+      ENDIF
+
+      RETURN
+      END
+
+#endif /* ETA_SMOOTH_MIN */

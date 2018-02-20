@@ -167,6 +167,7 @@ C--   SEAICE parameters
      & SEAICEuseEVPstar, SEAICEuseEVPrev,
      & SEAICE_monFreq, SEAICE_dumpFreq, SEAICE_taveFreq,
      & SEAICE_tave_mnc, SEAICE_dump_mnc, SEAICE_mon_mnc,
+     & SEAICEmcMu,
 #ifdef SEAICE_ITD
      & Hlimit_c1, Hlimit_c2, Hlimit_c3,
 #endif
@@ -221,6 +222,7 @@ C--   set default sea ice parameters
       SEAICEuseTilt      = .TRUE.
       SEAICEheatConsFix  = .FALSE.
       SEAICEuseTEM       = .FALSE.
+      SEAICEmcMu         = 1.0
       SEAICEuseMetricTerms = .TRUE.
       SEAICEuseEVPpickup = .TRUE.
       SEAICEuseEVPstar   = .FALSE.

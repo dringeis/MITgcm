@@ -453,6 +453,7 @@ C     SEAICEmuRidging :: tuning parameter similar to hStar for Lipcomb et al
 C                        (2007)-scheme
 C     SEAICEmaxRaft   :: regularization parameter (default=1)
 C     SEAICEsnowFracRidge :: fraction of snow that remains on ridged
+C     SEAICEmcMu     :: parameter for MC yield curve (slope of trucating line)
 C
       _RL SEAICE_deltaTtherm, SEAICE_deltaTdyn, SEAICE_deltaTevp
       _RL SEAICE_LSRrelaxU, SEAICE_LSRrelaxV
@@ -501,6 +502,7 @@ C
       _RL SEAICEgStar, SEAICEhStar, SEAICEaStar, SEAICEshearParm
       _RL SEAICEmuRidging, SEAICEmaxRaft, SEAICE_cf
       _RL SEAICEsnowFracRidge
+      _RL SEAICEmcMu
 
       COMMON /SEAICE_PARM_RL/
      &    SEAICE_deltaTtherm, SEAICE_deltaTdyn,
@@ -545,7 +547,7 @@ C
      &    SEAICE_airTurnAngle, SEAICE_waterTurnAngle,
      &    SEAICEgStar, SEAICEhStar, SEAICEaStar, SEAICEshearParm,
      &    SEAICEmuRidging, SEAICEmaxRaft, SEAICE_cf,
-     &    SEAICEsnowFracRidge
+     &    SEAICEsnowFracRidge, SEAICEmcMu,
 
 C--   COMMON /SEAICE_BOUND_RL/ Various bounding values
 C     MIN_ATEMP         :: minimum air temperature   (deg C)

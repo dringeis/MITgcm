@@ -77,8 +77,13 @@ C     Northern boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Jn(i,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_N ) THEN
+           uFld(i,Jobc,bi,bj) = uFld(i,Jobc-1,bi,bj) 
+     &                        *seaiceMaskU(i,Jobc,bi,bj)
+            ELSE
            uFld(i,Jobc,bi,bj) = OBNuice(i,bi,bj)
      &                        *seaiceMaskU(i,Jobc,bi,bj)
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -90,8 +95,13 @@ C     Southern boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Js(i,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_S ) THEN
+           uFld(i,Jobc,bi,bj) = uFld(i,Jobc+1,bi,bj) 
+     &                        *seaiceMaskU(i,Jobc,bi,bj)
+            ELSE
            uFld(i,Jobc,bi,bj) = OBSuice(i,bi,bj)
      &                        *seaiceMaskU(i,Jobc,bi,bj)
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -104,8 +114,13 @@ C     Eastern boundary
          DO j=1-OLy,sNy+OLy
           Iobc = OB_Ie(j,bi,bj)
           IF ( Iobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_E ) THEN
+           vFld(Iobc,j,bi,bj) =  vFld(Iobc-1,j,bi,bj)
+     &                        *seaiceMaskV(Iobc,j,bi,bj)
+            ELSE
            vFld(Iobc,j,bi,bj) = OBEvice(j,bi,bj)
      &                        *seaiceMaskV(Iobc,j,bi,bj)
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -117,8 +132,13 @@ C     Western boundary
          DO j=1-OLy,sNy+OLy
           Iobc = OB_Iw(j,bi,bj)
           IF ( Iobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_W ) THEN
+           vFld(Iobc,j,bi,bj) =  vFld(Iobc+1,j,bi,bj)
+     &                        *seaiceMaskV(Iobc,j,bi,bj)
+            ELSE
            vFld(Iobc,j,bi,bj) = OBWvice(j,bi,bj)
      &                        *seaiceMaskV(Iobc,j,bi,bj)
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -133,12 +153,17 @@ C     Northern boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Jn(i,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_N ) THEN
+           vFld(i,Jobc,bi,bj)   = vFld(i,Jobc-1,bi,bj)
+     &                          *seaiceMaskV(i,Jobc,bi,bj)
+            ELSE
            vFld(i,Jobc,bi,bj)   = OBNvice(i,bi,bj)
      &                          *seaiceMaskV(i,Jobc,bi,bj)
            IF ( uvIceApplyFac.GE.0. )
      &     vFld(i,Jobc+1,bi,bj) = OBNvice(i,bi,bj)
      &                          *seaiceMaskV(i,Jobc,bi,bj)
      &                          *uvIceApplyFac
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -150,12 +175,17 @@ C     Southern boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Js(i,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_S ) THEN
+           vFld(i,Jobc+1,bi,bj) = vFld(i,Jobc+2,bi,bj)
+     &                          *seaiceMaskV(i,Jobc+1,bi,bj)
+            ELSE
            vFld(i,Jobc+1,bi,bj) = OBSvice(i,bi,bj)
      &                          *seaiceMaskV(i,Jobc+1,bi,bj)
            IF ( uvIceApplyFac.GE.0. )
      &     vFld(i,Jobc,bi,bj)   = OBSvice(i,bi,bj)
      &                          *seaiceMaskV(i,Jobc+1,bi,bj)
      &                          *uvIceApplyFac
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -168,12 +198,17 @@ C     Eastern boundary
          DO j=1-OLy,sNy+OLy
           Iobc = OB_Ie(j,bi,bj)
           IF ( Iobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_E ) THEN
+           uFld(Iobc,j,bi,bj) = uFld(Iobc-1,j,bi,bj)
+     &                          *seaiceMaskU(Iobc,j,bi,bj)
+            ELSE
            uFld(Iobc,j,bi,bj)   = OBEuice(j,bi,bj)
      &                          *seaiceMaskU(Iobc,j,bi,bj)
            IF ( uvIceApplyFac.GE.0. )
      &     uFld(Iobc+1,j,bi,bj) = OBEuice(j,bi,bj)
      &                          *seaiceMaskU(Iobc,j,bi,bj)
      &                          *uvIceApplyFac
+            ENDIF
           ENDIF
          ENDDO
         ENDIF
@@ -185,12 +220,17 @@ C     Western boundary
          DO j=1-OLy,sNy+OLy
           Iobc = OB_Iw(j,bi,bj)
           IF ( Iobc.NE.OB_indexNone ) THEN
+            IF ( OBCS_Cont_uvice_W ) THEN
+           uFld(Iobc+1,j,bi,bj)= uFld(Iobc+2,j,bi,bj)
+     &                         *seaiceMaskU(Iobc+1,j,bi,bj)
+            ELSE
            uFld(Iobc+1,j,bi,bj) = OBWuice(j,bi,bj)
      &                          *seaiceMaskU(Iobc+1,j,bi,bj)
            IF ( uvIceApplyFac.GE.0. )
      &     uFld(Iobc,j,bi,bj)   = OBWuice(j,bi,bj)
      &                          *seaiceMaskU(Iobc+1,j,bi,bj)
      &                          *uvIceApplyFac
+            ENDIF
           ENDIF
          ENDDO
         ENDIF

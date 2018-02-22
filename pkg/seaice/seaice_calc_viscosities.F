@@ -2,7 +2,6 @@
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
 #endif
-#define ETA_SMOOTH_MIN
 
 CBOP
 CStartOfInterface
@@ -196,11 +195,7 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
            SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
            etaMax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
      &     -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
-#ifdef ETA_SMOOTH_MIN
-           eta(I,J,bi,bj) = SMOOTH_MIN(eta(I,J,bi,bj),etaMax)
-#else
            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etaMax)
-#endif /* ETA_SMOOTH_MIN */
           ENDDO
          ENDDO
         ENDIF
@@ -238,53 +233,3 @@ C     about the no-slip boundary conditions
 #endif /* SEAICE_ALLOW_DYNAMICS and SEAICE_CGRID */
       RETURN
       END
-
-
-#ifdef ETA_SMOOTH_MIN
-
-      _RL FUNCTION SMOOTH_MIN( a, b )
-
-      IMPLICIT NONE
-
-      _RL a, b
-
-      _RL SMOOTH_ABS
-      EXTERNAL SMOOTH_ABS
-
-      SMOOTH_MIN = .5*( a+b - SMOOTH_ABS(a-b) )
-
-      RETURN
-      END
-
-      _RL FUNCTION SMOOTH_ABS( x )
-
-      IMPLICIT NONE
-C     === Global variables ===
-#include "SIZE.h"
-#include "EEPARAMS.h"
-#include "PARAMS.h"
-C     input parameter
-      _RL x
-c     local variable
-      _RL sf,rsf
-      
-      IF ( smoothAbsFuncRange .LT. 0.0 ) THEN
-c     limit of smoothMin(a,b) = min(a,b)
-         SMOOTH_ABS = ABS(x)
-      ELSE
-         IF ( smoothAbsFuncRange .NE. 0.0 ) THEN
-            sf  = 1.D0/smoothAbsFuncRange
-            rsf = smoothAbsFuncRange
-         ELSE
-c     limit of smoothMin(a,b) = min(a,b)
-            sf  = 0.D0
-            rsf = 0.D0 
-         ENDIF
-c
-        SMOOTH_ABS = log((exp(x*sf)+exp(-x*sf)))*rsf
-      ENDIF
-
-      RETURN
-      END
-
-#endif /* ETA_SMOOTH_MIN */

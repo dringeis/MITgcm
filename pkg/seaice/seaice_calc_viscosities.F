@@ -2,7 +2,7 @@
 #ifdef ALLOW_AUTODIFF
 # include "AUTODIFF_OPTIONS.h"
 #endif
-#undef ETA_SMOOTH_MIN
+#define ETA_SMOOTH_MIN
 
 CBOP
 CStartOfInterface
@@ -265,8 +265,24 @@ C     === Global variables ===
 #include "PARAMS.h"
 C     input parameter
       _RL x
-
-        SMOOTH_ABS = log((exp(x)+exp(-x)))
+c     local variable
+      _RL sf,rsf
+      
+      IF ( smoothAbsFuncRange .LT. 0.0 ) THEN
+c     limit of smoothMin(a,b) = min(a,b)
+         SMOOTH_ABS = ABS(x)
+      ELSE
+         IF ( smoothAbsFuncRange .NE. 0.0 ) THEN
+            sf  = 1.D0/smoothAbsFuncRange
+            rsf = smoothAbsFuncRange
+         ELSE
+c     limit of smoothMin(a,b) = min(a,b)
+            sf  = 0.D0
+            rsf = 0.D0 
+         ENDIF
+c
+        SMOOTH_ABS = log((exp(x*sf)+exp(-x*sf)))*rsf
+      ENDIF
 
       RETURN
       END

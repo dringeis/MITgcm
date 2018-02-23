@@ -153,6 +153,7 @@ C     but we are looking for T = k*P = k*press/(1-k)
        ENDIF
        IF ( DIAGNOSTICS_IS_ON('SIsig1  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIsig2  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIdiv   ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIshear ',myThid) ) THEN
 #ifdef SEAICE_ALLOW_EVP
         IF ( SEAICEuseEVP ) THEN
@@ -236,6 +237,7 @@ C     endif SEAICEuseEVP
          DO bi = myBxLo(myThid), myBxHi(myThid)
           DO j=1,sNy
            DO i=1,sNx
+            sigp = e11(I,J,bi,bj) + e22(I,J,bi,bj)
             sigm = e11(I,J,bi,bj) - e22(I,J,bi,bj)
             sigTmp = 
      &           ( e12(I,  J,  bi,bj)**2 + e12(I+1,J,  bi,bj)**2
@@ -243,9 +245,11 @@ C     endif SEAICEuseEVP
 C     shear deformation as sqrt((e11-e22)**2 + 4*e12**2); the 4 pulled into
 C     the average
             sig1(I,J) = sqrt(sigm*sigm + sigTmp)
+            sig2(I,J) = sigp
            ENDDO
           ENDDO
           CALL DIAGNOSTICS_FILL(sig1,'SIshear ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(sig2,'SIdiv   ',0,1,2,bi,bj,myThid)
          ENDDO
         ENDDO
 C     endif DIAGNOSTICS_IS_ON(SIsig1/2)

@@ -95,7 +95,7 @@ C     Southern boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Js(i,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
-            IF ( OBCS_Cont_uice_S_T ) THEN
+            IF ( OBCS_Cont_uice_S ) THEN
            uFld(i,Jobc,bi,bj) = uFld(i,Jobc+1,bi,bj) 
      &                        *seaiceMaskU(i,Jobc,bi,bj)
             ELSE
@@ -114,7 +114,7 @@ C     Eastern boundary
          DO j=1-OLy,sNy+OLy
           Iobc = OB_Ie(j,bi,bj)
           IF ( Iobc.NE.OB_indexNone ) THEN
-            IF ( OBCS_Cont_vice_E_T ) THEN
+            IF ( OBCS_Cont_vice_E ) THEN
            vFld(Iobc,j,bi,bj) =  vFld(Iobc-1,j,bi,bj)
      &                        *seaiceMaskV(Iobc,j,bi,bj)
             ELSE

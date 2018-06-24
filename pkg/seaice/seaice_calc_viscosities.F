@@ -76,6 +76,9 @@ C     em            - e11-e22 (abbreviation)
 #ifdef SEAICE_ALLOW_TEM
       _RL etaMax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
+#ifdef SEAICE_ALLOW_FULLMC
+      _RL etmp, zetaTmp, etaTemp
+#endif /* SEAICE_ALLOW_FULLMC */
       INTEGER k
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
@@ -122,6 +125,7 @@ C     (and energy conserving)
           ENDDO
          ENDDO
         ENDIF
+      IF (SEAICE_ALLOW_FULLMC .EQ. .FALSE.) THEN
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -200,6 +204,35 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDIF
 #endif /* SEAICE_ALLOW_TEM */
+CDR 
+CDR FULL MC following IP et al. 1991
+CDR 
+#ifdef SEAICE_ALLOW_FULLMC 
+      ELSEIF ( SEAICEuseFULLMC .EQ. .TRUE. ) THEN
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+
+C           Computing e1 and e2
+            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+            etmp=SQRT(em*em+4*e12Csq(i,j,bi,bj))
+
+C           Computing ZETA
+            zetaTmp=press(I,J,bi,bj)*1/ABS(ep)
+            IF (ep < 0) THEN 
+              zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
+            ELSEIF THEN
+              zeta(I,J,bi,bj)=0
+            ENDIF
+
+C           Computing ETA  (EMAX=ZMAX)
+            etaTemp = ABS(ep/etmp)
+            eta(I,J,bi,bj)=MIN(ZMAX(I,J,bi,bj),zeta(I,J,bi,bj)*
+     &         SEAICEmcMU*etaTemp)
+          ENDDO
+         ENDDO
+      ENDIF 
+#endif /* SEAICE_ALLOW_FULLMC */
 C     compute eta at Z-points by simple averaging
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1

@@ -204,11 +204,12 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDIF
 #endif /* SEAICE_ALLOW_TEM */
+      ENDIF
 CDR 
 CDR FULL MC following IP et al. 1991
 CDR 
 #ifdef SEAICE_ALLOW_FULLMC 
-      ELSEIF ( SEAICEuseFULLMC .EQ. .TRUE. ) THEN
+      IF ( SEAICEuseFULLMC .EQ. .TRUE. ) THEN
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
 
@@ -221,7 +222,7 @@ C           Computing ZETA
             zetaTmp=press(I,J,bi,bj)*1/ABS(ep)
             IF (ep < 0) THEN 
               zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
-            ELSEIF THEN
+            ELSE
               zeta(I,J,bi,bj)=0
             ENDIF
 

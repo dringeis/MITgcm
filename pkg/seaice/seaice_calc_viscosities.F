@@ -125,7 +125,7 @@ C     (and energy conserving)
           ENDDO
          ENDDO
         ENDIF
-      IF (SEAICE_ALLOW_FULLMC .EQ. .FALSE.) THEN
+      IF (SEAICEuseFULLMC .EQ. .FALSE.) THEN
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)

@@ -219,7 +219,7 @@ C           Computing e1 and e2
             etmp=SQRT(em*em+4*e12Csq(i,j,bi,bj))
 
 C           Computing ZETA
-            zetaTmp=press(I,J,bi,bj)*1/ABS(ep)
+            zetaTmp=press0(I,J,bi,bj)*1/ABS(ep)
             IF (ep < 0) THEN 
               zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
             ELSE

@@ -220,11 +220,11 @@ C           Computing e1 and e2
 
 C           Computing ZETA
             zetaTmp=press0(I,J,bi,bj)*1/ABS(ep)
-C             IF (ep < 0) THEN 
-            zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
-C             ELSE
-C               zeta(I,J,bi,bj)=0
-C             ENDIF
+            IF (ep < 0) THEN 
+              zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
+            ELSE
+              zeta(I,J,bi,bj)=0
+            ENDIF
 
 C           Computing ETA  (EMAX=ZMAX)
             etaTemp = ABS(ep/etmp)

@@ -206,7 +206,11 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDIF
 #endif /* SEAICE_ALLOW_TEM */
+
+#ifdef SEAICE_ALLOW_FULLMC 
       ENDIF
+#endif /* SEAICE_ALLOW_FULLMC */
+
 CDR 
 CDR FULL MC following IP et al. 1991
 CDR 

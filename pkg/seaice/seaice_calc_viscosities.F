@@ -222,18 +222,14 @@ C           Computing e1 and e2
 
 C           Computing ZETA
             IF (ep < 0. _d 0) THEN 
-              zetaTmp=press0(I,J,bi,bj)/ABS(ep)
-              zetaTmp=press0(I,J,bi,bj)/(ABS(ep)+SEAICE_deltaMin)
-              zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
+             zeta(I,J,bi,bj)=press0(I,J,bi,bj)/(ABS(ep)+SEAICE_deltaMin)
             ELSE
-              zeta(I,J,bi,bj)=0. _d 0
+             zeta(I,J,bi,bj)=0. _d 0
             ENDIF
 
 C           Computing ETA  (EMAX=ZMAX)
-            etaTemp = ABS(ep/etmp)
             etaTemp = SQRT(ep**2/(etmp**2+deltaMinSq)
-            eta(I,J,bi,bj)=MIN(ZMAX(I,J,bi,bj),zeta(I,J,bi,bj)*
-     &         SEAICEmcMU*etaTemp)
+            eta(I,J,bi,bj)=zeta(I,J,bi,bj)*SEAICEmcMU*etaTemp
           ENDDO
          ENDDO
       ENDIF 

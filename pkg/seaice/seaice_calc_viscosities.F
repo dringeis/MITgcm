@@ -125,7 +125,9 @@ C     (and energy conserving)
           ENDDO
          ENDDO
         ENDIF
-      IF (SEAICEuseFULLMC .EQV. .FALSE.) THEN
+#ifdef SEAICE_ALLOW_FULLMC
+      IF (.NOT. SEAICEuseFULLMC ) THEN
+#endif /* SEAICE_ALLOW_FULLMC */
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -209,25 +211,27 @@ CDR
 CDR FULL MC following IP et al. 1991
 CDR 
 #ifdef SEAICE_ALLOW_FULLMC 
-      IF ( SEAICEuseFULLMC .EQV. .TRUE. ) THEN
+      IF ( SEAICEuseFULLMC ) THEN
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
 
 C           Computing e1 and e2
             ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-            etmp=SQRT(em*em+4*e12Csq(i,j,bi,bj))
+            etmp=SQRT(em*em+4. _d 0*e12Csq(i,j,bi,bj))
 
 C           Computing ZETA
-            zetaTmp=press0(I,J,bi,bj)*1/ABS(ep)
-            IF (ep < 0) THEN 
+            IF (ep < 0. _d 0) THEN 
+              zetaTmp=press0(I,J,bi,bj)/ABS(ep)
+              zetaTmp=press0(I,J,bi,bj)/(ABS(ep)+SEAICE_deltaMin)
               zeta(I,J,bi,bj)=MIN(zetaTmp,ZMAX(I,J,bi,bj))
             ELSE
-              zeta(I,J,bi,bj)=0
+              zeta(I,J,bi,bj)=0. _d 0
             ENDIF
 
 C           Computing ETA  (EMAX=ZMAX)
             etaTemp = ABS(ep/etmp)
+            etaTemp = SQRT(ep**2/(etmp**2+deltaMinSq)
             eta(I,J,bi,bj)=MIN(ZMAX(I,J,bi,bj),zeta(I,J,bi,bj)*
      &         SEAICEmcMU*etaTemp)
           ENDDO

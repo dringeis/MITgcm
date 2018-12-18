@@ -154,6 +154,12 @@ C     but we are looking for T = k*P = k*press/(1-k)
        IF ( DIAGNOSTICS_IS_ON('SIsig1  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIsig2  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIdiv   ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig11  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig22  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig12  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps11  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps22  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps12  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIshear ',myThid) ) THEN
 #ifdef SEAICE_ALLOW_EVP
         IF ( SEAICEuseEVP ) THEN
@@ -229,6 +235,9 @@ C     in different way to get meaningfull sig12C (=sigTmp):
            ENDDO
            CALL DIAGNOSTICS_FILL(sig1,'SIsig1  ',0,1,2,bi,bj,myThid)
            CALL DIAGNOSTICS_FILL(sig2,'SIsig2  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig11,'SIsig11 ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig22,'SIsig22 ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig12,'SIsig12 ',0,1,2,bi,bj,myThid)
           ENDDO
          ENDDO
 C     endif SEAICEuseEVP
@@ -250,6 +259,9 @@ C     the average
           ENDDO
           CALL DIAGNOSTICS_FILL(sig1,'SIshear ',0,1,2,bi,bj,myThid)
           CALL DIAGNOSTICS_FILL(sig2,'SIdiv   ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(e11,'SIeps11 ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(e22,'SIeps22 ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(sigTmp,'SIeps12 ',0,1,2,bi,bj,myThid)
          ENDDO
         ENDDO
 C     endif DIAGNOSTICS_IS_ON(SIsig1/2)

@@ -172,8 +172,10 @@ C     retired parameters
      &          OBCS_uvApplyFac,
      &          OBCS_monitorFreq, OBCS_monSelect, OBCSprintDiags,
      &          tidalPeriod,
-     &          OBCS_Cont_uvice_N,OBCS_Cont_uvice_S,
-     &          OBCS_Cont_uvice_E,OBCS_Cont_uvice_W,
+     &          OBCS_Cont_uice_N,OBCS_Cont_uice_S,
+     &          OBCS_Cont_vice_N,OBCS_Cont_vice_S,
+     &          OBCS_Cont_uice_E,OBCS_Cont_uice_W,
+     &          OBCS_Cont_vice_E,OBCS_Cont_vice_W,
      &          OBCS_Cont_seaice_N,OBCS_Cont_seaice_S,
      &          OBCS_Cont_seaice_E,OBCS_Cont_seaice_W
 
@@ -269,10 +271,14 @@ C--   Default flags and values for OBCS
       OBCSsponge_VatEW   =.TRUE.
       OBCSsponge_Theta   =.TRUE.
       OBCSsponge_Salt    =.TRUE.
-      OBCS_Cont_uvice_N  =.FALSE.
-      OBCS_Cont_uvice_S  =.FALSE.
-      OBCS_Cont_uvice_E  =.FALSE.
-      OBCS_Cont_uvice_W  =.FALSE.
+      OBCS_Cont_uice_N  =.FALSE.
+      OBCS_Cont_uice_S  =.FALSE.
+      OBCS_Cont_uice_E  =.FALSE.
+      OBCS_Cont_uice_W  =.FALSE.
+      OBCS_Cont_vice_N  =.FALSE.
+      OBCS_Cont_vice_S  =.FALSE.
+      OBCS_Cont_vice_E  =.FALSE.
+      OBCS_Cont_vice_W  =.FALSE.
       OBCS_Cont_seaice_N =.FALSE.
       OBCS_Cont_seaice_S =.FALSE.
       OBCS_Cont_seaice_E =.FALSE.

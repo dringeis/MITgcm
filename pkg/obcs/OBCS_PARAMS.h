@@ -95,8 +95,10 @@ C                     concentration, snow) at the open boundary conditions,
      & useOBCSbalance, useOBCStides, useOBCSprescribe,
      & OBCSprintDiags,
      & OBCSfixTopo,
-     & OBCS_Cont_uvice_N,OBCS_Cont_uvice_S,
-     & OBCS_Cont_uvice_E,OBCS_Cont_uvice_W,
+     & OBCS_Cont_uice_N,OBCS_Cont_uice_S,
+     & OBCS_Cont_uice_E,OBCS_Cont_uice_W,
+     & OBCS_Cont_vice_N,OBCS_Cont_vice_S,
+     & OBCS_Cont_vice_E,OBCS_Cont_vice_W,
      & OBCS_Cont_seaice_N,OBCS_Cont_seaice_S,
      & OBCS_Cont_seaice_E,OBCS_Cont_seaice_W
       LOGICAL useOrlanskiNorth
@@ -126,10 +128,14 @@ C                     concentration, snow) at the open boundary conditions,
       LOGICAL useOBCSprescribe
       LOGICAL OBCSprintDiags
       LOGICAL OBCSfixTopo
-      LOGICAL OBCS_Cont_uvice_N
-      LOGICAL OBCS_Cont_uvice_S
-      LOGICAL OBCS_Cont_uvice_E
-      LOGICAL OBCS_Cont_uvice_W
+      LOGICAL OBCS_Cont_uice_N
+      LOGICAL OBCS_Cont_uice_S
+      LOGICAL OBCS_Cont_uice_E
+      LOGICAL OBCS_Cont_uice_W
+      LOGICAL OBCS_Cont_vice_N
+      LOGICAL OBCS_Cont_vice_S
+      LOGICAL OBCS_Cont_vice_E
+      LOGICAL OBCS_Cont_vice_W
       LOGICAL OBCS_Cont_seaice_N
       LOGICAL OBCS_Cont_seaice_S
       LOGICAL OBCS_Cont_seaice_E

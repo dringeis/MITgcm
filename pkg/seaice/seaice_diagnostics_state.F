@@ -249,20 +249,20 @@ C     endif SEAICEuseEVP
            DO i=1,sNx
             sigp = e11(I,J,bi,bj) + e22(I,J,bi,bj)
             sigm = e11(I,J,bi,bj) - e22(I,J,bi,bj)
-            e12(I,J) = 0.25 *
+            eps12(I,J) = 0.25 *
      &           ( e12(I,  J,  bi,bj) + e12(I+1,J,  bi,bj)
      &           + e12(I+1,J+1,bi,bj) + e12(I  ,J+1,bi,bj) )
 C     shear deformation as sqrt((e11-e22)**2 + 4*e12**2); the 4 pulled into
 C     the average
             sig2(I,J) = sigp
-            sig1(I,J) = sqrt(sigm*sigm + 4*e12(I,J)*e12(I,J))
+            sig1(I,J) = sqrt(sigm*sigm + 4*eps12(I,J)*eps12(I,J))
            ENDDO
           ENDDO
           CALL DIAGNOSTICS_FILL(sig1,'SIshear ',0,1,2,bi,bj,myThid)
           CALL DIAGNOSTICS_FILL(sig2,'SIdiv   ',0,1,2,bi,bj,myThid)
           CALL DIAGNOSTICS_FILL(e11,'SIeps11 ',0,1,2,bi,bj,myThid)
           CALL DIAGNOSTICS_FILL(e22,'SIeps22 ',0,1,2,bi,bj,myThid)
-          CALL DIAGNOSTICS_FILL(e12,'SIeps12 ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(eps12,'SIeps12 ',0,1,2,bi,bj,myThid)
          ENDDO
         ENDDO
 C     endif DIAGNOSTICS_IS_ON(SIsig1/2)

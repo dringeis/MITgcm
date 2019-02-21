@@ -225,6 +225,7 @@ C     in different way to get meaningfull sig12C (=sigTmp):
              sigTmp = 2.*eta(I,J,bi,bj) * 0.25 _d 0 *
      &            (e12(I,J,bi,bj) + e12(I+1,J,bi,bj)
      &            +e12(I,J+1,bi,bj)+e12(I+1,J+1,bi,bj))
+             sig12(I,J)=sigTmp
              sigTmp = SQRT( sigm*sigm + 4.*sigTmp*sigTmp )
              recip_prs = 0. _d 0
              IF ( press0(I,J,bi,bj) .GT. 1. _d -13 )

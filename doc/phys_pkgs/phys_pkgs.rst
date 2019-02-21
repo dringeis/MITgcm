@@ -69,6 +69,7 @@ Packages Related to Hydrodynamical Kernel
    :maxdepth: 3
 
    generic_advdiff.rst
+   mom_packages.rst
    shap_filt.rst
    zonal_filt.rst
    exch2.rst
@@ -109,11 +110,23 @@ Atmosphere Packages
    land.rst
    fizhi.rst
 
-Sea Ice Packages
-================
+Ice and Sea Ice Packages
+========================
 
 .. toctree::
    :maxdepth: 3
 
    thsice.rst
    seaice.rst
+   shelfice.rst
+   streamice.rst   
+
+
+Biogeochemistry Packages
+========================
+
+.. toctree::
+   :maxdepth: 3
+
+   gchem.rst
+   dic.rst

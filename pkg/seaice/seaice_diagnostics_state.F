@@ -231,6 +231,9 @@ C     in different way to get meaningfull sig12C (=sigTmp):
      &            recip_prs = 1./press0(I,J,bi,bj)
              sig1(I,J) = 0.5*(sigp + sigTmp)*recip_prs
              sig2(I,J) = 0.5*(sigp - sigTmp)*recip_prs
+             sig11(I,J) = sig11(I,J) * recip_prs 
+             sig12(I,J) = sig12(I,J) * recip_prs 
+             sig22(I,J) = sig22(I,J) * recip_prs 
             ENDDO
            ENDDO
            CALL DIAGNOSTICS_FILL(sig1,'SIsig1  ',0,1,2,bi,bj,myThid)

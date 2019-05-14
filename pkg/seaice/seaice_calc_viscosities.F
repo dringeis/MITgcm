@@ -72,6 +72,9 @@ C     em            - e11-e22 (abbreviation)
 #ifdef SEAICE_ALLOW_TEM
       _RL etaMax, etaDen
 #endif /* SEAICE_ALLOW_TEM */
+#ifdef SEAICE_ALLOW_TEARDROP
+      _RL k, x, a
+#endif /* SEAICE_ALLOW_TEARDROP */
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
       _RL argTmp
@@ -116,6 +119,29 @@ C     (and energy conserving)
           ENDDO
          ENDDO
         ENDIF
+
+#ifdef SEAICE_ALLOW_TEARDROP
+       IF ( SEAICEuseTD ) THEN
+        DO j=1-OLy+1,sNy+OLy-1
+         DO i=1-OLx+1,sNx+OLx-1
+          ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+          em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+          etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+          k=ep/etaDen
+          a=tnsFac(I,J,bi,bj)
+          IF (k .LE. 1) THEN
+           x=(-(6*(1+a)-k*k)+2*k*SQRT(k*k+3*(1+a)))/9+a
+           zeta(I,J,bi,bj) = (x+0.5)*P/ep
+           eta(I,J,bi,bj) = -(x-a)*SQRT(1+x)*P/etaDen 
+          ELSEIF
+           zeta(I,J,bi,bj) = (a+0.5)*P/ep
+           eta(I,J,bi,bj) = 0
+          ENDIF ! k <= 1
+         ENDDO ! x loop
+        ENDDO ! y loop
+       ELSE ! SEAICEuseTD
+#endif SEAICE_ALLOW_TEARDROP
+
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -188,6 +214,11 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
          ENDDO
         ENDIF
 #endif /* SEAICE_ALLOW_TEM */
+
+#ifdef SEAICE_ALLOW_TEARDROP    
+        ENDIF !  SEAICEuseTD
+#endif SEAICE_ALLOW_TEARDROP
+
 C     compute eta at Z-points by simple averaging
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1

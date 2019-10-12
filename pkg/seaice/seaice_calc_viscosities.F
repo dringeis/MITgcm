@@ -129,14 +129,15 @@ C     (and energy conserving)
           etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
           k=ep/etaDen
           a=tnsFac(I,J,bi,bj)
-          IF (k .LE. 1) THEN
            x=(-(6*(1+a)-k*k)+2*k*SQRT(k*k+3*(1+a)))/9+a
-           zeta(I,J,bi,bj) = (x+0.5)*P/ep
-           eta(I,J,bi,bj) = -(x-a)*SQRT(1+x)*P/etaDen 
-          ELSEIF
-           zeta(I,J,bi,bj) = (a+0.5)*P/ep
-           eta(I,J,bi,bj) = 0
-          ENDIF ! k <= 1
+          IF (x .LE. -1) THEN
+            x = -1.0
+          ELSEIF (x .GE. a) THEN
+            x = a 
+          ENDIF ! x < -1 or x > a
+          zeta(I,J,bi,bj) = (x+0.5)*P/ep
+          eta(I,J,bi,bj) = -(x-a)*SQRT(1+x)*P/etaDen
+          
          ENDDO ! x loop
         ENDDO ! y loop
        ELSE ! SEAICEuseTD

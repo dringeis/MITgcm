@@ -91,7 +91,7 @@ C     SEAICE_freeze     :: FREEZING TEMP. OF SEA WATER
 C--   SEAICE parameters
       NAMELIST /SEAICE_PARM01/
      & SEAICEuseDYNAMICS, SEAICEuseFREEDRIFT, SEAICEuseStrImpCpl,
-     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt, SEAICEuseTD
+     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt, SEAICEuseTD,
      & useHB87stressCoupling, SEAICEupdateOceanStress,
      & usePW79thermodynamics, useMaykutSatVapPoly, SEAICEuseFlooding,
      & SEAICErestoreUnderIce, SEAICE_growMeltByConv,

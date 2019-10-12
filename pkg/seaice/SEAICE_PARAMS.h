@@ -126,7 +126,7 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     SEAICEuseJFNK, SEAICEuseIMEX, SEAICEuseBDF2,
      &     SEAICEusePicardAsPrecon,
      &     useHibler79IceStrength, SEAICEsimpleRidging,
-     &     SEAICEuseLinRemapITD, SEAICEuseTD
+     &     SEAICEuseLinRemapITD, SEAICEuseTD,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
      &     SEAICE_no_slip, SEAICE_2ndOrderBC,
      &     SEAICE_maskRHS, SEAICEscaleSurfStress,
@@ -155,7 +155,7 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     SEAICEuseJFNK, SEAICEuseIMEX, SEAICEuseBDF2,
      &     SEAICEusePicardAsPrecon,
      &     useHibler79IceStrength, SEAICEsimpleRidging,
-     &     SEAICEuseLinRemapITD, SEAICEuseTD
+     &     SEAICEuseLinRemapITD, SEAICEuseTD,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
      &     SEAICE_no_slip, SEAICE_2ndOrderBC,
      &     SEAICE_maskRHS, SEAICEscaleSurfStress,

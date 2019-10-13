@@ -73,7 +73,7 @@ C     em            - e11-e22 (abbreviation)
       _RL etaMax, etaDen
 #endif /* SEAICE_ALLOW_TEM */
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, x, a
+      _RL k, x, a, xm, Pm
 #endif /* SEAICE_ALLOW_TEARDROP */
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
@@ -127,16 +127,30 @@ C     (and energy conserving)
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
           etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-          k=ep/etaDen
-          a=tnsFac(I,J,bi,bj)
-           x=(-(6*(1+a)-k*k)+2*k*SQRT(k*k+3*(1+a)))/9+a
+          k = ep / (etaDen+deltaMinSq)
+          a = tnsFac(I,J,bi,bj)
+           x=(-(6*(1+a)-k*k)+2*k*SQRT(k*k+3*(1+a)))/9 + a
           IF (x .LE. -1) THEN
             x = -1.0
           ELSEIF (x .GE. a) THEN
             x = a 
           ENDIF ! x < -1 or x > a
-          zeta(I,J,bi,bj) = (x+0.5)*P/ep
-          eta(I,J,bi,bj) = -(x-a)*SQRT(1+x)*P/etaDen
+          
+          zeta(I,J,bi,bj) = (x+0.5) * P / (ep+deltaMinSq)
+          IF zeta (I,J,bi,bj) > ZMAX THEN
+            zeta (I,J,bi,bj) = ZMAX
+          ELSEIF zeta (I,J,bi,bj) > -ZMAX THEN 
+            zeta (I,J,bi,bj) = -ZMAX
+          ENDIF
+
+          xm = ep * zeta(I,J,bi,bj)/P - 0.5 
+          Pm = ep * zeta(I,J,bi,bj)/(x+0.5)
+
+          eta(I,J,bi,bj) = -(xm-a)*SQRT(1+xm)*Pm/(etaDen+deltaMinSq)
+
+          press(I,J,bi,bj) =
+     &         ( press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * Pm
           
          ENDDO ! x loop
         ENDDO ! y loop

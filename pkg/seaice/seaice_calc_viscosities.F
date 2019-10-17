@@ -225,15 +225,19 @@ C           Computing e1 and e2
             etmp=SQRT(em*em+4. _d 0*e12Csq(i,j,bi,bj))
 
 C           Computing ZETA
-            IF (ep < 0. _d 0) THEN 
-             zeta(I,J,bi,bj)=press0(I,J,bi,bj)/(ABS(ep)+SEAICE_deltaMin)
-            ELSE
-             zeta(I,J,bi,bj)=0. _d 0
-            ENDIF
+            zeta(I,J,bi,bj) = press0(I,J,bi,bj) 
+                            / (2 * SQRT(ep*ep+deltaMinSq) )
 
 C           Computing ETA  (EMAX=ZMAX)
-            etaTemp = SQRT(ep**2/(etmp**2+deltaMinSq)
-            eta(I,J,bi,bj)=zeta(I,J,bi,bj)*SEAICEmcMU*etaTemp
+            etaTemp = SQRT(etmp*etmp+deltaMinSq)
+            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
+     &                     - zeta(I,J,bi,bj)*ep ) / TWO * etaTemp
+
+C           Replacement Pressure 
+            press(I,J,bi,bj) =
+     &         press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + TWO * zeta(I,J,bi,bj)*ep * SEAICEpressReplFac
+
           ENDDO
          ENDDO
       ENDIF 

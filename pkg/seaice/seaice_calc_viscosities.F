@@ -122,35 +122,85 @@ C     (and energy conserving)
 
 #ifdef SEAICE_ALLOW_TEARDROP
        IF ( SEAICEuseTD ) THEN
+        
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
-          ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+          ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-          etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+          etaDen = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
           k = ep / (etaDen+deltaMinSq)
           a = tnsFac(I,J,bi,bj)
-           x=(-(6*(1+a)-k*k)+2*k*SQRT(k*k+3*(1+a)))/9 + a
+          x = (-(6. _d 0*(1. _d 0+a)-k*k)+2. _d 0*k*SQRT(k*k+3. _d 0 
+     &      * (1. _d 0+a)))/9. _d 0 + a
           IF (x .LE. -1) THEN
-            x = -1.0
+            x = -1. _d 0
           ELSEIF (x .GE. a) THEN
             x = a 
           ENDIF ! x < -1 or x > a
           
-          zeta(I,J,bi,bj) = (x+0.5) * P / (ep+deltaMinSq)
+          zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
+     &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
+
+          eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj) 
+     &                     / (etaDen+deltaMinSq)
+
+          etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
+     &           + deltaMin)
+
           IF zeta (I,J,bi,bj) > ZMAX THEN
             zeta (I,J,bi,bj) = ZMAX
-          ELSEIF zeta (I,J,bi,bj) > -ZMAX THEN 
+          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
             zeta (I,J,bi,bj) = -ZMAX
-          ENDIF
+          ENDIF ! zmax condition
 
-          xm = ep * zeta(I,J,bi,bj)/P - 0.5 
-          Pm = ep * zeta(I,J,bi,bj)/(x+0.5)
-
-          eta(I,J,bi,bj) = -(xm-a)*SQRT(1+xm)*Pm/(etaDen+deltaMinSq)
+          eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
 
           press(I,J,bi,bj) =
-     &         ( press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-     &         + SEAICEpressReplFac * Pm
+     &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
+     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
+          
+         ENDDO ! x loop
+        ENDDO ! y loop
+
+       ELSEIF ( SEAICEusePL ) THEN 
+        DO j=1-OLy+1,sNy+OLy-1
+         DO i=1-OLx+1,sNx+OLx-1
+          ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
+          em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+          etaDen = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+          k = ep / (etaDen+deltaMinSq)
+          a = tnsFac(I,J,bi,bj)
+          x = 0.5 * (k - 1. _d 0 - a)
+          IF (x .LE. -1) THEN
+            x = -1. _d 0
+          ELSEIF (x .GE. a) THEN
+            x = a 
+          ENDIF ! x < -1 or x > a
+          
+          zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
+     &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
+
+          eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj) 
+     &                     / (etaDen+deltaMinSq)
+
+          etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
+     &           + deltaMin)
+
+          IF zeta (I,J,bi,bj) > ZMAX THEN
+            zeta (I,J,bi,bj) = ZMAX
+          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
+            zeta (I,J,bi,bj) = -ZMAX
+          ENDIF ! zmax condition
+
+          eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
+
+C         a/SIGN(MAX(ABS(b), SMALL), b)
+
+          press(I,J,bi,bj) =
+     &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
+     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
           
          ENDDO ! x loop
         ENDDO ! y loop

@@ -68,6 +68,7 @@ C     ep            - e11+e22 (abbreviation)
 C     em            - e11-e22 (abbreviation)
       INTEGER i, j, bi, bj
       _RL recip_e2, deltaCreg, deltaCsq, deltaMinSq, tmp, ep, em
+      _RL recip_efr4, recip_efr2
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #ifdef SEAICE_ALLOW_TEM
       _RL etaMax, etaDen

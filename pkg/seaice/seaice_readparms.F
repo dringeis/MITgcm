@@ -145,7 +145,7 @@ C--   SEAICE parameters
      & SEAICE_drySnowAlb_south, SEAICE_wetSnowAlb_south, HO_south,
      & SEAICE_cBasalStar, SEAICEbasalDragU0, SEAICEbasalDragK1,
      & SEAICEbasalDragK2, SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
-     & SEAICE_strength, SEAICE_cStar, SEAICE_eccen,
+     & SEAICE_strength, SEAICE_cStar, SEAICE_eccen, SEAICE_eccfr,
      & SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      & SEAICE_lhFusion, SEAICE_lhEvap, SEAICE_dalton,
      & SEAICE_sensHeat, SEAICE_latentWater, SEAICE_latentIce,
@@ -392,6 +392,7 @@ C
       SEAICE_cStar       = 20.    _d 0
       SEAICEpressReplFac = 1.     _d 0
       SEAICE_eccen       = 2.     _d 0
+      SEAICE_eccfr       = UNSET_RL
       SEAICE_tensilFac   = 0.     _d 0
       SEAICE_tensilDepth = 0.     _d 0
 C     coefficients for flux computations/bulk formulae
@@ -662,7 +663,9 @@ C--   Set default values (if not specified in data.seaice namelist)
 
 C--   Default for regularizing Delta to remain backward compatible
       IF ( SEAICE_deltaMin .EQ. UNSET_RL ) SEAICE_deltaMin = SEAICE_EPS
-
+C--   Default to have a normal flow rule if SEAICE_eccfr is not set
+      IF (SEAICE_eccfr .EQ. UNSET_RL ) SEAICE_eccfr = SEAICE_eccen
+      
 C--   If no PDF was prescribed use the default uniform pdf
       tmp = SEAICE_multDim
       DO l = 1, SEAICE_multDim

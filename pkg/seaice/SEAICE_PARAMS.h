@@ -401,6 +401,7 @@ C     SEAICEpressReplFac :: interpolator between PRESS0 and regularized PRESS
 C                           1. (default): pure pressure replace method (PRESS)
 C                           0.          : pure Hibler (1979) method (PRESS0)
 C     SEAICE_eccen       :: sea-ice eccentricity of the elliptical yield curve
+C     SEAICE_eccfr       :: sea-ice eccentricity of the elliptical flow rule
 C     SEAICE_lhFusion    :: latent heat of fusion for ice and snow (J/kg)
 C     SEAICE_lhEvap      :: latent heat of evaporation for water (J/kg)
 C     SEAICE_dalton      :: Dalton number (= sensible heat transfer coefficient)
@@ -479,7 +480,7 @@ C
       _RL SEAICE_wetAlbTemp, SEAICE_waterAlbedo
       _RL SEAICE_strength, SEAICE_cStar, SEAICEpressReplFac
       _RL SEAICE_tensilFac, SEAICE_tensilDepth, SEAICE_eccen
-      _RL SEAICE_lhFusion, SEAICE_lhEvap
+      _RL SEAICE_eccfr, SEAICE_lhFusion, SEAICE_lhEvap
       _RL SEAICE_dalton
       _RL SEAICE_iceConduct, SEAICE_snowConduct
       _RL SEAICE_emissivity, SEAICE_ice_emiss, SEAICE_snow_emiss
@@ -530,7 +531,7 @@ C
      &    SEAICE_cBasalStar, SEAICEbasalDragU0,
      &    SEAICEbasalDragK1, SEAICEbasalDragK2,
      &    SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
-     &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen,
+     &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen, SEAICE_eccfr,
      &    SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      &    SEAICE_lhFusion, SEAICE_lhEvap,
      &    SEAICE_dalton, SEAICE_cpAir,

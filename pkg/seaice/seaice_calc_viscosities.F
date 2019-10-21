@@ -81,6 +81,10 @@ CEOP
 C--   basic constants
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
+      recip_efr2=0. _d 0
+      IF( SEAICE_eccfr .NE. 0. _d 0) recip_efr2=ONE/(SEAICE_eccfr**2)
+      recip_efr4=0. _d 0
+      IF( SEAICE_eccfr .NE. 0. _d 0) recip_efr4=ONE/(SEAICE_eccfr**4)
       deltaMinSq = SEAICE_deltaMin**2
 C
       DO bj=myByLo(myThid),myByHi(myThid)
@@ -120,7 +124,8 @@ C     (and energy conserving)
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-          deltaCsq = ep*ep+recip_e2*(em*em+4. _d 0*e12Csq(i,j))
+          deltaCsq = ep*ep+SEAICE_eccen**2 * recip_efr4 
+     &    * (em*em+4. _d 0*e12Csq(i,j))
 CML The old formulation does not ensure that deltaC**2 is always positive,
 CML but in case you need it to reproduce old results, here it is:
 CML          deltaCsq = 
@@ -160,7 +165,7 @@ C     put min and max viscosities in
           zeta (I,J,bi,bj) = MAX(ZMIN(I,J,bi,bj),zeta(I,J,bi,bj))
 C     set viscosities to zero at HEFFM flow pts
           zeta (I,J,bi,bj) = zeta(I,J,bi,bj)*HEFFM(I,J,bi,bj)
-          eta  (I,J,bi,bj) = recip_e2*zeta(I,J,bi,bj)
+          eta  (I,J,bi,bj) = recip_efr2*zeta(I,J,bi,bj)
 C     "replacement pressure"
           press(I,J,bi,bj) =
      &         ( press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )

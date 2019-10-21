@@ -222,21 +222,22 @@ CDR
 C           Computing e1 and e2
             ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-            etmp=SQRT(em*em+4. _d 0*e12Csq(i,j,bi,bj))
+            etmp=em*em+4. _d 0*e12Csq(i,j,bi,bj)
 
 C           Computing ZETA
-            zeta(I,J,bi,bj) = press0(I,J,bi,bj) 
-                            / (2 * SQRT(ep*ep+deltaMinSq) )
-
-C           Computing ETA  (EMAX=ZMAX)
-            etaTemp = SQRT(etmp*etmp+deltaMinSq)
-            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
-     &                     - zeta(I,J,bi,bj)*ep ) / TWO * etaTemp
+            zeta(I,J,bi,bj) = press0(I,J,bi,bj) * (1._d 0 + tnsFac) 
+                            / (TWO * SQRT(ep*ep+deltaMinSq))
 
 C           Replacement Pressure 
-            press(I,J,bi,bj) =
-     &         press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-     &         + TWO * zeta(I,J,bi,bj)*ep * SEAICEpressReplFac
+            press(I,J,bi,bj) = ( 1. _d 0 - tnsFac ) 
+     &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
+     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * ABS(ep)  
+     &      / (1. _d 0 + tnsFac ) )
+
+C           Computing ETA  (EMAX=ZMAX)
+            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj) 
+     &      - zeta(I,J,bi,bj) * ep + press0(I,J,bi,bj) * tnsFac ) 
+     &      / (TWO  * SQRT(etmp + deltaMinSq))
 
           ENDDO
          ENDDO

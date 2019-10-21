@@ -45,6 +45,7 @@ C     == Local variables ==
       _RL sig11(1-oLx:sNx+oLx,1-oLy:sNy+oLy)
       _RL sig22(1-oLx:sNx+oLx,1-oLy:sNy+oLy)
       _RL sig12(1-oLx:sNx+oLx,1-oLy:sNy+oLy)
+      _RL eps12(1-oLx:sNx+oLx,1-oLy:sNy+oLy)
       _RL sigp, sigm, sigTmp, recip_prs
 #endif
       INTEGER k
@@ -153,6 +154,12 @@ C     but we are looking for T = k*P = k*press/(1-k)
        ENDIF
        IF ( DIAGNOSTICS_IS_ON('SIsig1  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIsig2  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig11  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig22  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIsig12  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps11  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps22  ',myThid) .OR.
+     &      DIAGNOSTICS_IS_ON('SIeps12  ',myThid) .OR.
      &      DIAGNOSTICS_IS_ON('SIshear ',myThid) ) THEN
 #ifdef SEAICE_ALLOW_EVP
         IF ( SEAICEuseEVP ) THEN
@@ -218,16 +225,23 @@ C     in different way to get meaningfull sig12C (=sigTmp):
              sigTmp = 2.*eta(I,J,bi,bj) * 0.25 _d 0 *
      &            (e12(I,J,bi,bj) + e12(I+1,J,bi,bj)
      &            +e12(I,J+1,bi,bj)+e12(I+1,J+1,bi,bj))
+             sig12(I,J)=sigTmp
              sigTmp = SQRT( sigm*sigm + 4.*sigTmp*sigTmp )
              recip_prs = 0. _d 0
              IF ( press0(I,J,bi,bj) .GT. 1. _d -13 )
      &            recip_prs = 1./press0(I,J,bi,bj)
              sig1(I,J) = 0.5*(sigp + sigTmp)*recip_prs
              sig2(I,J) = 0.5*(sigp - sigTmp)*recip_prs
+             sig11(I,J) = sig11(I,J) * recip_prs 
+             sig12(I,J) = sig12(I,J) * recip_prs 
+             sig22(I,J) = sig22(I,J) * recip_prs 
             ENDDO
            ENDDO
            CALL DIAGNOSTICS_FILL(sig1,'SIsig1  ',0,1,2,bi,bj,myThid)
            CALL DIAGNOSTICS_FILL(sig2,'SIsig2  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig11,'SIsig11 ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig22,'SIsig22 ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig12,'SIsig12 ',0,1,2,bi,bj,myThid)
           ENDDO
          ENDDO
 C     endif SEAICEuseEVP
@@ -237,15 +251,18 @@ C     endif SEAICEuseEVP
           DO j=1,sNy
            DO i=1,sNx
             sigm = e11(I,J,bi,bj) - e22(I,J,bi,bj)
-            sigTmp = 
-     &           ( e12(I,  J,  bi,bj)**2 + e12(I+1,J,  bi,bj)**2
-     &           + e12(I+1,J+1,bi,bj)**2 + e12(I  ,J+1,bi,bj)**2 )
+            eps12(I,J) = 0.25 *
+     &           ( e12(I,  J,  bi,bj) + e12(I+1,J,  bi,bj)
+     &           + e12(I+1,J+1,bi,bj) + e12(I  ,J+1,bi,bj) )
 C     shear deformation as sqrt((e11-e22)**2 + 4*e12**2); the 4 pulled into
 C     the average
-            sig1(I,J) = sqrt(sigm*sigm + sigTmp)
+            sig1(I,J) = sqrt(sigm*sigm + 4*eps12(I,J)*eps12(I,J))
            ENDDO
           ENDDO
           CALL DIAGNOSTICS_FILL(sig1,'SIshear ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(e11,'SIeps11 ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(e22,'SIeps22 ',0,1,2,bi,bj,myThid)
+          CALL DIAGNOSTICS_FILL(eps12,'SIeps12 ',0,1,2,bi,bj,myThid)
          ENDDO
         ENDDO
 C     endif DIAGNOSTICS_IS_ON(SIsig1/2)

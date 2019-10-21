@@ -754,6 +754,48 @@ C=============== dynamics ============
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
+      diagName  = 'SIsig11 '
+      diagTitle = 'SEAICE stress first diagonal component'
+      diagUnits = 'm^2/s^2         '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIsig22 '
+      diagTitle = 'SEAICE stress second diagonal component'
+      diagUnits = 'm^2/s^2         '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIsig12 '
+      diagTitle = 'SEAICE stress off diagonal component'
+      diagUnits = 'm^2/s^2         '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps11 '
+      diagTitle = 'SEAICE strainrate first diagonal component'
+      diagUnits = 'no unit        '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps22 '
+      diagTitle = 'SEAICE strainrate second diagonal component'
+      diagUnits = 'no unit        '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps12 '
+      diagTitle = 'SEAICE strainrate off diagonal component'
+      diagUnits = 'no unit        '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
 #ifdef SEAICE_ITD
 C=============== ice thickness categories ============
 

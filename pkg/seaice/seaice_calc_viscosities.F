@@ -232,7 +232,7 @@ C           Computing e1 and e2
 
 C           Computing ZETA
             zeta(I,J,bi,bj) = press0(I,J,bi,bj) * (1._d 0 + tnsFac) 
-                            / (TWO * SQRT(ep*ep+deltaMinSq))
+     &                      / (TWO * SQRT(ep*ep+deltaMinSq))
 
 C           Replacement Pressure 
             press(I,J,bi,bj) = ( 1. _d 0 - tnsFac ) 

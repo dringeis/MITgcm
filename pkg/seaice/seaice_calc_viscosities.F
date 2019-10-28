@@ -18,6 +18,10 @@ C     *==========================================================*
 C     | written by Martin Losch, Mar 2006                        |
 C     *==========================================================*
       IMPLICIT NONE
+#ifdef ETA_SMOOTH_MIN
+      _RL SMOOTH_MIN
+      EXTERNAL SMOOTH_MIN
+#endif /* ETA_SMOOTH_MIN */
 
 C     === Global variables ===
 #include "SIZE.h"
@@ -71,8 +75,13 @@ C     em            - e11-e22 (abbreviation)
       _RL recip_efr4, recip_efr2
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #ifdef SEAICE_ALLOW_TEM
-      _RL etaMax, etaDen
+      _RL etaMax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
+
+#ifdef SEAICE_ALLOW_FULLMC
+      _RL etmp, zetaTmp, etaTemp
+#endif /* SEAICE_ALLOW_FULLMC */
+      INTEGER k
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
       _RL argTmp
@@ -121,6 +130,9 @@ C     (and energy conserving)
           ENDDO
          ENDDO
         ENDIF
+#ifdef SEAICE_ALLOW_FULLMC
+      IF (.NOT. SEAICEuseFULLMC ) THEN
+#endif /* SEAICE_ALLOW_FULLMC */
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -156,6 +168,7 @@ C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
           argTmp = exp(-1. _d 0/(deltaCreg*SEAICE_zetaMaxFac))
           zeta (I,J,bi,bj) = ZMAX(I,J,bi,bj)
      &         *(1. _d 0 - argTmp)/(1. _d 0 + argTmp)
+     &         *(1. _d 0 + tnsFac(I,J,bi,bj) )
 #else
           zeta (I,J,bi,bj) = HALF*( press0(I,J,bi,bj) 
      &         * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
@@ -186,14 +199,47 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
            etaDen = em*em + 4. _d 0 * e12Csq(i,j)
+#ifdef SEAICE_DELTA_SMOOTHREG
+           etaDen = SQRT(deltaMinSq + etaDen)
+#else
            etaDen = SQRT(MAX(deltaMinSq,etaDen))
-           etaMax = ( 0.5 _d 0*press(I,J,bi,bj)-zeta(I,J,bi,bj)*ep
-     &          )/etaDen
+#endif /* SEAICE_DELTA_SMOOTHREG */
+           SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
+           etaMax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
+     &     -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etaMax)
           ENDDO
          ENDDO
         ENDIF
 #endif /* SEAICE_ALLOW_TEM */
+      ENDIF
+CDR 
+CDR FULL MC following IP et al. 1991
+CDR 
+#ifdef SEAICE_ALLOW_FULLMC 
+      IF ( SEAICEuseFULLMC ) THEN
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+
+C           Computing e1 and e2
+            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+            etmp=SQRT(em*em+4. _d 0*e12Csq(i,j,bi,bj))
+
+C           Computing ZETA
+            IF (ep < 0. _d 0) THEN 
+             zeta(I,J,bi,bj)=press0(I,J,bi,bj)/(ABS(ep)+SEAICE_deltaMin)
+            ELSE
+             zeta(I,J,bi,bj)=0. _d 0
+            ENDIF
+
+C           Computing ETA  (EMAX=ZMAX)
+            etaTemp = SQRT(ep**2/(etmp**2+deltaMinSq)
+            eta(I,J,bi,bj)=zeta(I,J,bi,bj)*SEAICEmcMU*etaTemp
+          ENDDO
+         ENDDO
+      ENDIF 
+#endif /* SEAICE_ALLOW_FULLMC */
 C     compute eta at Z-points by simple averaging
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1

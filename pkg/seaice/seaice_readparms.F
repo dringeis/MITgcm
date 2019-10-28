@@ -92,14 +92,9 @@ C--   SEAICE parameters
       NAMELIST /SEAICE_PARM01/
      & SEAICEuseDYNAMICS, SEAICEuseFREEDRIFT, SEAICEuseStrImpCpl,
      & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt,
-<<<<<<< HEAD
-     & useHB87stressCoupling, SEAICEupdateOceanStress,
-     & usePW79thermodynamics, useMaykutSatVapPoly, SEAICEuseFlooding,
-=======
      & SEAICEuseFULLMC,
      & useHB87stressCoupling, SEAICEuseFlooding,
      & usePW79thermodynamics, useMaykutSatVapPoly,
->>>>>>> mc
      & SEAICErestoreUnderIce, SEAICE_growMeltByConv,
      & SEAICE_salinityTracer, SEAICE_ageTracer,
      & SEAICEadvHeff, SEAICEadvArea, SEAICEadvSnow,

@@ -231,18 +231,18 @@ C           Computing e1 and e2
             etmp=em*em+4. _d 0*e12Csq(i,j)
 
 C           Computing ZETA
-            zeta(I,J,bi,bj) = press0(I,J,bi,bj) * (1. _d 0 + tnsFac) 
+            zeta(I,J,bi,bj) = press0(I,J,bi,bj)*(ONE+tnsFac(I,J,bi,bj)) 
      &                      / (TWO * SQRT(ep*ep+deltaMinSq))
 
 C           Replacement Pressure 
-            press(I,J,bi,bj) = ( ONE - tnsFac ) 
+            press(I,J,bi,bj) = ( ONE - tnsFac(I,J,bi,bj) ) 
      &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
      &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * ABS(ep)  
-     &      / ( ONE + tnsFac ) )
+     &      / ( ONE + tnsFac(I,J,bi,bj) ) )
 
 C           Computing ETA  (EMAX=ZMAX)
             eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj) 
-     &      - zeta(I,J,bi,bj) * ep + press0(I,J,bi,bj) * tnsFac ) 
+     &      - zeta(I,J,bi,bj)*ep+press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) 
      &      / (TWO  * SQRT(etmp + deltaMinSq))
 
           ENDDO

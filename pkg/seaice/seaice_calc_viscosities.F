@@ -222,7 +222,7 @@ CDR
 C           Computing e1 and e2
             ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-            etmp=em*em+4. _d 0*e12Csq(i,j,bi,bj)
+            etmp=em*em+4. _d 0*e12Csq(i,j)
 
 C           Computing ZETA
             zeta(I,J,bi,bj) = press0(I,J,bi,bj) * (1._d 0 + tnsFac) 

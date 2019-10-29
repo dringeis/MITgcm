@@ -77,17 +77,15 @@ C     em            - e11-e22 (abbreviation)
 #ifdef SEAICE_ALLOW_TEM
       _RL etaMax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
-<<<<<<< HEAD
 
 #ifdef SEAICE_ALLOW_FULLMC
       _RL etmp, zetaTmp, etaTemp
 #endif /* SEAICE_ALLOW_FULLMC */
       INTEGER k
-=======
 #ifdef SEAICE_ALLOW_TEARDROP
       _RL k, x, a, xm, Pm
 #endif /* SEAICE_ALLOW_TEARDROP */
->>>>>>> teardrop
+
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
       _RL argTmp

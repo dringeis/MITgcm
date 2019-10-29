@@ -243,7 +243,7 @@ C           Replacement Pressure
 C           Computing ETA  (EMAX=ZMAX)
             eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj) 
      &      - zeta(I,J,bi,bj)*ep+press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) 
-     &      / (TWO  * SQRT(etmp + deltaMinSq))
+     &      / (SQRT(etmp + deltaMinSq))
 
           ENDDO
          ENDDO

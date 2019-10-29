@@ -226,13 +226,10 @@ C--   set default sea ice parameters
       SEAICEuseTilt      = .TRUE.
       SEAICEheatConsFix  = .FALSE.
       SEAICEuseTEM       = .FALSE.
-<<<<<<< HEAD
       SEAICEuseFULLMC    = .FALSE.
       SEAICEmcMu         = 1.0
-=======
       SEAICEuseTD        = .FALSE.
       SEAICEusePL        = .FALSE.
->>>>>>> teardrop
       SEAICEuseMetricTerms = .TRUE.
       SEAICEuseEVPpickup = .TRUE.
       SEAICEuseEVPstar   = .FALSE.

@@ -132,11 +132,9 @@ C     (and energy conserving)
           a = tnsFac(I,J,bi,bj)
           x = (-(6. _d 0*(1. _d 0+a)-k*k)+2. _d 0*k*SQRT(k*k+3. _d 0 
      &      * (1. _d 0+a)))/9. _d 0 + a
-          IF (x .LE. -1) THEN
-            x = -1. _d 0
-          ELSEIF (x .GE. a) THEN
-            x = a 
-          ENDIF ! x < -1 or x > a
+          
+          x = MAX(x,-1 _d 0)
+          x = MIN(x, a )
           
           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
      &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
@@ -144,15 +142,12 @@ C     (and energy conserving)
           eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj) 
      &                     / (etaDen+deltaMinSq)
 
-          etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
+          etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
      &           + deltaMin)
 
-          IF zeta (I,J,bi,bj) > ZMAX THEN
-            zeta (I,J,bi,bj) = ZMAX
-          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
-            zeta (I,J,bi,bj) = -ZMAX
-          ENDIF ! zmax condition
-
+          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
+          zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
+          
           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
 
           press(I,J,bi,bj) =
@@ -172,11 +167,9 @@ C     (and energy conserving)
           k = ep / (etaDen+deltaMinSq)
           a = tnsFac(I,J,bi,bj)
           x = 0.5 * (k - 1. _d 0 - a)
-          IF (x .LE. -1) THEN
-            x = -1. _d 0
-          ELSEIF (x .GE. a) THEN
-            x = a 
-          ENDIF ! x < -1 or x > a
+          
+          x = MAX(x,-1 _d 0)
+          x = MIN(x, a )
           
           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
      &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
@@ -187,11 +180,8 @@ C     (and energy conserving)
           etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
      &           + deltaMin)
 
-          IF zeta (I,J,bi,bj) > ZMAX THEN
-            zeta (I,J,bi,bj) = ZMAX
-          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
-            zeta (I,J,bi,bj) = -ZMAX
-          ENDIF ! zmax condition
+          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
+          zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
 
           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
 

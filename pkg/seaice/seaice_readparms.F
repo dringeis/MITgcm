@@ -92,7 +92,7 @@ C--   SEAICE parameters
       NAMELIST /SEAICE_PARM01/
      & SEAICEuseDYNAMICS, SEAICEuseFREEDRIFT, SEAICEuseStrImpCpl,
      & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt, SEAICEuseTD,
-     & useHB87stressCoupling, SEAICEupdateOceanStress,
+     & useHB87stressCoupling, SEAICEupdateOceanStress, SEAICEusePL,
      & usePW79thermodynamics, useMaykutSatVapPoly, SEAICEuseFlooding,
      & SEAICErestoreUnderIce, SEAICE_growMeltByConv,
      & SEAICE_salinityTracer, SEAICE_ageTracer,
@@ -225,6 +225,7 @@ C--   set default sea ice parameters
       SEAICEheatConsFix  = .FALSE.
       SEAICEuseTEM       = .FALSE.
       SEAICEuseTD        = .FALSE.
+      SEAICEusePL        = .FALSE.
       SEAICEuseMetricTerms = .TRUE.
       SEAICEuseEVPpickup = .TRUE.
       SEAICEuseEVPstar   = .FALSE.

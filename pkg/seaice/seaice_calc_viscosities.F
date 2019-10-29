@@ -143,7 +143,7 @@ C     (and energy conserving)
      &                     / (etaDen+deltaMinSq)
 
           etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
-     &           + deltaMin)
+     &           + deltaMinSq)
 
           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))

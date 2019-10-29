@@ -255,16 +255,16 @@ C     compute convergence criterion for linear preconditioned FGMRES
        krylovLinTol = JFNKgamma_lin_max
 C     the best method is still not clear to me
 C     this is described in Lemieux et al 2008
-CML       IF ( picardIter .EQ. 1 ) krylovLinTol = 1./10.
-CML       IF ( picardIter .EQ. 2 ) krylovLinTol = 1./20.
-CML       IF ( picardIter .EQ. 3 ) krylovLinTol = 1./20.
-CML       IF ( picardIter .EQ. 4 ) krylovLinTol = 1./30.
-CML       IF ( picardIter .EQ. 5 ) krylovLinTol = 1./30.
-CML       IF ( picardIter .EQ. 6 ) krylovLinTol = 1./30.
-CML       IF ( picardIter .EQ. 7 ) krylovLinTol = 1./30.
-CML       IF ( picardIter .EQ. 8 ) krylovLinTol = 1./40.
-CML       IF ( picardIter .EQ. 9 ) krylovLinTol = 1./50.
-CML       IF ( picardIter .GT. 9 ) krylovLinTol = 1./80.
+          IF ( picardIter .EQ. 1 ) krylovLinTol = 1./10.
+          IF ( picardIter .EQ. 2 ) krylovLinTol = 1./20.
+          IF ( picardIter .EQ. 3 ) krylovLinTol = 1./20.
+          IF ( picardIter .EQ. 4 ) krylovLinTol = 1./30.
+          IF ( picardIter .EQ. 5 ) krylovLinTol = 1./30.
+          IF ( picardIter .EQ. 6 ) krylovLinTol = 1./30.
+          IF ( picardIter .EQ. 7 ) krylovLinTol = 1./30.
+          IF ( picardIter .EQ. 8 ) krylovLinTol = 1./40.
+          IF ( picardIter .EQ. 9 ) krylovLinTol = 1./50.
+          IF ( picardIter .GT. 9 ) krylovLinTol = 1./80.
 C     this is used with the JFNK solver, but the Picard-Krylov solver
 C     converges too slowly for this scheme
 CML       IF ( picardIter.GT.1.AND.picardResidual.LT.JFNKres_t ) THEN

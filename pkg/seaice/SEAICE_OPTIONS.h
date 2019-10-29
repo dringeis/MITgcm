@@ -117,6 +117,8 @@ C     allow the truncated ellipse rheology (runtime flag SEAICEuseTEM)
 # undef SEAICE_ALLOW_TEM
 C     allow the use of full Mohr Coulomb rheology (runtime flag SEAICEuseFULLMC)
 # define SEAICE_USE_FULLMC
+C     allow the teardrop and parabolic lens  rheology (runtime flag SEAICEuseTD and SEAICEusePL)
+# undef SEAICE_ALLOW_TEARDROP
 C     Use LSR vector code; not useful on non-vector machines, because it
 C     slows down convergence considerably, but the extra iterations are
 C     more than made up by the much faster code on vector machines. For

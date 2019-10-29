@@ -91,10 +91,10 @@ C     SEAICE_freeze     :: FREEZING TEMP. OF SEA WATER
 C--   SEAICE parameters
       NAMELIST /SEAICE_PARM01/
      & SEAICEuseDYNAMICS, SEAICEuseFREEDRIFT, SEAICEuseStrImpCpl,
-     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt,
      & SEAICEuseFULLMC,
-     & useHB87stressCoupling, SEAICEuseFlooding,
-     & usePW79thermodynamics, useMaykutSatVapPoly,
+     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt, SEAICEuseTD,
+     & useHB87stressCoupling, SEAICEupdateOceanStress, SEAICEusePL,
+     & usePW79thermodynamics, useMaykutSatVapPoly, SEAICEuseFlooding,
      & SEAICErestoreUnderIce, SEAICE_growMeltByConv,
      & SEAICE_salinityTracer, SEAICE_ageTracer,
      & SEAICEadvHeff, SEAICEadvArea, SEAICEadvSnow,
@@ -226,8 +226,13 @@ C--   set default sea ice parameters
       SEAICEuseTilt      = .TRUE.
       SEAICEheatConsFix  = .FALSE.
       SEAICEuseTEM       = .FALSE.
+<<<<<<< HEAD
       SEAICEuseFULLMC    = .FALSE.
       SEAICEmcMu         = 1.0
+=======
+      SEAICEuseTD        = .FALSE.
+      SEAICEusePL        = .FALSE.
+>>>>>>> teardrop
       SEAICEuseMetricTerms = .TRUE.
       SEAICEuseEVPpickup = .TRUE.
       SEAICEuseEVPstar   = .FALSE.

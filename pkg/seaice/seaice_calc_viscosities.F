@@ -77,11 +77,17 @@ C     em            - e11-e22 (abbreviation)
 #ifdef SEAICE_ALLOW_TEM
       _RL etaMax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
+<<<<<<< HEAD
 
 #ifdef SEAICE_ALLOW_FULLMC
       _RL etmp, zetaTmp, etaTemp
 #endif /* SEAICE_ALLOW_FULLMC */
       INTEGER k
+=======
+#ifdef SEAICE_ALLOW_TEARDROP
+      _RL k, x, a, xm, Pm
+#endif /* SEAICE_ALLOW_TEARDROP */
+>>>>>>> teardrop
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
       _RL argTmp
@@ -133,6 +139,94 @@ C     (and energy conserving)
 #ifdef SEAICE_ALLOW_FULLMC
       IF (.NOT. SEAICEuseFULLMC ) THEN
 #endif /* SEAICE_ALLOW_FULLMC */
+
+#ifdef SEAICE_ALLOW_TEARDROP
+       IF ( SEAICEuseTD ) THEN
+        
+        DO j=1-OLy+1,sNy+OLy-1
+         DO i=1-OLx+1,sNx+OLx-1
+          ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
+          em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+          etaDen = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+          k = ep / (etaDen+deltaMinSq)
+          a = tnsFac(I,J,bi,bj)
+          x = (-(6. _d 0*(1. _d 0+a)-k*k)+2. _d 0*k*SQRT(k*k+3. _d 0 
+     &      * (1. _d 0+a)))/9. _d 0 + a
+          IF (x .LE. -1) THEN
+            x = -1. _d 0
+          ELSEIF (x .GE. a) THEN
+            x = a 
+          ENDIF ! x < -1 or x > a
+          
+          zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
+     &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
+
+          eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj) 
+     &                     / (etaDen+deltaMinSq)
+
+          etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
+     &           + deltaMin)
+
+          IF zeta (I,J,bi,bj) > ZMAX THEN
+            zeta (I,J,bi,bj) = ZMAX
+          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
+            zeta (I,J,bi,bj) = -ZMAX
+          ENDIF ! zmax condition
+
+          eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
+
+          press(I,J,bi,bj) =
+     &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
+     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
+          
+         ENDDO ! x loop
+        ENDDO ! y loop
+
+       ELSEIF ( SEAICEusePL ) THEN 
+        DO j=1-OLy+1,sNy+OLy-1
+         DO i=1-OLx+1,sNx+OLx-1
+          ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
+          em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+          etaDen = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+          k = ep / (etaDen+deltaMinSq)
+          a = tnsFac(I,J,bi,bj)
+          x = 0.5 * (k - 1. _d 0 - a)
+          IF (x .LE. -1) THEN
+            x = -1. _d 0
+          ELSEIF (x .GE. a) THEN
+            x = a 
+          ENDIF ! x < -1 or x > a
+          
+          zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
+     &                    / SIGN( MAX( ABS(ep),deltaMinSq) , ep)
+
+          eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj) 
+     &                     / (etaDen+deltaMinSq)
+
+          etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
+     &           + deltaMin)
+
+          IF zeta (I,J,bi,bj) > ZMAX THEN
+            zeta (I,J,bi,bj) = ZMAX
+          ELSEIF zeta (I,J,bi,bj) < -ZMAX THEN 
+            zeta (I,J,bi,bj) = -ZMAX
+          ENDIF ! zmax condition
+
+          eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
+
+C         a/SIGN(MAX(ABS(b), SMALL), b)
+
+          press(I,J,bi,bj) =
+     &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
+     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
+          
+         ENDDO ! x loop
+        ENDDO ! y loop
+       ELSE ! SEAICEuseTD
+#endif SEAICE_ALLOW_TEARDROP
+
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -249,6 +343,11 @@ C           Computing ETA  (EMAX=ZMAX)
          ENDDO
       ENDIF 
 #endif /* SEAICE_ALLOW_FULLMC */
+
+#ifdef SEAICE_ALLOW_TEARDROP    
+        ENDIF !  SEAICEuseTD
+#endif SEAICE_ALLOW_TEARDROP
+
 C     compute eta at Z-points by simple averaging
         DO j=1-OLy+1,sNy+OLy-1
          DO i=1-OLx+1,sNx+OLx-1

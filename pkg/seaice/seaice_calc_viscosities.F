@@ -171,7 +171,7 @@ C     (and energy conserving)
           press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
-     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
+     &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
           
          ENDDO ! x loop
         ENDDO ! y loop

@@ -178,7 +178,7 @@ C     (and energy conserving)
      &                     / (etaDen+deltaMinSq)
 
           etamax = eta(I,J,bi,bj) * ZMAX / ABS(zeta(I,J,bi,bj) 
-     &           + deltaMin)
+     &           + deltaMinSq)
 
           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
@@ -190,7 +190,7 @@ C         a/SIGN(MAX(ABS(b), SMALL), b)
           press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) 
-     &         / SIGN(MAX(ABS(x+0.5), SMALL), x+0.5)
+     &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
           
          ENDDO ! x loop
         ENDDO ! y loop

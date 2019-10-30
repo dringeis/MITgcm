@@ -155,16 +155,16 @@ C     (and energy conserving)
           x = MIN(x, a )
           
           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
-     &                    / SIGN( MAX( ABS(2.*ep),deltaMinSq) , ep)
+     &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
 
           eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj) 
-     &                     / (2*etaDen+deltaMinSq)
+     &                     / (2. _d 0 *etaDen+deltaMinSq)
 
           etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
      &           + deltaMinSq)
 
-          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
-          zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
+          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
+          zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
           
           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
 
@@ -190,15 +190,15 @@ C     (and energy conserving)
           x = MIN(x, a )
           
           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj) 
-     &                    / SIGN( MAX( ABS(2.0*ep),deltaMinSq) , ep)
+     &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq) , ep)
 
           eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj) 
-     &                     / (2*etaDen+deltaMinSq)
+     &                     / (2. _d 0 *etaDen+deltaMinSq)
 
           etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
      &           + deltaMinSq)
 
-          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),- ZMAX(I,J,bi,bj))
+          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), -ZMAX(I,J,bi,bj))
           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
 
           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))

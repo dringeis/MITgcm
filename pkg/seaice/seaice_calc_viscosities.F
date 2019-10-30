@@ -272,7 +272,7 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
 
 #ifdef SEAICE_ALLOW_TEARDROP    
         ENDIF !  SEAICEuseTD
-#endif SEAICE_ALLOW_TEARDROP
+#endif /* SEAICE_ALLOW_TEARDROP */
 
 C     compute eta at Z-points by simple averaging
         DO j=1-OLy+1,sNy+OLy-1

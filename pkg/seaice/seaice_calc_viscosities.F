@@ -142,7 +142,7 @@ C     (and energy conserving)
           eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj) 
      &                     / (2. _d 0 *etaDen+deltaMinSq)
 
-          etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
+          etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)/(ABS(zeta(I,J,bi,bj)) 
      &           + deltaMinSq)
 
           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
@@ -177,7 +177,7 @@ C     (and energy conserving)
           eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj) 
      &                     / (2. _d 0 *etaDen+deltaMinSq)
 
-          etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / ABS(zeta(I,J,bi,bj) 
+          etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj) / (ABS(zeta(I,J,bi,bj)) 
      &           + deltaMinSq)
 
           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), -ZMAX(I,J,bi,bj))

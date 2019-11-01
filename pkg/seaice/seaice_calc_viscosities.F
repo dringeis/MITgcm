@@ -85,7 +85,8 @@ C--   basic constants
       recip_efr2=0. _d 0
       IF( SEAICE_eccfr .NE. 0. _d 0) recip_efr2=ONE/(SEAICE_eccfr**2)
       recip_efr4=0. _d 0
-      IF( SEAICE_eccfr .NE. 0. _d 0) recip_efr4=ONE/(SEAICE_eccfr**4)
+      IF( SEAICE_eccfr .NE. 0. _d 0) recip_efr4=(SEAICE_eccen**2)
+     &   / (SEAICE_eccfr**4)
       deltaMinSq = SEAICE_deltaMin**2
 C
       DO bj=myByLo(myThid),myByHi(myThid)
@@ -125,8 +126,7 @@ C     (and energy conserving)
          DO i=1-OLx+1,sNx+OLx-1
           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-          deltaCsq = ep*ep+SEAICE_eccen**2 * recip_efr4 
-     &    * (em*em+4. _d 0*e12Csq(i,j))
+          deltaCsq = ep*ep+recip_efr4*(em*em+4. _d 0*e12Csq(i,j))
 CML The old formulation does not ensure that deltaC**2 is always positive,
 CML but in case you need it to reproduce old results, here it is:
 CML          deltaCsq = 

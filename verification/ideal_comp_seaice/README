@@ -8,7 +8,33 @@ python gendata.py
 # to generate the 1D fields for the OBCS package
 python mk_input.py
 
-# The latter check that asked dimensions fit with the files created by the former 
+# The latter check that asked dimensions fit with the files created by the former
 
 
+ SEAICE_tensilFac=0.0,
+ SEAICEpressReplFac = 0.0,
 
+# standard ellipse:
+ SEAICE_eccen=2.0,
+
+# non-normal flow rule for the ellipse (> 2 favor shear, < 2 favor normal flow)
+ SEAICE_eccen=2.0,
+ SEAICE_eccfr=5.0,
+
+# coulombic yield curve
+ SEAICEuseTEM=.TRUE.,
+# with thes slope parameters
+ SEAICEmcMu=0.7,
+ SEAICE_tensilFac = 0.05,
+
+# teardrop
+ SEAICEuseTD = .TRUE.
+
+# parabolic lense
+ SEAICEusePL = .TRUE.
+
+# Mohr-Coulomb yield curve (Ip, 1990)
+ SEAICEuseFullMC = .TRUE.
+# with thes slope parameters
+ SEAICEmcMu=0.7,
+ SEAICE_tensileFac = 0.05,

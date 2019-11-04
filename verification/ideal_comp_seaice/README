@@ -1,0 +1,14 @@
+Idealized sea ice compression experiment.
+
+# Run the python scripts:
+
+# To generate the 2D field for SEAICE package
+python gendata.py
+
+# to generate the 1D fields for the OBCS package
+python mk_input.py
+
+# The latter check that asked dimensions fit with the files created by the former 
+
+
+

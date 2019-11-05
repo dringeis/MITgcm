@@ -75,16 +75,20 @@ C     em            - e11-e22 (abbreviation)
       _RL recip_efr4, recip_efr2
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 #ifdef SEAICE_ALLOW_TEM
-      _RL etaMax, etaDen, SEAICEmcC
+      _RL etamax, etaDen, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
 
 #ifdef SEAICE_ALLOW_FULLMC
-      _RL etmp
+      _RL etmp_MC
 #endif /* SEAICE_ALLOW_FULLMC */
 
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, x, a
+      _RL k, x, a, etamax_TD
 #endif /* SEAICE_ALLOW_TEARDROP */
+
+#ifdef SEAICE_ALLOW_MCE
+      _RL etmp_MCE, etamax_MCE
+#endif /* SEAICE_ALLOW_MCE */
 
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
@@ -161,17 +165,17 @@ C     do nothing (hack to be able add code with different cpp-flags)
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (2. _d 0 *etaDen+deltaMinSq)
 
-           etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)/(ABS(zeta(I,J,bi,bj))
-     &           + deltaMinSq)
+           etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
+     &               /(ABS(zeta(I,J,bi,bj)) + deltaMinSq)
 
            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
-           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
+           eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 
            press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
+     &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
      &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
 
           ENDDO ! x loop
@@ -197,13 +201,13 @@ C     do nothing (hack to be able add code with different cpp-flags)
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (2. _d 0 *etaDen+deltaMinSq)
 
-           etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
+           etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &          /( ABS(zeta(I,J,bi,bj)) + deltaMinSq )
 
            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), -ZMAX(I,J,bi,bj))
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
 
-           eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
+           eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 
 C         a/SIGN(MAX(ABS(b), SMALL), b)
 
@@ -226,7 +230,7 @@ CDR
 C     Computing e1 and e2
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           etmp=em*em+4. _d 0*e12Csq(i,j)
+           etmp_MC=em*em+4. _d 0*e12Csq(i,j)
 
 C     Computing ZETA
            zeta(I,J,bi,bj) = press0(I,J,bi,bj)*(ONE+tnsFac(I,J,bi,bj))
@@ -241,11 +245,45 @@ C     Replacement Pressure
 C     Computing ETA  (EMAX=ZMAX)
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj)
      &      - zeta(I,J,bi,bj)*ep+press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(etmp + deltaMinSq))
+     &      / (SQRT(etmp_MC + deltaMinSq))
 
           ENDDO
          ENDDO
 #endif /* SEAICE_ALLOW_FULLMC */
+#ifdef SEAICE_ALLOW_MCE
+        ELSEIF ( SEAICEuseMCE ) THEN
+C.    MC yield curve with flow rule from the elliptical yield curve
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+C     Computing e1 and e2
+           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+           etmp_MCE=em*em+4. _d 0*e12Csq(i,j)
+C     Computing DELTAsq       
+           deltaC = SQRT(ep*ep+recip_e2*(em*em+4. _d 0*e12Csq(i,j)))
+C     Computing ZETA
+           zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
+     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+     &          )/(deltaC + deltaMinSq)
+C     Computing ETA 
+           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj) 
+     &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep 
+     &      + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) 
+     &      / (SQRT(etmp_MCE) + deltaMinSq)
+C     Computing etamax_MCE
+           etamax_MCE = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
+     &      / ( zeta(I,J,bi,bj) + deltaMinSq )
+C     Applying maximum 
+           zeta(I,J,bi,bj) = MIN( zeta(I,J,bi,bj) , ZMAX(I,J,bi,bj) )
+           eta(I,J,bi,bj) = MIN( eta(I,J,bi,bj) , etamax_MCE) 
+C     Replacement Pressure
+           press(I,J,bi,bj) = ( ONE - tnsFac(I,J,bi,bj) )
+     &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
+     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaC
+     &      / ( ONE + tnsFac(I,J,bi,bj) ) )
+          ENDDO
+         ENDDO
+#endif /* SEAICE_ALLOW_MCE */
         ELSE
 C     default elliptical yield curve
          DO j=1-OLy+1,sNy+OLy-1
@@ -319,9 +357,9 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
             etaDen = SQRT(MAX(deltaMinSq,etaDen))
 #endif /* SEAICE_DELTA_SMOOTHREG */
             SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
-            etaMax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
+            etamax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
      &           -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
-            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etaMax)
+            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etamax)
            ENDDO
           ENDDO
          ENDIF

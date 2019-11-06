@@ -6,13 +6,16 @@
  OCEAN_drag         = 8.1541e-04,
 
 ### Solvers
-## Preconditionner 
+## Preconditionner
 # SEAICEpreconNL_Iter= 100,
 # SEAICEpreconLinIter= 100,
 
 ## Global
  SEAICElinearIterMax= 1500,
- SEAICEnonlinIterMax= 1500,
+# for tests
+ SEAICEnonlinIterMax= 10,
+# for real experiments
+#SEAICEnonlinIterMax= 1500,
  SEAICEnonLinTol    = 1.E-11,
  SEAICE_Olx=1,
  SEAICE_Oly=1,
@@ -24,30 +27,23 @@
 
 ## Krylov
  SEAICEuseKrylov    = .FALSE.,
- 
-## JNFK 
+
+## JNFK
  SEAICEuseJFNK      = .FALSE.,
  JFNKres_t          = 1.E-05,
 
  SEAICE_no_Slip     = .TRUE.,
  SEAICEwriteState   = .TRUE.,
- SEAICE_monFreq = 0.1,
+#SEAICE_monFreq = 0.1,
  SEAICEADVSCHEME = 33,
  HeffFile        = 'ice0_heff_DMcomp.bin',
  AreaFile        = 'ice0_area_DMcomp.bin',
 
  SEAICE_eccen=2.0,
- SEAICE_eccfr=5.0,
-# SEAICE_eccen=1.3846,
  SEAICE_tensilFac=0.0,
  SEAICEpressReplFac = 0.0,
- 
-# SEAICEuseTEM=.FALSE.,
-# SEAICEmcMu=1.0,
- 
+
  &
 
  &SEAICE_PARM03
  &
-
-

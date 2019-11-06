@@ -79,16 +79,12 @@ C     em            - e11-e22 (abbreviation)
       _RL etamax, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
 
-#ifdef SEAICE_ALLOW_FULLMC
-      _RL etmp_MC
-#endif /* SEAICE_ALLOW_FULLMC */
-
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, ksq, x, a, ap1, etamax_TD
+      _RL k, ksq, x, a, ap1, etamax_TD, shearDef
 #endif /* SEAICE_ALLOW_TEARDROP */
 
 #ifdef SEAICE_ALLOW_MCE
-      _RL etmp_MCE, etamax_MCE
+      _RL etamax_MCE
 #endif /* SEAICE_ALLOW_MCE */
 
       _RL sumNorm, maskZ
@@ -187,7 +183,7 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN( ABS(x+0.5)+SEAICE_deltaMin, x+0.5)
+     &         / SIGN( ABS(x+0.5)+SEAICE_deltaMin, x+0.5 )
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -196,10 +192,10 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
-           ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
+           ep = ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           shearDefSq = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k = ep / (shearDefSq+deltaMinSq)
+           shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+           k = ep / (shearDef+SEAICE_deltaMin)
            a = tnsFac(I,J,bi,bj)
            x = 0.5 * (k - 1. _d 0 - a)
 
@@ -207,13 +203,13 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            x = MIN( x, a )
 
            zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
-     &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
+     &                    / SIGN( MAX( ABS(ep),deltaMinSq),ep)
 
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (2. _d 0 *shearDefSq+deltaMinSq)
+     &                     / (shearDef+SEAICE_deltaMin)
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &          /( ABS(zeta(I,J,bi,bj)) + deltaMinSq )
+     &          /( ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin )
 
            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), -ZMAX(I,J,bi,bj))
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
@@ -225,7 +221,7 @@ C         a/SIGN(MAX(ABS(b), SMALL), b)
            press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
+     &         / SIGN( ABS(x+0.5)+SEAICE_deltaMin, x+0.5 )
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -241,7 +237,7 @@ CDR
 C     Computing e1 and e2
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           etmp_MC=em*em+4. _d 0*e12Csq(i,j)
+           shearDefSq=em*em+4. _d 0*e12Csq(i,j)
 
 C     Computing ZETA
            zeta(I,J,bi,bj) = press0(I,J,bi,bj)*(ONE+tnsFac(I,J,bi,bj))
@@ -256,7 +252,7 @@ C     Replacement Pressure
 C     Computing ETA  (EMAX=ZMAX)
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj)
      &      - zeta(I,J,bi,bj)*ep+press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(etmp_MC + deltaMinSq))
+     &      / (SQRT(shearDefSq + deltaMinSq))
 
           ENDDO
          ENDDO
@@ -269,9 +265,9 @@ C.    MC yield curve with flow rule from the elliptical yield curve
 C     Computing e1 and e2
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           etmp_MCE=em*em+4. _d 0*e12Csq(i,j)
+           shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
 C     Computing DELTAsq
-           deltaC = SQRT(ep*ep+recip_e2*(em*em+4. _d 0*e12Csq(i,j)))
+           deltaC = SQRT(ep*ep + recip_e2 * shearDefSq)
 C     Computing ZETA
            zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
      &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
@@ -280,7 +276,7 @@ C     Computing ETA
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
      &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep
      &      + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(etmp_MCE) + deltaMinSq)
+     &      / (SQRT(shearDefSq) + deltaMinSq)
 C     Computing etamax_MCE
            etamax_MCE = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &      / ( zeta(I,J,bi,bj) + deltaMinSq )

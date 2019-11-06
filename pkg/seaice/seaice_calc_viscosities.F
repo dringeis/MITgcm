@@ -203,7 +203,7 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            x = MIN( x, a )
 
            zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
-     &                    / SIGN( MAX( ABS(ep),deltaMinSq),ep)
+     &                    / SIGN( ABS(ep) + SEAICE_deltaMin , ep)
 
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (shearDef+SEAICE_deltaMin)
@@ -267,26 +267,26 @@ C     Computing e1 and e2
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
            shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
 C     Computing DELTAsq
-           deltaC = SQRT(ep*ep + recip_e2 * shearDefSq)
+           deltaCreg = SQRT(ep*ep + recip_e2 * shearDefSq)
 C     Computing ZETA
            zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
      &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &          )/(deltaC + deltaMinSq)
+     &          )/(deltaCreg + SEAICE_deltaMin )
 C     Computing ETA
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
      &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep
      &      + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(shearDefSq) + deltaMinSq)
+     &      / (SQRT(shearDefSq) + SEAICE_deltaMin)
 C     Computing etamax_MCE
            etamax_MCE = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &      / ( zeta(I,J,bi,bj) + deltaMinSq )
+     &      / ( zeta(I,J,bi,bj) + SEAICE_deltaMin )
 C     Applying maximum
            zeta(I,J,bi,bj) = MIN( zeta(I,J,bi,bj) , ZMAX(I,J,bi,bj) )
            eta(I,J,bi,bj) = MIN( eta(I,J,bi,bj) , etamax_MCE)
 C     Replacement Pressure
            press(I,J,bi,bj) = ( ONE - tnsFac(I,J,bi,bj) )
      &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
-     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaC
+     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaCreg
      &      / ( ONE + tnsFac(I,J,bi,bj) ) )
           ENDDO
          ENDDO

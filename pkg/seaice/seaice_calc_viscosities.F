@@ -203,7 +203,7 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            x = MIN( x, a )
 
            zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
-     &                    / SIGN( MAX( ABS(ep),deltaMinSq),ep)
+     &                    / SIGN( ABS(ep) + SEAICE_deltaMin , ep)
 
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (shearDef+SEAICE_deltaMin)
@@ -271,15 +271,15 @@ C     Computing DELTAsq
 C     Computing ZETA
            zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
      &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &          )/(deltaCreg + deltaMinSq)
+     &          )/(deltaCreg + SEAICE_deltaMin )
 C     Computing ETA
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
      &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep
      &      + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(shearDefSq) + deltaMinSq)
+     &      / (SQRT(shearDefSq) + SEAICE_deltaMin)
 C     Computing etamax_MCE
            etamax_MCE = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &      / ( zeta(I,J,bi,bj) + deltaMinSq )
+     &      / ( zeta(I,J,bi,bj) + SEAICE_deltaMin )
 C     Applying maximum
            zeta(I,J,bi,bj) = MIN( zeta(I,J,bi,bj) , ZMAX(I,J,bi,bj) )
            eta(I,J,bi,bj) = MIN( eta(I,J,bi,bj) , etamax_MCE)

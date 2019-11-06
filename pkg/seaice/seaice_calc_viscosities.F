@@ -147,8 +147,8 @@ C     do nothing (hack to be able add code with different cpp-flags)
           DO i=1-OLx+1,sNx+OLx-1
            ep = e11(i,j,bi,bj) + e22(i,j,bi,bj)
            em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
-           shearDefSq = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k   = ep / (shearDefSq+SEAICE_deltaMin)
+           shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+           k   = ep / (shearDef+SEAICE_deltaMin)
            ksq = k*k
            a   = tnsFac(I,J,bi,bj)
            ap1 = a + 1. _d 0
@@ -170,7 +170,7 @@ C     multiply by 0.5
 CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (shearDefSq + SEAICE_deltaMin)
+     &                     / (shearDef + SEAICE_deltaMin)
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &               /(ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin)

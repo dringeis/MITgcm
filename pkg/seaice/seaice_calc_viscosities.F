@@ -83,7 +83,7 @@ C     em            - e11-e22 (abbreviation)
 #endif /* SEAICE_ALLOW_FULLMC */
 
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, x, a
+      _RL k, ksq, x, a, ap1
 #endif /* SEAICE_ALLOW_TEARDROP */
 
       _RL sumNorm, maskZ
@@ -144,27 +144,37 @@ C     do nothing (hack to be able add code with different cpp-flags)
 
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
-           ep = 0.5 _d 0 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
-           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           etaDen = 0.5 _d 0 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k = ep / (etaDen+deltaMinSq)
-           a = tnsFac(I,J,bi,bj)
-           x = (-(6. _d 0*(1. _d 0+a)-k*k)+2. _d 0*k*SQRT(k*k+3. _d 0
-     &          * (1. _d 0+a)))/9. _d 0 + a
+           ep = e11(i,j,bi,bj) + e22(i,j,bi,bj)
+           em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
+           etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+           k   = ep / (etaDen+SEAICE_deltaMin)
+           ksq = k*k
+           a   = tnsFac(I,J,bi,bj)
+           ap1 = a + 1. _d 0
+           x = ( 2. _d 0*k*SQRT( ksq + 3. _d 0 * ap1 )
+     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) / 9. _d 0 + a
 
-           x = MAX( x, -1. _d 0 )
+C     not necessary to limit x from below, it cannot be smaller than -1
+C     by definition
+CML           x = MAX( x, -1. _d 0 )
+C     capping x at a is probably better that setting it to a for x>1,
+C     but still not ideal (because non-differentiable)
+C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
            x = MIN( x, a )
 
-           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
-     &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
+           zeta(I,J,bi,bj) = (x + 0.5 _d 0) * press0(I,J,bi,bj)
+     &          / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
+C     only the sign of ep is required here, that is why we do not have to
+C     multiply by 0.5
+CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (2. _d 0 *etaDen+deltaMinSq)
+     &                     / (etaDen + SEAICE_deltaMin)
 
            etamax = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)/(ABS(zeta(I,J,bi,bj))
-     &           + deltaMinSq)
+     &           + SEAICE_deltaMin)
 
-           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
+           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), ZMIN(I,J,bi,bj))
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
            eta(I,J,bi,bj) = MIN( etamax , eta(I,J,bi,bj))
@@ -172,7 +182,7 @@ C     do nothing (hack to be able add code with different cpp-flags)
            press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
+     &         / SIGN( ABS(x+0.5)+SEAICE_deltaMin, x+0.5)
 
           ENDDO ! x loop
          ENDDO ! y loop

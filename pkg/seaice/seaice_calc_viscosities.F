@@ -260,11 +260,11 @@ C     Computing e1 and e2
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
            etmp_MCE=em*em+4. _d 0*e12Csq(i,j)
 C     Computing DELTAsq       
-           deltaC = SQRT(ep*ep+recip_e2*(em*em+4. _d 0*e12Csq(i,j)))
+           deltaCreg = SQRT(ep*ep+recip_e2*(em*em+4. _d 0*e12Csq(i,j)))
 C     Computing ZETA
-           zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
-     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &          )/(deltaC + deltaMinSq)
+           zeta(I,J,bi,bj) = ( press0(I,J,bi,bj)
+     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) ) )
+     &          / (2 * deltaCreg + SEAICE_deltaMin)
 C     Computing ETA 
            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj) 
      &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep 
@@ -279,7 +279,7 @@ C     Applying maximum
 C     Replacement Pressure
            press(I,J,bi,bj) = ( ONE - tnsFac(I,J,bi,bj) )
      &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
-     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaC
+     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaCreg
      &      / ( ONE + tnsFac(I,J,bi,bj) ) )
           ENDDO
          ENDDO

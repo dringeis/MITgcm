@@ -1,0 +1,50 @@
+# SEAICE parameters
+ &SEAICE_PARM01
+ SEAICErestoreUnderIce=.TRUE.,
+ usePW79thermodynamics=.FALSE.,
+ SEAICE_strength    = 2.750e+04,
+ OCEAN_drag         = 8.1541e-04,
+
+### Solvers
+## Preconditionner
+# SEAICEpreconNL_Iter= 100,
+# SEAICEpreconLinIter= 100,
+
+## Global
+ SEAICElinearIterMax= 1500,
+# for tests
+ SEAICEnonlinIterMax= 10,
+# for real experiments
+#SEAICEnonlinIterMax= 1500,
+ SEAICEnonLinTol    = 1.E-11,
+ SEAICE_Olx=1,
+ SEAICE_Oly=1,
+
+
+## LSR
+ LSR_ERROR          = 1.E-11,
+# LSR_mixIniGuess    = 1,
+
+## Krylov
+ SEAICEuseKrylov    = .FALSE.,
+
+## JNFK
+ SEAICEuseJFNK      = .FALSE.,
+ JFNKres_t          = 1.E-05,
+
+ SEAICE_no_Slip     = .TRUE.,
+ SEAICEwriteState   = .TRUE.,
+#SEAICE_monFreq = 0.1,
+ SEAICEADVSCHEME = 33,
+ HeffFile        = 'ice0_heff_DMcomp.bin',
+ AreaFile        = 'ice0_area_DMcomp.bin',
+
+ SEAICEpressReplFac = 0.0,
+# teardrop
+ SEAICEuseTD = .TRUE.
+ SEAICE_tensilFac=0.05,
+
+ &
+
+ &SEAICE_PARM03
+ &

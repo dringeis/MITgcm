@@ -74,8 +74,9 @@ C     em            - e11-e22 (abbreviation)
       _RL recip_e2, deltaCreg, deltaCsq, deltaMinSq, tmp, ep, em
       _RL recip_efr4, recip_efr2
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL shearDefSq
 #ifdef SEAICE_ALLOW_TEM
-      _RL etamax, etaDen, SEAICEmcC
+      _RL etamax, SEAICEmcC
 #endif /* SEAICE_ALLOW_TEM */
 
 #ifdef SEAICE_ALLOW_FULLMC
@@ -150,8 +151,8 @@ C     do nothing (hack to be able add code with different cpp-flags)
           DO i=1-OLx+1,sNx+OLx-1
            ep = e11(i,j,bi,bj) + e22(i,j,bi,bj)
            em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
-           etaDen = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k   = ep / (etaDen+SEAICE_deltaMin)
+           shearDefSq = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+           k   = ep / (shearDefSq+SEAICE_deltaMin)
            ksq = k*k
            a   = tnsFac(I,J,bi,bj)
            ap1 = a + 1. _d 0
@@ -173,7 +174,7 @@ C     multiply by 0.5
 CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (etaDen + SEAICE_deltaMin)
+     &                     / (shearDefSq + SEAICE_deltaMin)
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &               /(ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin)
@@ -197,8 +198,8 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
           DO i=1-OLx+1,sNx+OLx-1
            ep = 0.5 * ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           etaDen = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k = ep / (etaDen+deltaMinSq)
+           shearDefSq = 0.5 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+           k = ep / (shearDefSq+deltaMinSq)
            a = tnsFac(I,J,bi,bj)
            x = 0.5 * (k - 1. _d 0 - a)
 
@@ -209,7 +210,7 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
      &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
 
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (2. _d 0 *etaDen+deltaMinSq)
+     &                     / (2. _d 0 *shearDefSq+deltaMinSq)
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &          /( ABS(zeta(I,J,bi,bj)) + deltaMinSq )
@@ -300,7 +301,8 @@ C     default elliptical yield curve
           DO i=1-OLx+1,sNx+OLx-1
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           deltaCsq = ep*ep+recip_efr4*(em*em+4. _d 0*e12Csq(i,j))
+           shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
+           deltaCsq   = ep*ep + recip_efr4*shearDefSq
 CML The old formulation does not ensure that deltaC**2 is always positive,
 CML but in case you need it to reproduce old results, here it is:
 CML          deltaCsq =
@@ -360,15 +362,15 @@ CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
            DO i=1-OLx+1,sNx+OLx-1
             ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-            etaDen = em*em + 4. _d 0 * e12Csq(i,j)
+            shearDefSq = em*em + 4. _d 0 * e12Csq(i,j)
 #ifdef SEAICE_DELTA_SMOOTHREG
-            etaDen = SQRT(deltaMinSq + etaDen)
+            shearDefSq = SQRT(deltaMinSq + shearDefSq)
 #else
-            etaDen = SQRT(MAX(deltaMinSq,etaDen))
+            shearDefSq = SQRT(MAX(deltaMinSq,shearDefSq))
 #endif /* SEAICE_DELTA_SMOOTHREG */
             SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
             etamax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
-     &           -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/etaDen
+     &           -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/shearDefSq
             eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etamax)
            ENDDO
           ENDDO

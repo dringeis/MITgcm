@@ -197,7 +197,7 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
            k = ep / (shearDef+SEAICE_deltaMin)
            a = tnsFac(I,J,bi,bj)
-           x = 0.5 * (k - 1. _d 0 - a)
+           x = 0.5 * (k - 1. _d 0 + a)
 
            x = MAX( x,-1. _d 0 )
            x = MIN( x, a )
@@ -211,12 +211,11 @@ CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &          /( ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin )
 
-           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), -ZMAX(I,J,bi,bj))
-           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj),  ZMAX(I,J,bi,bj))
+           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), ZMIN(I,J,bi,bj))
+           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 
-C         a/SIGN(MAX(ABS(b), SMALL), b)
 
            press(I,J,bi,bj) =
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )

@@ -41,7 +41,7 @@
 
  SEAICEpressReplFac = 0.0,
 # coulombic yield curve
- SEAICEuseTEM=.TRUE.,
+ SEAICEuseMCE=.TRUE.,
 # with thes slope parameters
  SEAICEmcMu=0.7,
  SEAICE_tensilFac = 0.05,

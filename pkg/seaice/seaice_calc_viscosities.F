@@ -74,19 +74,13 @@ C     em            - e11-e22 (abbreviation)
       _RL recip_e2, deltaCreg, deltaCsq, deltaMinSq, tmp, ep, em
       _RL recip_efr4, recip_efr2
       _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
-      _RL shearDefSq
-#ifdef SEAICE_ALLOW_TEM
-      _RL etamax, SEAICEmcC
-#endif /* SEAICE_ALLOW_TEM */
-
+      _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, ksq, x, a, ap1, etamax_TD, shearDef
+      _RL k, ksq, x, a, ap1, etamax_TD
 #endif /* SEAICE_ALLOW_TEARDROP */
-
-#ifdef SEAICE_ALLOW_MCE
-      _RL etamax_MCE
-#endif /* SEAICE_ALLOW_MCE */
-
+#if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
+      _RL etaMaxFac
+#endif /* SEAICE_ALLOW_MCE or SEAICE_ALLOW_TEM */
       _RL sumNorm, maskZ
 #ifdef SEAICE_ZETA_SMOOTHREG
       _RL argTmp
@@ -256,42 +250,9 @@ C     Computing ETA  (EMAX=ZMAX)
           ENDDO
          ENDDO
 #endif /* SEAICE_ALLOW_FULLMC */
-#ifdef SEAICE_ALLOW_MCE
-        ELSEIF ( SEAICEuseMCE ) THEN
-C.    MC yield curve with flow rule from the elliptical yield curve
-         DO j=1-OLy+1,sNy+OLy-1
-          DO i=1-OLx+1,sNx+OLx-1
-C     Computing e1 and e2
-           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
-           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-           shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
-C     Computing DELTAsq
-           deltaCreg = SQRT(ep*ep + recip_e2 * shearDefSq)
-C     Computing ZETA
-           zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
-     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &          )/(deltaCreg + SEAICE_deltaMin )
-C     Computing ETA
-           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
-     &      * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zeta(I,J,bi,bj) * ep
-     &      + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
-     &      / (SQRT(shearDefSq) + SEAICE_deltaMin)
-C     Computing etamax_MCE
-           etamax_MCE = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &      / ( zeta(I,J,bi,bj) + SEAICE_deltaMin )
-C     Applying maximum
-           zeta(I,J,bi,bj) = MIN( zeta(I,J,bi,bj) , ZMAX(I,J,bi,bj) )
-           eta(I,J,bi,bj) = MIN( eta(I,J,bi,bj) , etamax_MCE)
-C     Replacement Pressure
-           press(I,J,bi,bj) = ( ONE - tnsFac(I,J,bi,bj) )
-     &      * (press0(I,J,bi,bj) * ( ONE - SEAICEpressReplFac )
-     &      + SEAICEpressReplFac * TWO * zeta(I,J,bi,bj) * deltaCreg
-     &      / ( ONE + tnsFac(I,J,bi,bj) ) )
-          ENDDO
-         ENDDO
-#endif /* SEAICE_ALLOW_MCE */
         ELSE
-C     default elliptical yield curve
+C     For all elliptic yield curves, computation of deltaC and zeta
+C     identical so we do it first
          DO j=1-OLy+1,sNy+OLy-1
           DO i=1-OLx+1,sNx+OLx-1
            ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
@@ -338,7 +299,6 @@ C     put min and max viscosities in
            zeta (I,J,bi,bj) = MAX(ZMIN(I,J,bi,bj),zeta(I,J,bi,bj))
 C     set viscosities to zero at HEFFM flow pts
            zeta (I,J,bi,bj) = zeta(I,J,bi,bj)*HEFFM(I,J,bi,bj)
-           eta  (I,J,bi,bj) = recip_efr2*zeta(I,J,bi,bj)
 C     "replacement pressure"
            press(I,J,bi,bj) =
      &          ( press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
@@ -351,26 +311,63 @@ CML     &                  * ( deltaC(I,J,bi,bj)/deltaCreg - 1. _d 0 )
 CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
           ENDDO
          ENDDO
-#ifdef SEAICE_ALLOW_TEM
-         IF ( SEAICEuseTEM ) THEN
+C     The elliptical yield curves differ in the way eta is computed
+         IF (.FALSE.) THEN
+#if (defined SEAICE_ALLOW_MCE) || (defined SEAICE_ALLOW_TEM)
+         ELSEIF ( SEAICEuseMCE .OR. SEAICEuseTEM ) THEN
+C     MC yield curve with flow rule from the elliptical yield curve
+C     or Truncated Ellipse method with Coulombic limbs
           DO j=1-OLy+1,sNy+OLy-1
            DO i=1-OLx+1,sNx+OLx-1
+C     Computing e1 and e2
             ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
-            shearDefSq = em*em + 4. _d 0 * e12Csq(i,j)
+            shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
 #ifdef SEAICE_DELTA_SMOOTHREG
-            shearDefSq = SQRT(deltaMinSq + shearDefSq)
+            shearDef  = SQRT(deltaMinSq + shearDefSq)
+            deltaCsq  = ep*ep + recip_efr4*shearDefSq
+            deltaCreg = SQRT(deltaCsq + deltaMinSq)
 #else
-            shearDefSq = SQRT(MAX(deltaMinSq,shearDefSq))
+            shearDef  = SQRT(MAX(deltaMinSq,shearDefSq))
+            deltaCreg = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
 #endif /* SEAICE_DELTA_SMOOTHREG */
-            SEAICEmcC=SEAICEmcMU*tnsFac(I,J,bi,bj)*SEAICE_strength
-            etamax = (SEAICEmcMu*( 0.5 _d 0*press(I,J,bi,bj)
-     &           -zeta(I,J,bi,bj)*ep)+SEAICEmcC)/shearDefSq
-            eta(I,J,bi,bj) = MIN(eta(I,J,bi,bj),etamax)
+C     Computing ETA
+CMLC     we need to recompute zeta here, because we need the unlimited version
+CML           zetaLoc = HALF*( press0(I,J,bi,bj)
+CML     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+CML     &          )/deltaCreg
+CML            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
+CML     &           * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zetaLoc * ep
+CML     &           + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) / shearDef
+            eta(I,J,bi,bj) = SEAICEmcMU * HALF * press0(I,J,bi,bj)
+     &           * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+     &           * ( 1. _d 0 - ep/deltaCreg ) / shearDef
+C     Computing etaMaxFac = ZMAX/zetaLoc
+            etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg
+     &           / ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+C     Applying maximum
+            eta(I,J,bi,bj) = eta(I,J,bi,bj) * MIN( 1. _d 0, etaMaxFac )
            ENDDO
           ENDDO
+C     closing the coulombic limbs with the ellipse for compression
+          IF ( SEAICEuseTEM) THEN
+           DO j=1-OLy+1,sNy+OLy-1
+            DO i=1-OLx+1,sNx+OLx-1
+             eta(I,J,bi,bj) = MIN( eta(I,J,bi,bj),
+     &            recip_efr2*zeta(I,J,bi,bj) )
+            ENDDO
+           ENDDO
+          ENDIF
+#endif /* SEAICE_ALLOW_MCE or SEAICE_ALLOW_TEM */
+         ELSE
+C     default elliptical yield curve
+          DO j=1-OLy+1,sNy+OLy-1
+           DO i=1-OLx+1,sNx+OLx-1
+            eta(I,J,bi,bj) = recip_efr2*zeta(I,J,bi,bj)
+           ENDDO
+          ENDDO
+C     end of elliptical yield curve options
          ENDIF
-#endif /* SEAICE_ALLOW_TEM */
 C     end of yield curve options
         ENDIF
 

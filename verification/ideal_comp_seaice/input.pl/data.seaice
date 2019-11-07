@@ -40,7 +40,7 @@
  AreaFile        = 'ice0_area_DMcomp.bin',
 
  SEAICEpressReplFac = 0.0,
-# teardrop
+# parabolic lens
  SEAICEusePL = .TRUE.
  SEAICE_tensilFac=0.05,
 

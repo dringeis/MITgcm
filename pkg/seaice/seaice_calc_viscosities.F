@@ -325,23 +325,24 @@ C     Computing e1 and e2
             shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
 #ifdef SEAICE_DELTA_SMOOTHREG
             shearDef  = SQRT(deltaMinSq + shearDefSq)
-            deltaCsq  = ep*ep + recip_efr4*shearDefSq
-            deltaCreg = SQRT(deltaCsq + deltaMinSq)
+            deltaCreg = SQRT(deltaC(I,J,bi,bj)**2 + deltaMinSq)
 #else
             shearDef  = SQRT(MAX(deltaMinSq,shearDefSq))
             deltaCreg = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
 #endif /* SEAICE_DELTA_SMOOTHREG */
 C     Computing ETA
-CMLC     we need to recompute zeta here, because we need the unlimited version
-CML           zetaLoc = HALF*( press0(I,J,bi,bj)
-CML     &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-CML     &          )/deltaCreg
-CML            eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
-CML     &           * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zetaLoc * ep
-CML     &           + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) / shearDef
+C     In principle, we need to recompute zeta here, because we need the
+C     unlimited version
+C          zetaLoc = HALF*( press0(I,J,bi,bj)
+C    &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+C    &          )/deltaCreg
+C           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
+C    &           * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zetaLoc * ep
+C    &           + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) / shearDef
+C     but in this formulation, only ep/deltaCreg remains
             eta(I,J,bi,bj) = SEAICEmcMU * HALF * press0(I,J,bi,bj)
-     &           * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &           * ( 1. _d 0 - ep/deltaCreg ) / shearDef
+     &           * ( ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+     &             - ep/deltaCreg ) / shearDef
 C     Computing etaMaxFac = ZMAX/zetaLoc
             etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg
      &           / ( 1. _d 0 + tnsFac(I,J,bi,bj) )

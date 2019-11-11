@@ -71,9 +71,10 @@ C     recip_e2      - inverse of square of ratio of yield curve main axes
 C     ep            - e11+e22 (abbreviation)
 C     em            - e11-e22 (abbreviation)
       INTEGER i, j, bi, bj
-      _RL recip_e2, deltaCreg, deltaCsq, deltaMinSq, tmp, ep, em
+      _RL recip_e2, deltaCsq, deltaMinSq, tmp, ep, em
       _RL recip_efr4, recip_efr2
-      _RL e12Csq(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL e12Csq   (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+      _RL deltaCreg(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
       _RL k, ksq, x, a, ap1, etamax_TD
@@ -102,7 +103,8 @@ C
 #ifdef ALLOW_AUTODIFF_TAMC
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
-          e12Csq(i,j) = 0. _d 0
+          e12Csq   (i,j) = 0. _d 0
+          deltaCreg(i,j) = SEAICE_deltaMin
          ENDDO
         ENDDO
 #endif /* ALLOW_AUTODIFF_TAMC */
@@ -276,23 +278,23 @@ C     avoid sqrt of 0
 #ifdef SEAICE_DELTA_SMOOTHREG
 C     smooth regularization (without max-function) of delta for
 C     better differentiability
-           deltaCreg = SQRT(deltaCsq + deltaMinSq)
-CML          deltaCreg = deltaC(I,J,bi,bj) + SEAICE_deltaMin
+           deltaCreg(I,J) = SQRT(deltaCsq + deltaMinSq)
+CML          deltaCreg(I,J) = deltaC(I,J,bi,bj) + SEAICE_deltaMin
 #else
-           deltaCreg = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
+           deltaCreg(I,J) = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
 #endif /* SEAICE_DELTA_SMOOTHREG */
 #ifdef SEAICE_ZETA_SMOOTHREG
 C     regularize zeta to zmax with a smooth tanh-function instead
 C     of a min(zeta,zmax). This improves convergence of iterative
 C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
-           argTmp = exp(-1. _d 0/(deltaCreg*SEAICE_zetaMaxFac))
+           argTmp = exp(-1. _d 0/(deltaCreg(I,J)*SEAICE_zetaMaxFac))
            zeta (I,J,bi,bj) = ZMAX(I,J,bi,bj)
      &          *(1. _d 0 - argTmp)/(1. _d 0 + argTmp)
      &          *(1. _d 0 + tnsFac(I,J,bi,bj) )
 #else
            zeta (I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
      &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &          )/deltaCreg
+     &          )/deltaCreg(I,J)
 C     put min and max viscosities in
            zeta (I,J,bi,bj) = MIN(ZMAX(I,J,bi,bj),zeta(I,J,bi,bj))
 #endif /*  SEAICE_ZETA_SMOOTHREG */
@@ -307,7 +309,7 @@ C     "replacement pressure"
      &          ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
 CML          press(I,J,bi,bj) = press0(I,J,bi,bj) *
 CML     &         ( 1. _d 0 + SEAICEpressReplFac
-CML     &                  * ( deltaC(I,J,bi,bj)/deltaCreg - 1. _d 0 )
+CML     &                  * ( deltaC(I,J,bi,bj)/deltaCreg(I,J) - 1. _d 0 )
 CML     &         ) * ( 1. _d 0 - tnsFac(I,J,bi,bj) )
           ENDDO
          ENDDO
@@ -324,27 +326,25 @@ C     Computing e1 and e2
             em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
             shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
 #ifdef SEAICE_DELTA_SMOOTHREG
-            shearDef  = SQRT(deltaMinSq + shearDefSq)
-            deltaCreg = SQRT(deltaC(I,J,bi,bj)**2 + deltaMinSq)
+            shearDef   = SQRT(deltaMinSq + shearDefSq)
 #else
-            shearDef  = SQRT(MAX(deltaMinSq,shearDefSq))
-            deltaCreg = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
+            shearDef   = SQRT(MAX(deltaMinSq,shearDefSq))
 #endif /* SEAICE_DELTA_SMOOTHREG */
 C     Computing ETA
 C     In principle, we need to recompute zeta here, because we need the
 C     unlimited version
 C          zetaLoc = HALF*( press0(I,J,bi,bj)
 C    &          * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-C    &          )/deltaCreg
+C    &          )/deltaCreg(I,J)
 C           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press0(I,J,bi,bj)
 C    &           * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zetaLoc * ep
 C    &           + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) / shearDef
-C     but in this formulation, only ep/deltaCreg remains
+C     but in this formulation, only ep/deltaCreg(I,J) remains
             eta(I,J,bi,bj) = SEAICEmcMU * HALF * press0(I,J,bi,bj)
      &           * ( ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &             - ep/deltaCreg ) / shearDef
+     &             - ep/deltaCreg(I,J) ) / shearDef
 C     Computing etaMaxFac = ZMAX/zetaLoc
-            etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg
+            etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg(I,J)
      &           / ( 1. _d 0 + tnsFac(I,J,bi,bj) )
 C     Applying maximum
             eta(I,J,bi,bj) = eta(I,J,bi,bj) * MIN( 1. _d 0, etaMaxFac )

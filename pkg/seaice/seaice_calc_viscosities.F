@@ -205,7 +205,7 @@ C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
            x = MAX( x,-1. _d 0 )
            x = MIN( x, a )
 C           compute ZETA
-           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
+           zeta(I,J,bi,bj) = (x + 0.5*(1-a)) * press0(I,J,bi,bj)
      &                    / SIGN( ABS(ep) + SEAICE_deltaMin , ep)
 C           compute ETA
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
@@ -218,10 +218,10 @@ C           Apply the maxiums on zeta and eta
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 C            Compute the replacement pressure
-           press(I,J,bi,bj) =
+           press(I,J,bi,bj) = (1-a)* (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN( ABS(x+0.5)+SEAICE_deltaMin, x+0.5 )
+     &         / SIGN( ABS(x+0.5*(1-a))+SEAICE_deltaMin, x+0.5*(1-a)))
 
           ENDDO ! x loop
          ENDDO ! y loop

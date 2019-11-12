@@ -8,14 +8,14 @@ from rw import readfield
 kwr, kprt =1, 1
 nx, ny, nr = 40, 100, 1
 
-pix_sides=nx/10
+pix_sides=int(nx/10)
 
 
 # ------------------------------------------------------
 
 def writefield(fname,data):
     import sys
-    print 'write to file: '+fname
+    print( 'write to file: '+fname)
     datac=copy(data)
     if sys.byteorder == 'little':
         datac.byteswap(True)

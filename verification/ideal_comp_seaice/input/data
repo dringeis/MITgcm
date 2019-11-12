@@ -1,6 +1,6 @@
-# Dynamical comparison between continuum mechanics in MITgcm and 
+# Dynamical comparison between continuum mechanics in MITgcm and
 # Discrete model DESIgn fron A. Herman, described in Herman et al 2016
-# 
+#
 # Damien Ringeisen, 2016
 #
 # ====================
@@ -24,7 +24,7 @@
 #   momAdvection    - On/Off flag for momentum self transport
 #   momViscosity    - On/Off flag for momentum mixing
 #   f0              - Coriolis parameters, set to 0 to ignore coriolis force
-#   beta            - Coriolis parameters, set to 0 to ignore coriolis force  
+#   beta            - Coriolis parameters, set to 0 to ignore coriolis force
 #
  &PARM01
  tRef= 24.0,
@@ -52,7 +52,6 @@
  gravity         = 9.8156,
  rhoConst        = 1027.D0,
  rhoConstFresh   = 999.8,
- useCDscheme=.TRUE.,
  useSingleCpuIO=.TRUE.,
  readBinaryPrec=64,
  writeBinaryPrec=64,
@@ -74,7 +73,6 @@
 #
 #   startTime         - Integration starting time                (s)
 #   endTime           - Integration ending time                  (s)
-#   tauCD             - CD scheme coupling timescale             (s)
 #   deltaTMom         - Timestep for momemtum equations          (s)
 #   deltaTtracer      - Tracer timestep                          (s)
 #   deltaTClock       - Timestep used as model "clock"           (s)
@@ -86,10 +84,12 @@
 #   tauSaltClimRelax  - Relaxation to climatology time scale     (s)
 #
  &PARM03
- tauCD=172800.,
- startTime=0.0,
-# nTimeSteps=5,
- endTime=200,
+# for testing use a short integration
+ nIter0=0,
+ nTimeSteps=10,
+# this is for real experiments
+#startTime=0.0,
+#endTime=200,
  deltaT=0.1,
  cAdjFreq=0.,
  abEps=0.1,
@@ -97,7 +97,8 @@
 # pChkptFreq=36000.,
 # chkptFreq= 0.,
 # dumpFreq = 360.,
- monitorFreq=1.,
+ dumpInitAndLast=.FALSE.,
+ monitorFreq=0.1,
  pickupStrictlyMatch=.FALSE.,
  &
 
@@ -106,8 +107,8 @@
 #   usingCartesianGrid      - On/Off flag for cartesian coordinates
 #   delX                    - Zonal grid spacing         (m)
 #   delY                    - Meridional grid spacing    (m)
-#   delZ                    - Vertical grid spacing      (m)       
-#   
+#   delZ                    - Vertical grid spacing      (m)
+#
  &PARM04
  usingCartesianGrid=.TRUE.,
  dXspacing=250.0,

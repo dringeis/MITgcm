@@ -35,6 +35,6 @@ python mk_input.py
 
 # Mohr-Coulomb yield curve (Ip, 1990)
  SEAICEuseFullMC = .TRUE.
-# with thes slope parameters
+# with these slope parameters
  SEAICEmcMu=0.7,
- SEAICE_tensileFac = 0.05,
+ SEAICE_tensilFac = 0.05,

@@ -187,7 +187,7 @@ for f in icedata :
                 elif d=='W':
                     data[fo][t,:]=temp_data[iy,x1].T
 
-    writefield(fo,data[fo],method='ab')
+    writefield(fo,data[fo])#,method='ab')
     del data[fo]
 
 

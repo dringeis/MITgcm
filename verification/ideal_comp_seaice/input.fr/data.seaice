@@ -40,6 +40,7 @@
  AreaFile        = 'ice0_area_DMcomp.bin',
 
  SEAICE_eccen=2.0,
+ SEAICE_eccfr=5.0,
  SEAICE_tensilFac=0.0,
  SEAICEpressReplFac = 0.0,
 

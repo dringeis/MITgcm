@@ -39,9 +39,10 @@
  HeffFile        = 'ice0_heff_DMcomp.bin',
  AreaFile        = 'ice0_area_DMcomp.bin',
 
- SEAICE_eccen=2.0,
- SEAICE_tensilFac=0.0,
  SEAICEpressReplFac = 0.0,
+# teardrop
+ SEAICEuseTD = .TRUE.
+ SEAICE_tensilFac=0.05,
 
  &
 

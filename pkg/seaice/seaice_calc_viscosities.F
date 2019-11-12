@@ -83,7 +83,7 @@ C     em            - e11-e22 (abbreviation)
 #endif /* SEAICE_ALLOW_FULLMC */
 
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, x, a, etamax_TD
+      _RL k, x, a, etamax_TD, cyc
 #endif /* SEAICE_ALLOW_TEARDROP */
 
 #ifdef SEAICE_ALLOW_MCE
@@ -153,30 +153,40 @@ C     do nothing (hack to be able add code with different cpp-flags)
            etaDen = 0.5 _d 0 * SQRT(em*em + 4. _d 0 * e12Csq(i,j))
            k = ep / (etaDen+deltaMinSq)
            a = tnsFac(I,J,bi,bj)
+CDR    CYC Coordinate of the highest point of the yield curve, here eI changes sign
+           cyc=(2. _d 0 - tnsFac(I,J,bi,bj) ) / 3. _d 0
            x = (-(6. _d 0*(1. _d 0+a)-k*k)+2. _d 0*k*SQRT(k*k+3. _d 0
      &          * (1. _d 0+a)))/9. _d 0 + a
 
            x = MAX( x, -1. _d 0 )
            x = MIN( x, a )
 
-           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
+           zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj)
      &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
+CDR   Original formulation of Zhang 2005
+C            zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
+C      &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
 
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (2. _d 0 *etaDen+deltaMinSq)
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &               /(ABS(zeta(I,J,bi,bj)) + deltaMinSq)
-
-           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
+CDR     No need of this, zeta is not negative anywhere anymore
+C            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),-ZMAX(I,J,bi,bj))
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 
-           press(I,J,bi,bj) =
+           press(I,J,bi,bj) = 2* cyc * (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN(MAX(ABS(x+0.5), deltaMinSq), x+0.5)
+     &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
+CDR   Original formulation of Zhang 2005           
+C            press(I,J,bi,bj) = 2* cyc * (
+C      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
+C      &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
+C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -195,7 +205,7 @@ C     do nothing (hack to be able add code with different cpp-flags)
            x = MAX( x,-1. _d 0 )
            x = MIN( x, a )
 
-           zeta(I,J,bi,bj) = (x + 0.5) * press0(I,J,bi,bj)
+           zeta(I,J,bi,bj) = (x+0.5)*press0(I,J,bi,bj)
      &                    / SIGN( MAX( ABS(2. _d 0 *ep),deltaMinSq),ep)
 
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)

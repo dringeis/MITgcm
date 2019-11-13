@@ -72,12 +72,12 @@ C     ep            - e11+e22 (abbreviation)
 C     em            - e11-e22 (abbreviation)
       INTEGER i, j, bi, bj
       _RL recip_e2, deltaCsq, deltaMinSq, tmp, ep, em
-      _RL recip_efr4, recip_efr2
+      _RL recip_efr4, recip_efr2, oneThird, oneNinth
       _RL e12Csq   (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL deltaCreg(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, ksq, x, a, ap1, etamax_TD ,cyc
+      _RL k, ksq, x, a, ap1, etamax_TD ,cyc ,xma
 #endif /* SEAICE_ALLOW_TEARDROP */
 #if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
       _RL etaMaxFac
@@ -89,6 +89,8 @@ C     em            - e11-e22 (abbreviation)
 CEOP
 
 C--   basic constants
+      oneThird = 1. _d 0 / 3. _d 0
+      oneNinth = 1. _d 0 / 9. _d 0
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
       recip_efr2=0. _d 0
@@ -148,11 +150,10 @@ C     do nothing (hack to be able add code with different cpp-flags)
            ksq = k*k
            a   = tnsFac(I,J,bi,bj)
 CDR    CYC Coordinate of the highest point of the yield curve, here eI changes sign
-           cyc=(2. _d 0 - tnsFac(I,J,bi,bj) ) / 3. _d 0
+           cyc=(2. _d 0 - tnsFac(I,J,bi,bj) ) * oneThird
            ap1 = a + 1. _d 0
            x = ( 2. _d 0*k*SQRT( ksq + 3. _d 0 * ap1 )
-     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) / 9. _d 0 + a
-
+     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) * oneNinth + a
 C     not necessary to limit x from below, it cannot be smaller than -1
 C     by definition
 CML           x = MAX( x, -1. _d 0 )
@@ -179,7 +180,7 @@ CDR   Not sure we need this now, with the modification, there is no negative zet
 
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 
-           press(I,J,bi,bj) = 2* cyc * (
+           press(I,J,bi,bj) = 2. _d 0 * cyc * (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
@@ -201,11 +202,12 @@ C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
            k = ep / (shearDef+SEAICE_deltaMin)
            a = tnsFac(I,J,bi,bj)
-           x = 0.5 * (k - 1. _d 0 + a)
+           x = 0.5 _d 0 * (k - 1. _d 0 + a)
            x = MAX( x,-1. _d 0 )
            x = MIN( x, a )
+           xma = x + 0.5 _d 0 *(1. _d 0 - a )
 C           compute ZETA
-           zeta(I,J,bi,bj) = (x + 0.5*(1-a)) * press0(I,J,bi,bj)
+           zeta(I,J,bi,bj) = xma * press0(I,J,bi,bj)
      &                    / SIGN( ABS(ep) + SEAICE_deltaMin , ep)
 C           compute ETA
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
@@ -218,10 +220,10 @@ C           Apply the maxiums on zeta and eta
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 C            Compute the replacement pressure
-           press(I,J,bi,bj) = (1-a)* (
+           press(I,J,bi,bj) = (1. _d 0 - a )* (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN( ABS(x+0.5*(1-a))+SEAICE_deltaMin, x+0.5*(1-a)))
+     &         / SIGN( ABS(xma)+SEAICE_deltaMin, xma))
 
           ENDDO ! x loop
          ENDDO ! y loop

@@ -78,7 +78,6 @@ C     em            - e11-e22 (abbreviation)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
       _RL k, ksq, x, a, ap1, etamax_TD ,cyc ,xma, recip_TDmu
-      recip_TDmu= 1. _d 0 / SEAICEtdMU
 #endif /* SEAICE_ALLOW_TEARDROP */
 #if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
       _RL etaMaxFac
@@ -92,7 +91,7 @@ CEOP
 C--   basic constants
       oneThird = 1. _d 0 / 3. _d 0
       oneNinth = 1. _d 0 / 9. _d 0
-      
+      IF ( SEAICEtdMU .NE. 0. _d 0 ) recip_TDmu = ONE / SEAICEtdMU 
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
       recip_efr2=0. _d 0

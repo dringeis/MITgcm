@@ -36,9 +36,9 @@ C                          instead of LSR (default: false)
 C     SEAICEuseIMEX     :: use IMplicit/EXplicit scheme with JFNK
 C     SEAICEuseTEM      :: to use truncated ellipse method (see Geiger et al.
 C                          1998) set this parameter to true, default is false
-C     SEAICEuseTD       :: to use the teardrop yield curve (see Zhang and Hibler
+C     SEAICEuseTD       :: to use the teardrop yield curve (see Zhang and Rothrock
 C                          2005) set this parameter to true, default is false
-C     SEAICEusePL       :: to use the parabolic lens yield curve (see Zhang and Hibler
+C     SEAICEusePL       :: to use the parabolic lens yield curve (see Zhang and Rothrock
 C                          2005) set this parameter to true, default is false
 C     SEAICEuseTilt     :: If true then include surface tilt term in dynamics
 C     SEAICEuseMetricTerms :: use metric terms for dynamics solver
@@ -439,6 +439,8 @@ C     SEAICE_PDF         :: prescribed sea-ice distribution within grid box
 C     SEAICEstressFactor :: factor by which ice affects wind stress (default=1)
 C     LSR_ERROR          :: sets accuracy of LSR solver
 C     DIFF1              :: parameter used in advect.F
+C     SEAICEtdMU         :: slope parameter for the teardrop and parabolic lens yield
+C			    yield curves
 C     SEAICE_deltaMin    :: small number used to reduce singularities of Delta
 C     SEAICE_area_max    :: usually set to 1. Seeting areaMax below 1 specifies
 C                           the minimun amount of leads (1-areaMax) in the
@@ -503,7 +505,7 @@ C
       _RL SEAICEnonLinTol, JFNKres_t, JFNKres_tFac
       _RL JFNKgamma_lin_min, JFNKgamma_lin_max, SEAICE_JFNKepsilon
       _RL SEAICE_JFNKphi, SEAICE_JFNKalpha
-      _RL SEAICE_deltaMin
+      _RL SEAICE_deltaMin, SEAICEtdMU
       _RL SEAICE_area_reg, SEAICE_hice_reg
       _RL SEAICE_area_floor, SEAICE_area_max
       _RL SEAICE_airTurnAngle, SEAICE_waterTurnAngle
@@ -555,7 +557,7 @@ C
      &    OCEAN_drag, LSR_ERROR, DIFF1,
      &    SEAICEnonLinTol, JFNKres_t, JFNKres_tFac,
      &    JFNKgamma_lin_min, JFNKgamma_lin_max, SEAICE_JFNKepsilon,
-     &    SEAICE_JFNKphi, SEAICE_JFNKalpha,
+     &    SEAICE_JFNKphi, SEAICE_JFNKalpha, SEAICEtdMU
      &    SEAICE_deltaMin, SEAICE_area_reg, SEAICE_hice_reg,
      &    SEAICE_area_floor, SEAICE_area_max,
      &    SEAICEdiffKhArea, SEAICEdiffKhHeff, SEAICEdiffKhSnow,

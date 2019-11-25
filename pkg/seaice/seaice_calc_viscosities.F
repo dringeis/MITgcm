@@ -77,7 +77,8 @@ C     em            - e11-e22 (abbreviation)
       _RL deltaCreg(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, ksq, x, a, ap1, etamax_TD ,cyc ,xma
+      _RL k, ksq, x, a, ap1, etamax_TD ,cyc ,xma, recip_TDmu
+      recip_TDmu= 1. _d 0 / SEAICEtdMU
 #endif /* SEAICE_ALLOW_TEARDROP */
 #if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
       _RL etaMaxFac
@@ -91,6 +92,7 @@ CEOP
 C--   basic constants
       oneThird = 1. _d 0 / 3. _d 0
       oneNinth = 1. _d 0 / 9. _d 0
+      
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
       recip_efr2=0. _d 0
@@ -137,7 +139,7 @@ C     (and energy conserving)
 
 C     select between different yield curves; default: elliptical yield curve
         IF ( .FALSE. ) THEN
-C     do nothing (hack to be able add code with different cpp-flags)
+C     do nothing (hack to be able add code with different cpp-flag)
 #ifdef SEAICE_ALLOW_TEARDROP
         ELSEIF ( SEAICEuseTD ) THEN
 
@@ -146,7 +148,7 @@ C     do nothing (hack to be able add code with different cpp-flags)
            ep = e11(i,j,bi,bj) + e22(i,j,bi,bj)
            em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k   = ep / (shearDef+SEAICE_deltaMin)
+           k   = ep / (shearDef+SEAICE_deltaMin) * recip_TDmu
            ksq = k*k
            a   = tnsFac(I,J,bi,bj)
 CDR    CYC Coordinate of the highest point of the yield curve, here eI changes sign
@@ -170,7 +172,7 @@ C     only the sign of ep is required here, that is why we do not have to
 C     multiply by 0.5
 CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (shearDef + SEAICE_deltaMin)
+     &                     / (shearDef + SEAICE_deltaMin) * SEAICEtdMU
 
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &               /(ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin)
@@ -200,7 +202,7 @@ C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
            ep = ( e11(i,j,bi,bj) + e22(i,j,bi,bj) )
            em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k = ep / (shearDef+SEAICE_deltaMin)
+           k = ep / (shearDef+SEAICE_deltaMin) * recip_TDmu
            a = tnsFac(I,J,bi,bj)
            x = 0.5 _d 0 * (k - 1. _d 0 + a)
            x = MAX( x,-1. _d 0 )
@@ -211,7 +213,7 @@ C           compute ZETA
      &                    / SIGN( ABS(ep) + SEAICE_deltaMin , ep)
 C           compute ETA
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (shearDef+SEAICE_deltaMin)
+     &                     / (shearDef+SEAICE_deltaMin) * SEAICEtdMU
 C           Maximum of eta
            etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
      &          /( ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin )

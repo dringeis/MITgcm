@@ -30,7 +30,6 @@ C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
 #include "EXF_PARAM.h"
-#include "EXF_INTERP_SIZE.h"
 
 C     == routine arguments ==
       _RL genStartTime, genperiod
@@ -104,7 +103,7 @@ C  *=================================================================*
 C     == global variables ==
 #include "EEPARAMS.h"
 #include "SIZE.h"
-#include "EXF_INTERP_SIZE.h"
+#include "EXF_PARAM.h"
 
 C     == routine arguments ==
       _RL genperiod, exf_inscal_gen, genconst

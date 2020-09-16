@@ -210,20 +210,18 @@ c     ENDIF
        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I      diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
-       diagName  = 'SHI_TauX'
-       diagTitle =
-     &     'Ice shelf bottom stress, zonal  comp., >0 increases uVel'
-       diagUnits = 'N/m^2           '
-       diagCode  = 'UU      L1      '
+       diagName  = 'SHIUDrag'
+       diagTitle = 'U momentum tendency from ice shelf drag'
+       diagUnits = 'm/s^2           '
+       diagCode  = 'UU      MR      '
        diagMate  = diagNum + 2
        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I      diagName, diagCode, diagUnits, diagTitle, diagMate, myThid )
 
-       diagName  = 'SHI_TauY'
-       diagTitle =
-     &     'Ice shelf bottom stress, merid. comp., >0 increases vVel'
-       diagUnits = 'N/m^2           '
-       diagCode  = 'VV      L1      '
+       diagName  = 'SHIVDrag'
+       diagTitle = 'V momentum tendency from ice shelf drag'
+       diagUnits = 'm/s^2           '
+       diagCode  = 'VV      MR      '
        diagMate  = diagNum
        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I      diagName, diagCode, diagUnits, diagTitle, diagMate, myThid )
@@ -269,16 +267,6 @@ c     ENDIF
        diagCode  = 'SM      L1      '
        CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I      diagName, diagCode, diagUnits, diagTitle, 0, myThid )
-
-#ifdef ALLOW_SHELFICE_REMESHING
-       diagName  = 'SHIRshel'
-       diagTitle = 'depth of shelfice'
-       diagUnits = 'm               '
-       diagCode  = 'SM      L1      '
-       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
-     I      diagName, diagCode, diagUnits, diagTitle, 0, myThid )
-#endif
-
       ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
 #endif /* ALLOW_SHELFICE */

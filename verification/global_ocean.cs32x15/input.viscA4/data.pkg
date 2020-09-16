@@ -1,6 +1,8 @@
 # Packages
  &PACKAGES
  useGMRedi=.TRUE.,
- useDiagnostics=.TRUE.,
+#useBulkforce=.TRUE.,
+#useThSIce=.TRUE.,
+#useDiagnostics=.TRUE.,
 #useMNC=.TRUE.,
  &

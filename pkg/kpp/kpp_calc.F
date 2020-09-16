@@ -428,7 +428,7 @@ c------------------------------------------------------------------------
 
       CALL KPP_FORCING_SURF(
      I     work2, surfaceForcingU, surfaceForcingV,
-     I     surfaceForcingT, surfaceForcingS, adjustColdSST_diag,
+     I     surfaceForcingT, surfaceForcingS, surfaceForcingTice,
      I     Qsw,
 #ifdef ALLOW_SALT_PLUME
      I     temp1, temp2,

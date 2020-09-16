@@ -39,12 +39,6 @@ C     myComm     :: Communicator that is passed down from
 C                   upper level driver (if there is one).
       INTEGER myComm
 
-C     !FUNCTIONS:
-c     INTEGER  IFNBLNK
-c     EXTERNAL IFNBLNK
-      INTEGER  ILNBLNK
-      EXTERNAL ILNBLNK
-
 C     !LOCAL VARIABLES:
 C     == Local variables ==
 C     myThid     :: Temp. dummy thread number.
@@ -72,11 +66,7 @@ C     mpiRC      :: Error code reporting variable used with MPI.
 #endif
 #ifdef USE_PDAF
       INTEGER mpi_task_id
-      CHARACTER*(14) fmtStr
-#else
-      CHARACTER*(6) fmtStr
 #endif /* USE_PDAF */
-      INTEGER iTmp
 #endif /* ALLOW_USE_MPI */
 CEOP
 
@@ -204,25 +194,26 @@ C--    Get my process number
         GOTO 999
        ENDIF
        myProcId = mpiMyId
-       iTmp = MAX(4,1 + INT(LOG10(DFLOAT(nPx*nPy))))
 #ifdef USE_PDAF
-       WRITE(fmtStr,'(4(A,I1),A)')
-     &      '(I',iTmp,'.',iTmp,',A1,I',iTmp,'.',iTmp,')'
-       WRITE(myProcessStr,fmtStr) mpi_task_id,'.',myProcId
+       WRITE(myProcessStr,'(I4.4,A1,I4.4)') mpi_task_id,'.',myProcId
 #else
-       WRITE(fmtStr,'(2(A,I1),A)') '(I',iTmp,'.',iTmp,')'
-       WRITE(myProcessStr,fmtStr) myProcId
+       WRITE(myProcessStr,'(I4.4)') myProcId
 #endif /* USE_PDAF */
-       iTmp = ILNBLNK( myProcessStr )
        mpiPidIo = myProcId
        pidIO    = mpiPidIo
        IF ( mpiPidIo .EQ. myProcId ) THEN
 #ifdef SINGLE_DISK_IO
         IF( myProcId .EQ. 0 ) THEN
 #endif
-         WRITE(fNam,'(A,A)') 'STDERR.', myProcessStr(1:iTmp)
+         WRITE(fNam,'(A,A)') 'STDERR.', myProcessStr(1:4)
+#ifdef USE_PDAF
+         WRITE(fNam,'(A,A)') 'STDERR.', myProcessStr(1:9)
+#endif
          OPEN(errorMessageUnit,FILE=fNam,STATUS='unknown')
-         WRITE(fNam,'(A,A)') 'STDOUT.', myProcessStr(1:iTmp)
+         WRITE(fNam,'(A,A)') 'STDOUT.', myProcessStr(1:4)
+#ifdef USE_PDAF
+         WRITE(fNam,'(A,A)') 'STDOUT.', myProcessStr(1:9)
+#endif
          OPEN(standardMessageUnit,FILE=fNam,STATUS='unknown')
 #ifdef SINGLE_DISK_IO
         ELSE

@@ -16,21 +16,21 @@ C     !USES:
 #include "PARAMS.h"
 #include "STREAMICE.h"
 #include "STREAMICE_BDRY.h"
-c#ifdef ALLOW_STREAMICE_FLUX_CONTROL
-c#include "STREAMICE_CTRL_FLUX.h"
-c#endif
+!#ifdef ALLOW_STREAMICE_FLUX_CONTROL
+!#include "STREAMICE_CTRL_FLUX.h"
+!#endif
 
 C     !INPUT PARAMETERS:
       INTEGER myThid
 CEOP
 
 #ifdef ALLOW_STREAMICE
+
 C     !LOCAL VARIABLES:
 C     msgBuf     :: Informational/error message buffer
 C     iUnit      :: Work variable for IO unit number
       CHARACTER*(MAX_LEN_MBUF) msgBuf
-      INTEGER iUnit
-c     INTEGER iarr, tarr
+      INTEGER iUnit, iarr, tarr
 
       NAMELIST /STREAMICE_PARM01/
      &     streamice_density, streamice_density_ocean_avg,
@@ -59,10 +59,8 @@ c     INTEGER iarr, tarr
      &     streamice_kx_b_init, streamice_ky_b_init,
      &     STREAMICEbasalTracConfig,
      &     STREAMICEBdotConfig,
-     &     STREAMICEAdotConfig,
      &     STREAMICEbasalTracFile,
      &     STREAMICEBdotFile,
-     &     STREAMICEAdotFile,
      &     STREAMICEBdotTimeDepFile,
      &     STREAMICEvelOptimFile,
      &     STREAMICEtopogFile,
@@ -98,7 +96,6 @@ c     INTEGER iarr, tarr
      &     STREAMICE_chkfixedptconvergence,
      &     STREAMICE_chkresidconvergence,
      &     STREAMICE_alt_driving_stress,
-     &     STREAMICE_allow_reg_coulomb,
 #ifdef STREAMICE_FLOWLINE_BUTTRESS
      &     streamice_buttr_width,
      &     useStreamiceFlowlineButtr,
@@ -117,26 +114,25 @@ c     INTEGER iarr, tarr
 
 #ifdef ALLOW_PETSC
       NAMELIST /STREAMICE_PARMPETSC/
-     &     PETSC_PRECOND_TYPE, PETSC_SOLVER_TYPE,
-     &     streamice_use_petsc, streamice_maxnliter_petsc,
-     &     streamice_petsc_pcfactorlevels
+     &     PETSC_PRECOND_TYPE, PETSC_SOLVER_TYPE, 
+     &     streamice_use_petsc
 #endif
 
 #if (defined (ALLOW_OPENAD) && defined (ALLOW_STREAMICE_OAD_FP))
-      NAMELIST /STREAMICE_PARMOAD/
+      NAMELIST /STREAMICE_PARMOAD/ 
      &     streamice_nonlin_tol_adjoint
 #ifdef ALLOW_PETSC
-     &     ,STREAMICE_OAD_petsc_reuse,
+     &     ,STREAMICE_OAD_petsc_reuse, 
      &     PETSC_PRECOND_OAD
 #endif
 #endif
 
-c#ifdef ALLOW_STREAMICE_FLUX_CONTROL
-c      NAMELIST /STREAMICE_PARMFLUXCTRL/
-c     &     n_fluxes, n_epochs,
-c     &     streamice_ctrl_flux_id,
-c     &     streamice_ctrl_flux_scaleVel
-c#endif
+!#ifdef ALLOW_STREAMICE_FLUX_CONTROL
+!      NAMELIST /STREAMICE_PARMFLUXCTRL/
+!     &     n_fluxes, n_epochs,
+!     &     streamice_ctrl_flux_id,
+!     &     streamice_ctrl_flux_scaleVel
+!#endif
 
       NAMELIST /STREAMICE_PARM02/
      &     shelf_max_draft,
@@ -194,13 +190,13 @@ C--   Default values for STREAMICE
 
       streamice_density = 917.
       streamice_density_ocean_avg = 1024.
-      streamice_density_firn = streamice_density
+      streamice_density_firn = streamice_density  
       B_glen_isothermal = 9.461e-18   !  Pa (-1/3) a
       n_glen = 3.
       eps_glen_min = 1.0e-12
       eps_u_min = 1.0e-6
       C_basal_fric_const = 31.71 ! Pa (m/a)-1n
-      n_basal_friction = -1.
+      n_basal_friction = 1.
       streamice_vel_update = deltaT ! seconds
       streamice_cg_tol = 1e-6
       streamice_nonlin_tol = 1e-6
@@ -215,14 +211,12 @@ C--   Default values for STREAMICE
 #endif
       streamice_max_cg_iter = 2000
       streamice_max_nl_iter = 100
-      streamice_maxnliter_petsc = -1
       streamice_maxcgiter_cpl = 0
       streamice_maxnliter_cpl = 0
-      streamice_petsc_pcfactorlevels = 0
 #ifdef ALLOW_OPENAD
       streamice_smooth_thick_adjoint = 0
 #endif
-c      streamice_n_sub_regularize = 4
+!      streamice_n_sub_regularize = 4
       streamice_CFL_factor = .5
       streamice_adjDump = 0.
       streamice_bg_surf_slope_x = .0
@@ -243,7 +237,7 @@ c      streamice_n_sub_regularize = 4
       streamice_buttr_width = 1000000000.
 #endif
       STREAMICE_apply_firn_correction = .false.
-
+      
       STREAMICEthickInit = 'FILE'
       STREAMICEthickFile = ' '
       STREAMICEcalveMaskFile = ' '
@@ -251,9 +245,7 @@ c      streamice_n_sub_regularize = 4
       STREAMICEsigcoordFile = ' '
       STREAMICEbasalTracConfig = 'UNIFORM'
       STREAMICEBdotConfig = ''
-      STREAMICEAdotConfig = ''
       STREAMICEBdotFile = ''
-      STREAMICEAdotFile = ''
       STREAMICEBdotTimeDepFile = ' '
       STREAMICEbasalTracFile = ' '
       STREAMICEvelOptimFile = ''
@@ -293,26 +285,26 @@ c      streamice_n_sub_regularize = 4
 #endif
       STREAMICE_ADV_SCHEME = ''
 
-c#ifdef ALLOW_STREAMICE_FLUX_CONTROL
-c      n_fluxes = 0
-c      n_epochs = 0
-c      DO iarr=1,n_fluxes_max
-c       streamice_ctrl_flux_id(iarr) = 0
-c       DO tarr=1,n_epochs_max
-c        streamice_ctrl_flux_scaleVel(iarr,tarr) = 0. _d 0
-c       ENDDO
-c      ENDDO
-c#endif
+!#ifdef ALLOW_STREAMICE_FLUX_CONTROL
+!      n_fluxes = 0
+!      n_epochs = 0
+!      DO iarr=1,n_fluxes_max
+!       streamice_ctrl_flux_id(iarr) = 0
+!       DO tarr=1,n_epochs_max
+!        streamice_ctrl_flux_scaleVel(iarr,tarr) = 0. _d 0
+!       ENDDO
+!      ENDDO
+!#endif
 
       STREAMICE_tave_mdsio = .TRUE.
       STREAMICE_dump_mdsio = .TRUE.
       STREAMICE_dump_mnc = .FALSE.
       STREAMICE_tave_mnc = .FALSE.
-c      STREAMICE_GL_regularize = .FALSE.
+!      STREAMICE_GL_regularize = .FALSE.
       STREAMICE_move_front = .FALSE.
       STREAMICE_calve_to_mask = .FALSE.
-c       STREAMICE_geom_file_setup = .FALSE.
-c      STREAMICE_construct_matrix = .TRUE.
+!       STREAMICE_geom_file_setup = .FALSE.
+!      STREAMICE_construct_matrix = .TRUE.
       STREAMICE_lower_cg_tol = .FALSE.
       STREAMICE_diagnostic_only = .FALSE.
 #ifdef STREAMICE_FLOWLINE_BUTTRESS
@@ -322,10 +314,9 @@ c      STREAMICE_construct_matrix = .TRUE.
       STREAMICE_chkfixedptconvergence = .true.
       STREAMICE_chkresidconvergence = .true.
       STREAMICE_alt_driving_stress = .FALSE.
-      STREAMICE_allow_reg_coulomb = .FALSE.
       STREAMICE_h_ctrl_const_surf = .FALSE.
       STREAMICE_allow_cpl = .false.
-c       STREAMICE_hybrid_stress= .FALSE.
+!       STREAMICE_hybrid_stress= .FALSE.
 
       min_x_noflow_NORTH = 0.
       max_x_noflow_NORTH = 0.
@@ -429,24 +420,24 @@ C     Read parameters from open data file
       CLOSE(iUnit,STATUS='DELETE')
 #endif /* SINGLE_DISK_IO */
 
-c#ifdef ALLOW_STREAMICE_FLUX_CONTROL
-c
-c      CALL OPEN_COPY_DATA_FILE(
-c     I                     'data.strmctrlflux', 'STREAMICE_READPARMS',
-c     O                     iUnit,
-c     I                     myThid )
-c
-c      READ(UNIT=iUnit,NML=STREAMICE_PARMFLUXCTRL)
-c      WRITE(msgBuf,'(A)')
-c     &    'STREAMICE_READPARMS: read flux_ctrl param block'
-c      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
-c     &    SQUEEZE_RIGHT , 1)
-c#ifdef SINGLE_DISK_IO
-c      CLOSE(iUnit)
-c#else
-c      CLOSE(iUnit,STATUS='DELETE')
-c#endif /* SINGLE_DISK_IO */
-c#endif
+!#ifdef ALLOW_STREAMICE_FLUX_CONTROL
+!
+!      CALL OPEN_COPY_DATA_FILE(
+!     I                     'data.strmctrlflux', 'STREAMICE_READPARMS',
+!     O                     iUnit,
+!     I                     myThid )
+!
+!      READ(UNIT=iUnit,NML=STREAMICE_PARMFLUXCTRL)
+!      WRITE(msgBuf,'(A)')
+!     &    'STREAMICE_READPARMS: read flux_ctrl param block'
+!      CALL PRINT_MESSAGE( msgBuf, standardMessageUnit,
+!     &    SQUEEZE_RIGHT , 1)
+!#ifdef SINGLE_DISK_IO
+!      CLOSE(iUnit)
+!#else
+!      CLOSE(iUnit,STATUS='DELETE')
+!#endif /* SINGLE_DISK_IO */
+!#endif
 
       streamice_nstep_velocity = NINT (streamice_vel_update / deltaT)
 
@@ -458,12 +449,6 @@ C-    Set Output type flags :
      &       .AND. STREAMICE_tave_mnc ) STREAMICE_tave_mdsio = .FALSE.
         IF ( .NOT.outputTypesInclusive
      &       .AND. STREAMICE_dump_mnc ) STREAMICE_dump_mdsio = .FALSE.
-      ENDIF
-#endif
-
-#ifdef ALLOW_PETSC
-      IF (streamice_maxnliter_petsc.eq.-1) then
-       streamice_maxnliter_petsc = streamice_max_nl_iter
       ENDIF
 #endif
 

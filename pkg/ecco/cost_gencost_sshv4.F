@@ -153,7 +153,6 @@ c for PART 4/5: compute smooth/raw anomalies
       _RL ndaysaveRL
 
       integer k2, k2_mdt, k2_lsc
-      logical dosumsq
 
       character*(80) fname
       character*(80) fname4test
@@ -202,7 +201,6 @@ c-- detect the relevant gencost indices
         if (gencost_posproc(k2,igen_lsc).EQ.'smooth') k2_lsc=k2
       enddo
 
-      dosumsq = .TRUE.
       call ecco_zero(gencost_weight(:,:,1,1,igen_mdt),1,zeroRL,myThid)
       call ecco_zero(gencost_weight(:,:,1,1,igen_lsc),1,zeroRL,myThid)
       call ecco_zero(gencost_weight(:,:,1,1,igen_tp),1,zeroRL,myThid)
@@ -210,19 +208,19 @@ c-- detect the relevant gencost indices
       call ecco_zero(gencost_weight(:,:,1,1,igen_gfo),1,zeroRL,myThid)
       if ( gencost_errfile(igen_mdt) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(igen_mdt),
-     &     gencost_weight(:,:,1,1,igen_mdt),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,igen_mdt),1,1,myThid)
       if ( gencost_errfile(igen_lsc) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(igen_lsc),
-     &     gencost_weight(:,:,1,1,igen_lsc),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,igen_lsc),1,1,myThid)
       if ( gencost_errfile(igen_tp) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(igen_tp),
-     &     gencost_weight(:,:,1,1,igen_tp),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,igen_tp),1,1,myThid)
       if ( gencost_errfile(igen_ers) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(igen_ers),
-     &     gencost_weight(:,:,1,1,igen_ers),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,igen_ers),1,1,myThid)
       if ( gencost_errfile(igen_gfo) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(igen_gfo),
-     &     gencost_weight(:,:,1,1,igen_gfo),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,igen_gfo),1,1,myThid)
 
 c switch for excluding global mean
       useEtaMean=.TRUE.

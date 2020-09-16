@@ -19,7 +19,7 @@ Welcome to MITgcm's user manual
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
-   :numbered: 5
+   :numbered: 4
 
    overview/overview
    algorithm/algorithm
@@ -31,6 +31,6 @@ Welcome to MITgcm's user manual
    phys_pkgs/phys_pkgs
    outp_pkgs/outp_pkgs
    ocean_state_est/ocean_state_est.rst
-   utilities/utilities.rst
+   under_dev/under_dev.rst
    related_projects/related_projects.rst
    references

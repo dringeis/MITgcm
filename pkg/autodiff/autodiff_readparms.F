@@ -37,7 +37,6 @@ C     iUnit      :: Work variable for IO unit number
      &       useGMRediInAdMode, useSALT_PLUMEinAdMode,
      &       useSEAICEinAdMode, useSmoothCorrel2DinAdMode,
      &       inAdExact, SEAICEapproxLevInAd, viscFacInAd,
-     &       SIregFacInAd, SIregFacInFw,
      &       SEAICEuseFREEDRIFTswitchInAd, SEAICEuseDYNAMICSswitchInAd
 
       IF ( .NOT.useAUTODIFF ) THEN
@@ -69,8 +68,6 @@ C--   default : write one file per record
       inAdExact          = .TRUE.
       SEAICEapproxLevInAd = 0
       viscFacInAd        = 1. _d 0
-      SIregFacInAd       = UNSET_RL
-      SIregFacInFw       = UNSET_RL
 
 C-- pkg/seaice related switches
       SEAICEuseFREEDRIFTswitchInAd = .FALSE.

@@ -32,10 +32,8 @@ C     == global variables ==
 #include "GRID.h"
 
 #include "EXF_PARAM.h"
-#include "EXF_CONSTANTS.h"
-#include "EXF_INTERP_SIZE.h"
-#include "EXF_INTERP_PARAM.h"
 #include "EXF_FIELDS.h"
+#include "EXF_CONSTANTS.h"
 
 #ifdef ALLOW_CTRL
 # include "CTRL_SIZE.h"
@@ -94,7 +92,7 @@ C-    Zonal and meridional wind stress.
      I     myTime, myIter, myThid )
       ELSE
        DO bj = myByLo(myThid),myByHi(myThid)
-        DO bi = myBxLo(myThid),myBxHi(myThid)
+        DO bi = myBxLo(myThid),mybxhi(myThid)
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
            ustress(i,j,bi,bj) = 0. _d 0
@@ -143,7 +141,7 @@ C-    Zonal and meridional wind.
        IF (useRelativeWind) THEN
 C     Subtract UVEL and VVEL from UWIND and VWIND.
         DO bj = myByLo(myThid),myByHi(myThid)
-         DO bi = myBxLo(myThid),myBxHi(myThid)
+         DO bi = myBxLo(myThid),mybxhi(myThid)
           DO j = 1,sNy
            DO i = 1,sNx
             uwind(i,j,bi,bj) = uwind(i,j,bi,bj) - 0.5 _d 0
@@ -158,7 +156,7 @@ C     Subtract UVEL and VVEL from UWIND and VWIND.
 
       ELSE
        DO bj = myByLo(myThid),myByHi(myThid)
-        DO bi = myBxLo(myThid),myBxHi(myThid)
+        DO bi = myBxLo(myThid),mybxhi(myThid)
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
            uwind(i,j,bi,bj) = 0. _d 0
@@ -210,7 +208,7 @@ C-    Atmospheric temperature.
 #endif
      I     myTime, myIter, myThid )
       DO bj = myByLo(myThid),myByHi(myThid)
-       DO bi = myBxLo(myThid),myBxHi(myThid)
+       DO bi = myBxLo(myThid),mybxhi(myThid)
         DO j = 1,sNy
          DO i = 1,sNx
           atemp(i,j,bi,bj) = atemp(i,j,bi,bj) + exf_offset_atemp
@@ -320,7 +318,7 @@ C-    Snow.
 C     Take care of case where total precip is not defined
       IF ( snowPrecipFile .NE. ' ' ) THEN
        DO bj = myByLo(myThid),myByHi(myThid)
-        DO bi = myBxLo(myThid),myBxHi(myThid)
+        DO bi = myBxLo(myThid),mybxhi(myThid)
          DO j = 1,sNy
           DO i = 1,sNx
            precip(i,j,bi,bj) =
@@ -475,7 +473,7 @@ C-    Salt flux
 #ifdef ALLOW_ROTATE_UV_CONTROLS
       IF ( useCTRL ) THEN
         DO bj = myByLo(myThid),myByHi(myThid)
-         DO bi = myBxLo(myThid),myBxHi(myThid)
+         DO bi = myBxLo(myThid),mybxhi(myThid)
           DO j = 1-OLy,sNy+OLy
            DO i = 1-OLx,sNx+OLx
              tmpUE(i,j,bi,bj) = 0. _d 0
@@ -619,7 +617,7 @@ C-- Control variables for atmos. state
      &     .FALSE.,.FALSE.,.TRUE.,1,myThid)
 
         DO bj = myByLo(myThid),myByHi(myThid)
-         DO bi = myBxLo(myThid),myBxHi(myThid)
+         DO bi = myBxLo(myThid),mybxhi(myThid)
           DO j = 1,sNy
            DO i = 1,sNx
              uwind(i,j,bi,bj)=uwind(i,j,bi,bj)+tmpUX(i,j,bi,bj)
@@ -635,7 +633,7 @@ C-- Control variables for atmos. state
 
 #ifdef ALLOW_ATM_MEAN_CONTROL
       DO bj = myByLo(myThid),myByHi(myThid)
-       DO bi = myBxLo(myThid),myBxHi(myThid)
+       DO bi = myBxLo(myThid),mybxhi(myThid)
         DO j = 1,sNy
          DO i = 1,sNx
 # ifdef ALLOW_ATEMP_CONTROL
@@ -679,7 +677,7 @@ cdm #endif
 #if (defined (ALLOW_CTRL) && defined (ALLOW_GENTIM2D_CONTROL))
       IF ( useCTRL.AND.ctrlUseGen ) THEN
        DO bj = myByLo(myThid),myByHi(myThid)
-       DO bi = myBxLo(myThid),myBxHi(myThid)
+       DO bi = myBxLo(myThid),mybxhi(myThid)
         DO j = 1,sNy
          DO i = 1,sNx
           DO iarr = 1, maxCtrlTim2D
@@ -755,7 +753,7 @@ cdm #endif
      &      .FALSE.,.FALSE.,.TRUE.,1,myThid)
 
        DO bj = myByLo(myThid),myByHi(myThid)
-         DO bi = myBxLo(myThid),myBxHi(myThid)
+         DO bi = myBxLo(myThid),mybxhi(myThid)
           DO j = 1,sNy
            DO i = 1,sNx
              uwind(i,j,bi,bj)=uwind(i,j,bi,bj)+tmpUX(i,j,bi,bj)

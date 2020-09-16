@@ -67,13 +67,9 @@ C     !LOCAL VARIABLES:
 C     == Local variables ==
 C     iStart, iEnd :: String indexing variables
 C     idString     :: Temp. for building prefix.
-C     fmtStr, iTmp :: Temp. for building prefix.
-C     iTmpThid     :: Temp. for building prefix.
       INTEGER iStart
       INTEGER iEnd
-      INTEGER iTmp, iTmpThid
-      CHARACTER*13 fmtStr
-      CHARACTER*13 idString
+      CHARACTER*9 idString
 CEOP
 
 C--   Find beginning and end of message
@@ -109,23 +105,13 @@ C$OMP CRITICAL
        _BEGIN_CRIT(myThid)
 # endif
 #endif
-       fmtStr = '(I4.4,A,I4.4)'
-       IF ( nPx*nPy .GE. 10000 ) THEN
-         iTmp     = 1 + INT(LOG10(DFLOAT(nPx*nPy)))
-         iTmpThid = 1 + INT(LOG10(DFLOAT(MAX_NO_THREADS)))
-         iTmpThid = MAX( iTmpThid, 2, 8-iTmp )
-         WRITE(fmtStr,'(4(A,I1),A)')
-     &        '(I',iTmp,'.',iTmp,',A,I',iTmpThid,'.',iTmpThid,')'
-       ENDIF
-       WRITE(idString,fmtStr) myProcId,'.',myThid
-       iTmp = ILNBLNK( idString )
+       WRITE(idString,'(I4.4,A,I4.4)') myProcId,'.',myThid
        IF ( message .EQ. ' ' ) THEN
         WRITE(unit,'(A,A,A,A,A,A)',ERR=999)
-     &   '(',PROCESS_HEADER,' ',idString(1:iTmp),')',' '
+     &   '(',PROCESS_HEADER,' ',idString,')',' '
        ELSE
         WRITE(unit,'(A,A,A,A,A,A,A)',ERR=999)
-     &   '(',PROCESS_HEADER,' ',idString(1:iTmp),')',' ',
-     &   message(iStart:iEnd)
+     &   '(',PROCESS_HEADER,' ',idString,')',' ',message(iStart:iEnd)
        ENDIF
        IF ( debugMode ) THEN
         CALL MDS_FLUSH( unit, myThid )
@@ -209,13 +195,9 @@ C     !LOCAL VARIABLES:
 C     == Local variables ==
 C     iStart, iEnd :: Temps. for string indexing
 C     idString     :: Temp. for building message prefix
-C     fmtStr, iTmp :: Temp. for building prefix.
-C     iTmpThid     :: Temp. for building prefix.
 c     INTEGER iStart
       INTEGER iEnd
-      INTEGER iTmp, iTmpThid
-      CHARACTER*13 fmtStr
-      CHARACTER*13 idString
+      CHARACTER*9 idString
 CEOP
 
 C--   Find beginning and end of message
@@ -244,24 +226,15 @@ C$OMP CRITICAL
 #endif
        IF ( pidIO .EQ. myProcId ) THEN
 C--    Write multi-process format
-         fmtStr = '(I4.4,A,I4.4)'
-         IF ( nPx*nPy .GE. 10000 ) THEN
-           iTmp     = 1 + INT(LOG10(DFLOAT(nPx*nPy)))
-           iTmpThid = 1 + INT(LOG10(DFLOAT(MAX_NO_THREADS)))
-           iTmpThid = MAX( iTmpThid, 2, 8-iTmp )
-           WRITE(fmtStr,'(4(A,I1),A)')
-     &          '(I',iTmp,'.',iTmp,',A,I',iTmpThid,'.',iTmpThid,')'
-         ENDIF
-         WRITE(idString,fmtStr) myProcId,'.',myThid
-         iTmp = ILNBLNK( idString )
+         WRITE(idString,'(I4.4,A,I4.4)') myProcId,'.',myThid
 
          IF ( iEnd.EQ.0 ) THEN
           WRITE(errorMessageUnit,'(A,A,1X,A,A,A,A,A)',ERR=999)
-     &    '(',PROCESS_HEADER,idString(1:iTmp),')',ERROR_HEADER,' ',
+     &    '(',PROCESS_HEADER,idString,')',ERROR_HEADER,' ',
      &    ' '
          ELSE
           WRITE(errorMessageUnit,'(A,A,1X,A,A,A,A,A)',ERR=999)
-     &    '(',PROCESS_HEADER,idString(1:iTmp),')',ERROR_HEADER,' ',
+     &    '(',PROCESS_HEADER,idString,')',ERROR_HEADER,' ',
      &        message(1:iEnd)
 c    &    message(iStart:iEnd)
          ENDIF
@@ -418,13 +391,13 @@ C-    fortran format to write 1 or 2 indices:
       IF    ( nDup .EQ. 1 ) THEN
        WRITE(msgBuf,'(A,I9,A)') '              ',xOld,punc
        IF ( index_type .NE. INDEX_NONE )
-     &    WRITE(msgBuf(45:),fmt1)
-     &    commOpen,index_lab,iLo,commClose
+     &  WRITE(msgBuf(45:),'(A,1X,A,I3,1X,A)')
+     &  commOpen,index_lab,iLo,commClose
       ELSEIF( nDup .GT. 1 ) THEN
        WRITE(msgBuf,'(I5,'' '',A,I9,A)') nDup,'@',xOld,punc
        IF ( index_type .NE. INDEX_NONE )
-     &    WRITE(msgBuf(45:),fmt2)
-     &    commOpen,index_lab,iLo,':',iHi,commClose
+     &  WRITE(msgBuf(45:),'(A,1X,A,I3,A,I3,1X,A)')
+     &  commOpen,index_lab,iLo,':',iHi,commClose
       ENDIF
       CALL PRINT_MESSAGE( msgBuf, ioUnit, SQUEEZE_RIGHT , 1)
 

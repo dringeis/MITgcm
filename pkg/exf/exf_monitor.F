@@ -1,7 +1,4 @@
 #include "EXF_OPTIONS.h"
-#ifdef ALLOW_BLING
-# include "BLING_OPTIONS.h"
-#endif
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 CBOP
@@ -29,7 +26,7 @@ C     !USES:
 # include "MNC_PARAMS.h"
 #endif
 #ifdef ALLOW_BLING
-# include "EXF_INTERP_SIZE.h"
+# include "BLING_OPTIONS.h"
 # include "BLING_VARS.h"
 #endif
 

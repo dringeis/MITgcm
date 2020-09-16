@@ -1,5 +1,3 @@
-.. _sub_phys_pkg_gchem:
-
 GCHEM Package
 -------------
 

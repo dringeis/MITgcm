@@ -19,15 +19,14 @@ to convert atmospheric fields to surface fluxes. An interpolation
 routine provides on-the-fly interpolation of forcing fields an arbitrary
 grid onto the model grid.
 
-CPP options enable or disable different aspects of the package
-(:numref:`ssub_phys_pkg_exf_config`). Runtime options, flags,
-filenames and field-related dates/times are set in ``data.exf``
-(:numref:`ssub_phys_pkg_exf_runtime`). A description of key subroutines
-is given in :numref:`ssub_phys_pkg_exf_subroutines`. Input fields,
-units and sign conventions are summarized in
-:numref:`ssub_phys_pkg_exf_inputs_units`, and available
-diagnostics output is listed in
-:numref:`ssub_phys_pkg_exf_diagnostics`.
+CPP options enable or disable different aspects of the package (Section
+[sec:pkg:exf:config]). Runtime options, flags, filenames and
+field-related dates/times are set in ``data.exf`` (Section
+[sec:pkg:exf:runtime]). A description of key subroutines is given in
+Section [sec:pkg:exf:subroutines]. Input fields, units and sign
+conventions are summarized in Section
+[sec:pkg:exf:fields:sub:`u`\ nits], and available diagnostics output is
+listed in Section [sec:pkg:exf:diagnostics].
 
 .. _ssub_phys_pkg_exf_config:
 
@@ -45,11 +44,10 @@ As with all MITgcm packages, EXF can be turned on or off at compile time
    switches
 
 -  *required packages and CPP options*:
-   EXF (only) requires the calendar package ``cal`` to be enabled if
-   the julian calendar will be used with the data ; no
+   EXF requires the calendar package ``cal`` to be enabled; no
    additional CPP options are required.
 
-(see  :numref:`building_code`).
+(see Section [sec:buildingCode]).
 
 Parts of the EXF code can be enabled or disabled at compile time via CPP
 preprocessor flags. These options are set in either ``EXF_OPTIONS.h`` or
@@ -214,10 +212,10 @@ General flags and parameters
 Field attributes
 ################
 
-All EXF fields are listed in
-:numref:`ssub_phys_pkg_exf_inputs_units`. Each field has a number of
-attributes which can be customized. They are summarized in
-:numref:`tab_phys_pkg_exf_runtime_attributes`. To obtain an attribute for a
+All EXF fields are listed in Section
+[sec:pkg:exf:fields:sub:`u`\ nits]. Each field has a number of
+attributes which can be customized. They are summarized in Table
+[tab:pkg:exf:runtime:sub:`a`\ ttributes]. To obtain an attribute for a
 specific field, e.g. ``uwind`` prepend the field name to the listed
 attribute, e.g. for attribute ``period`` this yields ``uwindperiod``:
 
@@ -230,7 +228,7 @@ attribute, e.g. for attribute ``period`` this yields ``uwindperiod``:
      \end{array}\end{aligned}
 
 
-.. table:: EXF runtime attributes
+.. table:: EXF runtime attributes 
            Note there is one exception for the default of ``atempconst`` = celsius2K = 273.16
     :name: tab_phys_pkg_exf_runtime_attributes
 
@@ -432,9 +430,11 @@ Output fields which EXF provides to the MITgcm are fields **fu**,
     c----------------------------------------------------------------------
     c     runoff    :: River and glacier runoff in m/s
     c               |  > 0 for decrease in salt (ocean salinity)
-    c               |  Typical range: 0 < runoff < 5e-7
+    c               |  Typical range: 0 < runoff < ????
     c               |  Southwest C-grid tracer point
     c               |  Input or input/output field
+    c               |  !!! WATCH OUT: Default exf_inscal_runoff !!!
+    c               |  !!! in exf_readparms.F is not 1.0        !!!
     c----------------------------------------------------------------------
     c     swdown    :: Downward shortwave radiation in W/m^2
     c               |  > 0 for increase in theta (ocean warming)
@@ -449,7 +449,8 @@ Output fields which EXF provides to the MITgcm are fields **fu**,
     c               |  Input/output field
     c----------------------------------------------------------------------
     c     apressure :: Atmospheric pressure field in N/m^2
-    c               |  Typical range: 88000 < apressure < 108000
+    c               |  > 0 for ????
+    c               |  Typical range: ???? < apressure < ????
     c               |  Southwest C-grid tracer point
     c               |  Input field
     c----------------------------------------------------------------------
@@ -544,9 +545,8 @@ Header routines
 EXF diagnostics
 +++++++++++++++
 
-Diagnostics output is available via the diagnostics package (see
-:numref:`sub_outp_pkg_diagnostics`). Available output fields are
-summarized below.
+Diagnostics output is available via the diagnostics package (see Section
+[sec:pkg:diagnostics]). Available output fields are summarized below.
 
 
 ::
@@ -585,3 +585,6 @@ Experiments and tutorials that use exf
 -  Global Ocean experiment, in global\_with\_exf verification directory
 
 -  Labrador Sea experiment, in lab\_sea verification directory
+
+
+

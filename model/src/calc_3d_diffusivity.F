@@ -278,26 +278,28 @@ C-    Increase KappaRTr above bottom level:
              ENDIF
            ENDDO
           ENDDO
-          IF ( mixBott.EQ.2 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+         ENDIF
+         IF ( mixBott.EQ.2 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ELSEIF ( mixBott.EQ.3 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+          ENDDO
+         ELSEIF ( mixBott.EQ.3 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ELSEIF ( mixBott.EQ.4 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+          ENDDO
+         ELSEIF ( mixBott.EQ.4 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)
      &                   * tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ENDIF
+          ENDDO
+         ENDIF
+         IF ( mixBott.GE.1 ) THEN
 C-    increase mixing above bottom (by ~(1/hFac)^mixBott) if too thin p-cell
           DO j = 2-OLy, sNy+OLy
            DO i = 2-OLx, sNx+OLx
@@ -323,26 +325,28 @@ C-    Increase KappaRTr below surface level:
              ENDIF
            ENDDO
           ENDDO
-          IF ( mixSurf.EQ.2 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+         ENDIF
+         IF ( mixSurf.EQ.2 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ELSEIF ( mixSurf.EQ.3 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+          ENDDO
+         ELSEIF ( mixSurf.EQ.3 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ELSEIF ( mixSurf.EQ.4 ) THEN
-           DO j = 2-OLy, sNy+OLy
-            DO i = 2-OLx, sNx+OLx
+          ENDDO
+         ELSEIF ( mixSurf.EQ.4 ) THEN
+          DO j = 2-OLy, sNy+OLy
+           DO i = 2-OLx, sNx+OLx
              tmpFac(i,j) = tmpFac(i,j)*tmpFac(i,j)
      &                   * tmpFac(i,j)*tmpFac(i,j)
-            ENDDO
            ENDDO
-          ENDIF
+          ENDDO
+         ENDIF
+         IF ( mixSurf.GE.1 ) THEN
 C-    increase mixing below surface (by ~(1/hFac)^mixSurf) if too thin p-cell
           DO j = 2-OLy, sNy+OLy
            DO i = 2-OLx, sNx+OLx

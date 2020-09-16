@@ -4,7 +4,7 @@ c#include "PACKAGES_CONFIG.h"
 CBOP
 C     !ROUTINE: ADD_WALLS2MASKS
 C     !INTERFACE:
-      SUBROUTINE ADD_WALLS2MASKS( rEmpty, myThid )
+      SUBROUTINE ADD_WALLS2MASKS( myThid )
 C     !DESCRIPTION: \bv
 C     *==========================================================*
 C     | SUBROUTINE ADD_WALLS2MASKS
@@ -15,7 +15,6 @@ C     | Reset to zero hFacW and/or hFacS grid factors at some
 C     | specific locations. In particular, allow to prevent fluid
 C     | transport (at any detph) between 2 adjacent vertical
 C     | column by adding a "thin wall" between the 2.
-C     | Location of "thin-wall" is reccorded as kSurfW/S = Nr+2
 C     *==========================================================*
 C     \ev
 
@@ -30,17 +29,14 @@ c#include "SURFACE.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
 C     == Routine arguments ==
-C     rEmpty  :: empty column r-position
 C     myThid  :: my Thread Id number
-      _RS rEmpty
       INTEGER myThid
 
 C     !LOCAL VARIABLES:
 C     == Local variables ==
 C     bi,bj   :: tile indices
 C     i,j,k   :: Loop counters
-C     tmpFldW :: Temporary array used to load file in
-C     tmpFldS :: Temporary array used to load file in
+C     tmpfld  :: Temporary array used to load file in
       _RS tmpFldW(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RS tmpFldS(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       INTEGER bi, bj
@@ -72,7 +68,7 @@ C--   Load files "addWwallFile" and/or "addSwallFile":
 
       ENDIF
 
-c     IF ( selectSigmaCoord.EQ.0 ) THEN
+      IF ( selectSigmaCoord.EQ.0 ) THEN
 C---  r-coordinate with partial-cell or full cell mask
 
 C--   The following block allows thin walls representation of non-periodic
@@ -87,19 +83,15 @@ c      IF ( closedBoundaryAtPoles ) THEN
                 DO k=1,Nr
                  hFacW(i,j,k,bi,bj) = zeroRS
                 ENDDO
-                rLowW (i,j,bi,bj) = rEmpty
-                rSurfW(i,j,bi,bj) = rEmpty
-                kSurfW(i,j,bi,bj) = Nr+2
-                maskInW(i,j,bi,bj)= zeroRS
+                rLowW (i,j,bi,bj) = rF(1)
+                rSurfW(i,j,bi,bj) = rF(1)
               ENDIF
               IF ( dxG(i,j,bi,bj).EQ.zeroRS ) THEN
                 DO k=1,Nr
                  hFacS(i,j,k,bi,bj) = zeroRS
                 ENDDO
-                rLowS (i,j,bi,bj) = rEmpty
-                rSurfS(i,j,bi,bj) = rEmpty
-                kSurfS(i,j,bi,bj) = Nr+2
-                maskInS(i,j,bi,bj)= zeroRS
+                rLowS (i,j,bi,bj) = rF(1)
+                rSurfS(i,j,bi,bj) = rF(1)
               ENDIF
             ENDDO
            ENDDO
@@ -118,19 +110,15 @@ C      as provided in files: "addWwallFile" or "addSwallFile"
                 DO k=1,Nr
                  hFacW(i,j,k,bi,bj) = zeroRS
                 ENDDO
-                rLowW (i,j,bi,bj) = rEmpty
-                rSurfW(i,j,bi,bj) = rEmpty
-                kSurfW(i,j,bi,bj) = Nr+2
-                maskInW(i,j,bi,bj)= zeroRS
+                rLowW (i,j,bi,bj) = rF(1)
+                rSurfW(i,j,bi,bj) = rF(1)
               ENDIF
               IF ( tmpFldS(i,j,bi,bj).EQ.oneRS ) THEN
                 DO k=1,Nr
                  hFacS(i,j,k,bi,bj) = zeroRS
                 ENDDO
-                rLowS (i,j,bi,bj) = rEmpty
-                rSurfS(i,j,bi,bj) = rEmpty
-                kSurfS(i,j,bi,bj) = Nr+2
-                maskInS(i,j,bi,bj)= zeroRS
+                rLowS (i,j,bi,bj) = rF(1)
+                rSurfS(i,j,bi,bj) = rF(1)
               ENDIF
             ENDDO
            ENDDO
@@ -138,9 +126,11 @@ C      as provided in files: "addWwallFile" or "addSwallFile"
         ENDDO
        ENDIF
 
-c     ELSE
+      ELSE
+#ifndef DISABLE_SIGMA_CODE
 C---  Sigma and Hybrid-Sigma set-up:
-c     ENDIF
+#endif /* DISABLE_SIGMA_CODE */
+      ENDIF
 
       RETURN
       END

@@ -156,12 +156,6 @@ C-  Compute the 2 stream-function Components ( GM bolus vel.)
 #ifdef GM_VISBECK_VARIABLE_K
      &      +op5*(VisbeckK(i-1,j,bi,bj)+VisbeckK(i,j,bi,bj))
 #endif
-#ifdef ALLOW_GM_LEITH_QG
-     &      +op25*( GM_LeithQG_K(i-1,j,km1,bi,bj)
-     &            + GM_LeithQG_K( i ,j,km1,bi,bj)
-     &            + GM_LeithQG_K(i-1,j,k,bi,bj)
-     &            + GM_LeithQG_K( i ,j,k,bi,bj) )
-#endif
      &      )*maskW(i,j,k,bi,bj)
 #ifdef ALLOW_EDDYPSI
      &     +eddyPsiX(i,j,k,bi,bj)*maskW(i,j,k,bi,bj)
@@ -184,12 +178,6 @@ C-  Compute the 2 stream-function Components ( GM bolus vel.)
 #endif
 #ifdef GM_VISBECK_VARIABLE_K
      &      +op5*(VisbeckK(i,j-1,bi,bj)+VisbeckK(i,j,bi,bj))
-#endif
-#ifdef ALLOW_GM_LEITH_QG
-     &      +op25*( GM_LeithQG_K(i,j-1,km1,bi,bj)
-     &            + GM_LeithQG_K(i, j ,km1,bi,bj)
-     &            + GM_LeithQG_K(i,j-1,k,bi,bj)
-     &            + GM_LeithQG_K(i, j ,k,bi,bj) )
 #endif
      &      )*maskS(i,j,k,bi,bj)
 #ifdef ALLOW_EDDYPSI

@@ -93,7 +93,6 @@ c     == local variables ==
       integer md, dd, sd, ld, wd
 
       integer kgen, kgen_lsc
-      logical dosumsq
 
 c     == external functions ==
 
@@ -132,15 +131,14 @@ c-- detect the relevant gencost indices
       if (kgen.NE.0) then
 c ------
 
-      dosumsq=.TRUE.
       call ecco_zero(gencost_weight(:,:,1,1,kgen),1,zeroRL,myThid)
       call ecco_zero(gencost_weight(:,:,1,1,kgen_lsc),1,zeroRL,myThid)
       if ( gencost_errfile(kgen) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(kgen),
-     &     gencost_weight(:,:,1,1,kgen),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,kgen),1,1,myThid)
       if ( gencost_errfile(kgen_lsc) .NE. ' ' )
      &     call ecco_readwei(gencost_errfile(kgen_lsc),
-     &     gencost_weight(:,:,1,1,kgen_lsc),1,1,dosumsq,myThid)
+     &     gencost_weight(:,:,1,1,kgen_lsc),1,1,myThid)
 
       call cal_FullDate(19920101,0,locstartdate,myThid)
 

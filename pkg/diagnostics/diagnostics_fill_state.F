@@ -89,11 +89,6 @@ C--   fill momentum state-var diagnostics:
         ENDIF
 #endif
 
-        IF ( nonlinFreeSurf.GT.0 ) THEN
-         CALL DIAGNOSTICS_FILL_RS( hFacW,'hFactorW',0,Nr,0,1,1,myThid )
-         CALL DIAGNOSTICS_FILL_RS( hFacS,'hFactorS',0,Nr,0,1,1,myThid )
-        ENDIF
-
         CALL DIAGNOSTICS_FILL(uVel, 'UVEL    ',0,Nr,0,1,1,myThid)
         CALL DIAGNOSTICS_FILL(vVel, 'VVEL    ',0,Nr,0,1,1,myThid)
         CALL DIAGNOSTICS_FILL(wVel, 'WVEL    ',0,Nr,0,1,1,myThid)
@@ -376,7 +371,7 @@ C     (next fill for these diagnostics will NOT allow counter to be incremented)
          IF ( useLayers ) THEN
            CALL LAYERS_FILL(tmpMk,1,'TOT',0,Nr,0,1,1,myThid)
          ENDIF
-#endif /* ALLOW_LAYERS */
+#endif /* ALLOW_LAYERS */         
         ENDIF
 
         IF ( DIAGNOSTICS_IS_ON('TOTSTEND',myThid) ) THEN
@@ -407,10 +402,6 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       IF ( selectVars.EQ.1 .OR. selectVars.EQ.3 ) THEN
 C--   fill tracer state-var diagnostics:
-
-        IF ( nonlinFreeSurf.GT.0 ) THEN
-         CALL DIAGNOSTICS_FILL_RS( hFacC,'hFactorC',0,Nr,0,1,1,myThid )
-        ENDIF
 
         CALL DIAGNOSTICS_FILL(theta,'THETA   ',0,Nr,0,1,1,myThid)
         CALL DIAGNOSTICS_FILL(salt, 'SALT    ',0,Nr,0,1,1,myThid)
@@ -682,7 +673,7 @@ C     (previous fill for these diagnostics DID allow counter to be incremented)
            IF ( useLayers ) THEN
              CALL LAYERS_FILL(tmpMk,1,'TOT',0,Nr,-1,bi,bj,myThid)
            ENDIF
-#endif /* ALLOW_LAYERS */
+#endif /* ALLOW_LAYERS */    
           ENDDO
          ENDDO
         ENDIF
@@ -703,7 +694,7 @@ C     (previous fill for these diagnostics DID allow counter to be incremented)
            IF ( useLayers ) THEN
             CALL LAYERS_FILL(tmpMk,2,'TOT',0,Nr,-1,bi,bj,myThid)
            ENDIF
-#endif /* ALLOW_LAYERS */
+#endif /* ALLOW_LAYERS */    
           ENDDO
          ENDDO
         ENDIF

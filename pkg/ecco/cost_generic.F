@@ -336,8 +336,7 @@ c--     load weights
      &     fname3, localrec, obsrec, exst, myThid )
         call ecco_zero(localweight,nnzobs,zeroRL,myThid)
         if ( (localrec .GT. 0).AND.(obsrec .GT. 0).AND.(exst) )
-     &  call ecco_readwei(fname3,localweight,
-     &                    localrec,nnzobs,dosumsq,myThid)
+     &  call ecco_readwei(fname3,localweight,localrec,nnzobs,myThid)
 
 c--     determine records and file names
         exst=.FALSE.

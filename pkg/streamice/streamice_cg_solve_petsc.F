@@ -3,7 +3,7 @@
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
 CBOP
-      SUBROUTINE STREAMICE_CG_SOLVE_PETSC(
+      SUBROUTINE STREAMICE_CG_SOLVE_PETSC( 
      U                               cg_Uin,     ! x-velocities
      U                               cg_Vin,     ! y-velocities
      I                               cg_Bu,      ! force in x dir
@@ -12,13 +12,13 @@ CBOP
      I                               A_uv,       ! section of matrix that multiplies v and projects on u
      I                               A_vu,       ! section of matrix that multiplies u and projects on v
      I                               A_vv,       ! section of matrix that multiplies v and projects on v
-     I                               tolerance,
+     I                               tolerance, 
      O                               iters,
      I                               maxIter,
      I                               myThid )
 
 C     /============================================================\
-C     | SUBROUTINE                                                 |
+C     | SUBROUTINE                                                 |   
 C     | o                                                          |
 C     |============================================================|
 C     |                                                            |
@@ -31,17 +31,20 @@ C     \============================================================/
 #include "STREAMICE.h"
 #include "STREAMICE_CG.h"
 
+
+
 #ifdef ALLOW_PETSC
 #include "finclude/petsc.h"
 #include "STREAMICE_PETSC.h"
-c UNCOMMENT IF V3.0
-c#include "finclude/petscvec.h"
-c#include "finclude/petscmat.h"
-c#include "finclude/petscksp.h"
-c#include "finclude/petscpc.h"
+! UNCOMMENT IF V3.0
+!#include "finclude/petscvec.h"
+!#include "finclude/petscmat.h"
+!#include "finclude/petscksp.h"
+!#include "finclude/petscpc.h"
 #endif
 C     === Global variables ===
 
+      
 C     !INPUT/OUTPUT ARGUMENTS
 C     cg_Uin, cg_Vin - input and output velocities
 C     cg_Bu, cg_Bv - driving stress
@@ -52,7 +55,7 @@ C     cg_Bu, cg_Bv - driving stress
       _RL cg_Vin (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL cg_Bu (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL cg_Bv (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
-      _RL
+      _RL 
      & A_uu (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy,-1:1,-1:1),
      & A_vu (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy,-1:1,-1:1),
      & A_uv (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy,-1:1,-1:1),
@@ -62,28 +65,28 @@ C     cg_Bu, cg_Bv - driving stress
        LOGICAL create_mat, destroy_mat
 #endif
 
-#ifdef ALLOW_STREAMICE
-#ifdef ALLOW_PETSC
 C     LOCAL VARIABLES
       INTEGER i, j, bi, bj, cg_halo, conv_flag
       INTEGER iter, is, js, ie, je, colx, coly, k
-      _RL dot_p1, dot_p2, resid, resid_0
+      _RL dot_p1, dot_p2, alpha_k, beta_k, resid, resid_0
       _RL dot_p1_tile (nSx,nSy)
       _RL dot_p2_tile (nSx,nSy)
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
-      INTEGER indices(2*(sNx*nSx*sNy*nSy))
+
+#ifdef ALLOW_PETSC
+      INTEGER indices(2*(snx*nsx*sny*nsy))
       INTEGER n_dofs_cum_sum (0:nPx*nPy-1), idx(1)
-      _RL rhs_values(2*(sNx*nSx*sNy*nSy))
-      _RL solution_values(2*(sNx*nSx*sNy*nSy))
-c      _RL mat_values (2*Nx*Ny,2*(sNx*nSx*sNy*nSy))
+      _RL rhs_values(2*(snx*nsx*sny*nsy))
+      _RL solution_values(2*(snx*nsx*sny*nsy))
+!      _RL mat_values (2*Nx*Ny,2*(snx*nsx*sny*nsy))
       _RL mat_values (18,1), mat_val_return(1)
       INTEGER indices_col(18)
       INTEGER local_dofs, global_dofs, dof_index, dof_index_col
       INTEGER local_offset
-c      Mat matrix
-c      KSP ksp
-c      PC  pc
+!      Mat matrix
+!      KSP ksp
+!      PC  pc
       PC  subpc
       KSP subksp(1)
       Vec rhs
@@ -91,14 +94,24 @@ c      PC  pc
       PetscErrorCode ierr
 #ifdef ALLOW_USE_MPI
       integer mpiRC, mpiMyWid
+#endif 
 #endif
 
+
+#ifdef ALLOW_STREAMICE
+
+
+
+
+#ifdef ALLOW_PETSC
+
 #ifdef ALLOW_USE_MPI
+
 
       CALL MPI_COMM_RANK( MPI_COMM_WORLD, mpiMyWId, mpiRC )
       local_dofs = n_dofs_process (mpiMyWid)
       global_dofs = 0
-
+      
       n_dofs_cum_sum(0) = 0
       DO i=0,nPx*nPy-1
        global_dofs = global_dofs + n_dofs_process (i)
@@ -115,11 +128,11 @@ c      PC  pc
       global_dofs = local_dofs
       local_offset = 0
 
-#endif
+#endif 
 
-c      call petscInitialize(PETSC_NULL_CHARACTER,ierr)
+!      call petscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-c----------------------
+!----------------------
 
       CALL TIMER_START ('STREAMICE_PETSC_SETUP',myThid)
 
@@ -128,7 +141,7 @@ c----------------------
       call VecSetType(rhs, VECMPI, ierr)
 
       call VecCreate(PETSC_COMM_WORLD, solution, ierr)
-      call VecSetSizes(solution, local_dofs, global_dofs, ierr)
+      call VecSetSizes(solution, local_dofs, global_dofs, ierr) 
       call VecSetType(solution, VECMPI, ierr)
 
       do i=1,local_dofs
@@ -139,7 +152,7 @@ c----------------------
         solution_values (i) = 0. _d 0
       enddo
 
-c gather rhs and initial guess values to populate petsc vectors
+! gather rhs and initial guess values to populate petsc vectors
 
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
@@ -150,13 +163,13 @@ c gather rhs and initial guess values to populate petsc vectors
      &                - local_offset
 
           if (dof_index.ge.0) THEN
-
+           
            rhs_values(dof_index+1) = cg_Bu(i,j,bi,bj)
            solution_values(dof_index+1) = cg_Uin(i,j,bi,bj)
 
           endif
 
-c---------------
+!---------------
 
           dof_index = INT(streamice_petsc_dofs_v(i,j,bi,bj))
      &                - local_offset
@@ -173,15 +186,18 @@ c---------------
        ENDDO
       ENDDO
 
+
       call VecSetValues(rhs, local_dofs, indices, rhs_values,
      &                  INSERT_VALUES, ierr)
       call VecAssemblyBegin(rhs, ierr)
       call VecAssemblyEnd(rhs, ierr)
 
+
       call VecSetValues(solution, local_dofs, indices,
      &                  solution_values, INSERT_VALUES, ierr)
       call VecAssemblyBegin(solution, ierr)
       call VecAssemblyEnd(solution, ierr)
+
 
 #if (defined (ALLOW_OPENAD) && defined (ALLOW_STREAMICE_OAD_FP))
 #ifdef ALLOW_PETSC
@@ -189,16 +205,17 @@ c---------------
 #endif
 #endif
 
-c     IF USING v3.0 THEN
-c     call MatCreateMPIAIJ (PETSC_COMM_WORLD,
-      call MatCreateAIJ (PETSC_COMM_WORLD,
+!     IF USING v3.0 THEN
+!     call MatCreateMPIAIJ (PETSC_COMM_WORLD,
+      call MatCreateAIJ (PETSC_COMM_WORLD, 
      &                      local_dofs, local_dofs,
-     &                      global_dofs, global_dofs,
-     &                      18, PETSC_NULL_INTEGER,
+     &                      global_dofs, global_dofs, 
+     &                      18, PETSC_NULL_INTEGER, 
      &                      18, PETSC_NULL_INTEGER,
      &                      matrix, ierr)
 
-c populate petsc matrix
+
+! populate petsc matrix
 
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
@@ -206,7 +223,7 @@ c populate petsc matrix
          DO i=1,sNx
 
           dof_index = INT(streamice_petsc_dofs_u(i,j,bi,bj))
-c     &                - local_offset
+!     &                - local_offset
 
           IF (dof_index .ge. 0) THEN
 
@@ -222,36 +239,37 @@ c     &                - local_offset
              dof_index_col = streamice_petsc_dofs_u(i+colx,j+coly,bi,bj)
 
              if (dof_index_col.ge.0) THEN
-c               pscal = A_uu(i,j,bi,bj,colx,coly)
-c               CALL MatSetValue (matrix,dof_index, dof_index_col,
-c     &              pscal,INSERT_VALUES,ierr)
+!               pscal = A_uu(i,j,bi,bj,colx,coly) 
+!               CALL MatSetValue (matrix,dof_index, dof_index_col, 
+!     &              pscal,INSERT_VALUES,ierr)
                 k=k+1
                 mat_values (k,1) = A_uu(i,j,bi,bj,colx,coly)
                 indices_col (k) = dof_index_col
              endif
-
+              
              dof_index_col = streamice_petsc_dofs_v(i+colx,j+coly,bi,bj)
 
              if (dof_index_col.ge.0) THEN
-c               CALL MatSetValue (matrix,dof_index, dof_index_col,
-c     &              A_uv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
+!               CALL MatSetValue (matrix,dof_index, dof_index_col,
+!     &              A_uv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
                 k=k+1
                 mat_values (k,1) = A_uv(i,j,bi,bj,colx,coly)
                 indices_col (k) = dof_index_col
              endif
-
+            
             ENDDO
            ENDDO
 
            call matSetValues (matrix, 1, dof_index, k, indices_col,
      &                        mat_values,INSERT_VALUES,ierr)
 
+
           ENDIF
 
-c ----------------------------------------------
+! ----------------------------------------------
 
           dof_index = INT(streamice_petsc_dofs_v(i,j,bi,bj))
-c     &                - local_offset
+!     &                - local_offset
 
           IF (dof_index .ge. 0) THEN
 
@@ -267,8 +285,8 @@ c     &                - local_offset
              dof_index_col = streamice_petsc_dofs_u(i+colx,j+coly,bi,bj)
 
              if (dof_index_col.ge.0) THEN
-c               CALL MatSetValue (matrix,dof_index, dof_index_col,
-c     &              A_vu(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
+!               CALL MatSetValue (matrix,dof_index, dof_index_col,
+!     &              A_vu(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
                 k=k+1
                 mat_values (k,1) = A_vu(i,j,bi,bj,colx,coly)
                 indices_col (k) = dof_index_col
@@ -277,8 +295,8 @@ c     &              A_vu(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
              dof_index_col = streamice_petsc_dofs_v(i+colx,j+coly,bi,bj)
 
              if (dof_index_col.ge.0) THEN
-c               CALL MatSetValue (matrix,dof_index, dof_index_col,
-c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
+!               CALL MatSetValue (matrix,dof_index, dof_index_col,
+!     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
                 k=k+1
                 mat_values (k,1) = A_vv(i,j,bi,bj,colx,coly)
                 indices_col (k) = dof_index_col
@@ -299,8 +317,9 @@ c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
       call MatAssemblyBegin(matrix,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(matrix,MAT_FINAL_ASSEMBLY,ierr)
 
+
       call KSPCreate(PETSC_COMM_WORLD, ksp, ierr)
-      call KSPSetOperators(ksp, matrix, matrix,
+      call KSPSetOperators(ksp, matrix, matrix, 
      &                     DIFFERENT_NONZERO_PATTERN, ierr)
 
       IF (PETSC_PRECOND_TYPE.eq.'MUMPS') then
@@ -315,7 +334,7 @@ c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
        call KSPSetType(ksp, KSPGMRES, ierr)
        CASE ('BICG')
        PRINT *, "PETSC SOLVER: SELECTED BICG"
-       call KSPSetType(ksp, KSPBCGS, ierr)
+       call KSPSetType(ksp, KSPBICG, ierr)
        CASE DEFAULT
        PRINT *, "PETSC SOLVER: SELECTED DEFAULT"
        call KSPSetType(ksp, KSPCG, ierr)
@@ -324,8 +343,8 @@ c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
 
       call KSPGetPC(ksp, pc, ierr)
       call KSPSetTolerances(ksp,tolerance,
-     &     PETSC_DEFAULT_REAL,
-     &     PETSC_DEFAULT_REAL,
+     &     PETSC_DEFAULT_DOUBLE_PRECISION,     
+     &     PETSC_DEFAULT_DOUBLE_PRECISION,
      &     maxiter,ierr)
 
       SELECT CASE (PETSC_PRECOND_TYPE)
@@ -337,9 +356,8 @@ c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
      &                             PETSC_NULL_INTEGER,
      &                             subksp,ierr);
        call KSPGetPC (subksp, subpc, ierr)
-       call PCSetType (subpc, PCICC, ierr)
-       call PCFactorSetLevels(subpc,streamice_petsc_pcfactorlevels,
-     &  ierr)
+       call PCSetType (subpc, PCILU, ierr)
+!       call PCFactorSetLevels(subpc,0,ierr)
        CASE ('JACOBI')
        PRINT *, "PETSC PRECOND: SELECTED JACOBI"
        call PCSetType(pc, PCJACOBI, ierr)
@@ -354,7 +372,7 @@ c     &              A_vv(i,j,bi,bj,colx,coly),INSERT_VALUES,ierr)
        call PCGAMGSetSymGraph(pc, PETSC_TRUE,ierr)
        call PCGAMGSetNSmooths(pc, 0,ierr)
        call PCGAMGSetThreshold(pc, .001,ierr)
-c       call PCGAMGSetReuseProl(pc,PETSC_FALSE,ierr)
+!       call PCGAMGSetReuseProl(pc,PETSC_FALSE,ierr)
        call kspsetup (ksp, ierr)
 
        CASE ('MUMPS')
@@ -365,7 +383,7 @@ c       call PCGAMGSetReuseProl(pc,PETSC_FALSE,ierr)
        call PCFactorGetMatrix(pc,mumpsFac,ierr)
        call MatMumpsSetIcntl(mumpsfac,7,2,ierr)
        call MatMumpsSetIcntl(mumpsfac,24,1,ierr)
-c       call MatMumpsSetCntl(mumpsfac,3,2.e-6,ierr)
+!       call MatMumpsSetCntl(mumpsfac,3,2.e-6,ierr)
        call kspsetup (ksp, ierr)
 
        CASE DEFAULT
@@ -373,12 +391,14 @@ c       call MatMumpsSetCntl(mumpsfac,3,2.e-6,ierr)
        call PCSetType(pc, PCBJACOBI, ierr)
       END SELECT
 
+
       CALL TIMER_STOP ('STREAMICE_PETSC_SETUP',myThid)
 #if (defined (ALLOW_OPENAD) && defined (ALLOW_STREAMICE_OAD_FP))
 #ifdef ALLOW_PETSC
       endif
 #endif
 #endif
+
 
       CALL TIMER_START ('STREAMICE_PETSC_SOLVE',myThid)
 
@@ -401,7 +421,7 @@ c       call MatMumpsSetCntl(mumpsfac,3,2.e-6,ierr)
           if (dof_index.ge.0) THEN
            cg_Uin(i,j,bi,bj) = solution_values(dof_index+1)
           endif
-
+          
           dof_index = INT(streamice_petsc_dofs_v(i,j,bi,bj))
      &                - local_offset
           if (dof_index.ge.0) THEN
@@ -423,10 +443,15 @@ c       call MatMumpsSetCntl(mumpsfac,3,2.e-6,ierr)
 #endif
       call VecDestroy (rhs, ierr)
       call VecDestroy (solution, ierr)
+         
 
-c      call PetscFinalize(ierr)
+!      call PetscFinalize(ierr)
 
-#endif /* ALLOW_PETSC */
-#endif /* ALLOW_STREAMICE */
+
+#endif
+
+
+
+#endif
       RETURN
       END

@@ -1,5 +1,3 @@
-.. _hydrostatic_quasihydrostatic_forms:
-
 Hydrostatic, Quasi-hydrostatic, Quasi-nonhydrostatic and Non-hydrostatic forms
 ------------------------------------------------------------------------------
 
@@ -87,7 +85,6 @@ the shallow atmosphere approximation can be relaxed - when dividing
 through by :math:`r` in, for example, :eq:`gu-spherical`, we do not
 replace :math:`r` by :math:`a`, the radius of the earth.
 
-.. _hydro_and_quasihydro:
 
 Hydrostatic and quasi-hydrostatic forms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

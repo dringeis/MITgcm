@@ -79,6 +79,7 @@ c             intantaneous field.
      &                    sbar,
 #ifdef ALLOW_SIGMAR_COST_CONTRIBUTION
      &                    sigmaRbar,
+     &                    sigmaRfield,
 #endif
      &                    sstbar,
      &                    psbar,
@@ -104,6 +105,7 @@ c             intantaneous field.
      &                    wfmean
 
 #ifdef ALLOW_SIGMAR_COST_CONTRIBUTION
+      _RL sigmaRfield    (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
       _RL sigmaRbar      (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
       _RL sigmaRbar_gen  (1-olx:snx+olx,1-oly:sny+oly,nr,nsx,nsy)
 #endif

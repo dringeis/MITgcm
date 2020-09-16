@@ -52,7 +52,7 @@ c     myThid :: thread number for this instance of the routine
 C     !LOCAL VARIABLES:
 C     == Local variables ==
       INTEGER i,j
-      _RL refTemp, refSalt, tP, sP, dp0
+      _RL refTemp,refSalt,tP,sP
       _RL t1, t2, t3, s1, s3o2, p1, p2, sp5, p1t1
       _RL ct, sa, sqrtsa, p
       _RL drhoP0dtheta, drhoP0dthetaFresh, drhoP0dthetaSalt
@@ -112,10 +112,9 @@ c    I          k, bi, bj, myThid )
       ELSEIF ( equationOfState(1:5).EQ.'JMD95'
      &        .OR. equationOfState.EQ.'UNESCO' ) THEN
 C     nonlinear equation of state in pressure coordinates
-         dp0 = surf_pRef - eosRefP0
 
          CALL PRESSURE_FOR_EOS(
-     I        bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I        bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O        locPres,
      I        myThid )
 
@@ -220,10 +219,9 @@ C     of sea water at p
             ENDDO
          ENDDO
       ELSEIF ( equationOfState.EQ.'MDJWF' ) THEN
-         dp0 = surf_pRef - eosRefP0
 
          CALL PRESSURE_FOR_EOS(
-     I        bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I        bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O        locPres,
      I        myThid )
 
@@ -279,10 +277,9 @@ C     this line makes TAF create vectorizable code
       ENDDO
 
       ELSEIF ( equationOfState.EQ.'TEOS10' ) THEN
-       dp0 = surf_pRef - eosRefP0
 
        CALL PRESSURE_FOR_EOS(
-     I      bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I      bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O      locPres,
      I      myThid )
 
@@ -385,7 +382,7 @@ c     myThid :: thread number for this instance of the routine
 C     !LOCAL VARIABLES:
 C     == Local variables ==
       INTEGER i,j
-      _RL refTemp, refSalt, tP, sP, dp0
+      _RL refTemp,refSalt,tP,sP
       _RL t1, t2, t3, s1, s3o2, p1, sp5, p1t1
       _RL ct, sa, sqrtsa, p
       _RL drhoP0dS
@@ -443,10 +440,9 @@ c    I          k, bi, bj, myThid )
       ELSEIF ( equationOfState(1:5).EQ.'JMD95'
      &        .OR. equationOfState.EQ.'UNESCO' ) THEN
 C     nonlinear equation of state in pressure coordinates
-         dp0 = surf_pRef - eosRefP0
 
          CALL PRESSURE_FOR_EOS(
-     I        bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I        bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O        locPres,
      I        myThid )
 
@@ -537,10 +533,9 @@ C     of sea water at p
             ENDDO
          ENDDO
       ELSEIF ( equationOfState.EQ.'MDJWF' ) THEN
-         dp0 = surf_pRef - eosRefP0
 
          CALL PRESSURE_FOR_EOS(
-     I        bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I        bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O        locPres,
      I        myThid )
 
@@ -589,10 +584,9 @@ C     this line makes TAF create vectorizable code
          ENDDO
 
       ELSEIF ( equationOfState.EQ.'TEOS10' ) THEN
-       dp0 = surf_pRef - eosRefP0
 
        CALL PRESSURE_FOR_EOS(
-     I      bi, bj, iMin, iMax, jMin, jMax,  kRef, dp0,
+     I      bi, bj, iMin, iMax, jMin, jMax,  kRef,
      O      locPres,
      I      myThid )
 

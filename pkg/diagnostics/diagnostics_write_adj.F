@@ -1,7 +1,7 @@
 #include "DIAG_OPTIONS.h"
 
       SUBROUTINE DIAGNOSTICS_WRITE_ADJ (
-     I                               modelStart,
+     I                               modelEnd,
      I                               myTime, myIter, myThid )
 C***********************************************************************
 C  Purpose
@@ -14,8 +14,7 @@ C          than forward model diagnostic convention.
 C
 C  Arguments  Description
 C  ----------------------
-C     modelStart :: true if call at start of model run.
-C              :: (this is the adjoint's modelEnd)
+C     modelEnd :: true if call at end of model run.
 C     myTime   :: Current time of simulation ( s )
 C     myIter   :: Current Iteration Number
 C     myThid   :: my Thread Id number
@@ -28,7 +27,7 @@ C***********************************************************************
 #include "DIAGNOSTICS.h"
 
 C     !INPUT PARAMETERS:
-      LOGICAL modelStart
+      LOGICAL modelEnd
       _RL     myTime
       INTEGER myIter, myThid
 
@@ -84,7 +83,7 @@ C   to mirror ADJdump
      I                          wrTime, myIter, myThid )
           ENDIF
 #endif /* ALLOW_CAL */
-          IF ( dumpAtLast .AND. modelStart
+          IF ( dumpAtLast .AND. modelEnd
      &                    .AND. freqSec.GE.0. ) dump2fileNow = .TRUE.
           IF ( dump2fileNow ) THEN
             write2file = .TRUE.

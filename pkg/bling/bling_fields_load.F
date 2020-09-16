@@ -5,16 +5,15 @@
 
 CBOP
       SUBROUTINE BLING_FIELDS_LOAD (
-     I           myTime, myIter, myThid )
+     I           myIter,myTime,myThid)
 
 C     *========================================================*
 C     | subroutine bling_fields_load
 C     | o Read in fields needed for CO2, O2 flux terms, silica
 C     |   for pH calculation
-C     | o Update fields from EXF package
 C     *========================================================*
 
-      IMPLICIT NONE
+      implicit none
 
 C     === Global variables ===
 #include "SIZE.h"
@@ -23,7 +22,6 @@ C     === Global variables ===
 #include "GRID.h"
 #ifdef ALLOW_EXF
 # include "EXF_PARAM.h"
-# include "EXF_INTERP_SIZE.h"
 # include "EXF_FIELDS.h"
 #endif
 #include "BLING_VARS.h"
@@ -136,12 +134,12 @@ C--   fill-in overlap after loading temp arrays:
         _EXCH_XY_RS(dicwind1, myThid )
         _EXCH_XY_RS(atmosp0, myThid )
         _EXCH_XY_RS(atmosp1, myThid )
+        _EXCH_XY_RS(silica0, myThid )
+        _EXCH_XY_RS(silica1, myThid )
         _EXCH_XY_RS(ice0, myThid )
         _EXCH_XY_RS(ice1, myThid )
         _EXCH_XY_RS(feinput0, myThid )
         _EXCH_XY_RS(feinput1, myThid )
-        _EXCH_XY_RS(silica0, myThid )
-        _EXCH_XY_RS(silica1, myThid )
 
 C-    save newly loaded time-record
         DO bj = myByLo(myThid), myByHi(myThid)
@@ -158,34 +156,33 @@ C-     end if-bloc (time to load new fields)
          IF ( BLING_windFile .NE. ' '  ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             wind(i,j,bi,bj) = bWght*dicwind0(i,j,bi,bj)
+             WIND(i,j,bi,bj) = bWght*dicwind0(i,j,bi,bj)
      &                       + aWght*dicwind1(i,j,bi,bj)
             ENDDO
            ENDDO
          ENDIF
-
+#ifndef USE_PLOAD
          IF ( BLING_atmospFile .NE. ' '  ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             atmosP(i,j,bi,bj) = bWght*atmosp0(i,j,bi,bj)
+             AtmosP(i,j,bi,bj) = bWght*atmosp0(i,j,bi,bj)
      &                         + aWght*atmosp1(i,j,bi,bj)
             ENDDO
            ENDDO
          ENDIF
-
+#endif
          IF ( BLING_silicaFile .NE. ' '  ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             silica(i,j,bi,bj) = bWght*silica0(i,j,bi,bj)
+             SILICA(i,j,bi,bj) = bWght*silica0(i,j,bi,bj)
      &                         + aWght*silica1(i,j,bi,bj)
             ENDDO
            ENDDO
          ENDIF
-
          IF ( BLING_iceFile .NE. ' '  ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             fIce(i,j,bi,bj) = bWght*ice0(i,j,bi,bj)
+             FIce(i,j,bi,bj) = bWght*ice0(i,j,bi,bj)
      &                       + aWght*ice1(i,j,bi,bj)
             ENDDO
            ENDDO
@@ -205,15 +202,13 @@ C-     end if-bloc (time to load new fields)
 C endif for BLING_forcingCycle
       ENDIF
 
-C-----------------------------------------------------------
-C Get ice fraction from PKG/SEAICE or PKG/THSICE
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
 #ifdef ALLOW_SEAICE
          IF ( useSEAICE ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             fIce(i,j,bi,bj) = AREA(i,j,bi,bj)
+             FIce(i,j,bi,bj) = AREA(i,j,bi,bj)
             ENDDO
            ENDDO
          ENDIF
@@ -222,48 +217,9 @@ C Get ice fraction from PKG/SEAICE or PKG/THSICE
          IF ( useThSIce ) THEN
            DO j=1-OLy,sNy+OLy
             DO i=1-OLx,sNx+OLx
-             fIce(i,j,bi,bj) = iceMask(i,j,bi,bj)
+             FIce(i,j,bi,bj) = iceMask(i,j,bi,bj)
             ENDDO
            ENDDO
-         ENDIF
-#endif
-       ENDDO
-      ENDDO
-
-C-----------------------------------------------------------
-C Get winds from PKG/EXF
-      DO bj = myByLo(myThid), myByHi(myThid)
-       DO bi = myBxLo(myThid), myBxHi(myThid)
-#ifdef ALLOW_EXF
-         IF ( useEXF ) THEN
-          IF ( uwindfile .NE. ' '  ) THEN
-          IF ( vwindfile .NE. ' '  ) THEN
-           DO j=1-OLy,sNy+OLy
-            DO i=1-OLx,sNx+OLx
-             wind(i,j,bi,bj) = wspeed(i,j,bi,bj)
-            ENDDO
-           ENDDO
-          ENDIF
-          ENDIF
-         ENDIF
-#endif
-       ENDDO
-      ENDDO
-
-C-----------------------------------------------------------
-C Get atmospheric pressure from PKG/EXF
-      DO bj = myByLo(myThid), myByHi(myThid)
-       DO bi = myBxLo(myThid), myBxHi(myThid)
-#ifdef ALLOW_EXF
-         IF ( useEXF ) THEN
-          IF ( apressurefile .NE. ' '  ) THEN
-           DO j=1-OLy,sNy+OLy
-            DO i=1-OLx,sNx+OLx
-C Atm pressure in Pascals, convert to atm
-             AtmosP(i,j,bi,bj) = apressure(i,j,bi,bj)/Pa2atm
-            ENDDO
-           ENDDO
-          ENDIF
          ENDIF
 #endif
        ENDDO
@@ -271,11 +227,9 @@ C Atm pressure in Pascals, convert to atm
 
 C-----------------------------------------------------------
 C Get Atmospheric carbon dioxide concentration from PKG/EXF
-#ifdef ALLOW_EXF
+#ifdef USE_EXFCO2
 C     Atmospheric carbon dioxide concentration
-      IF ( useEXF ) THEN
-       IF ( apco2file .NE. ' '  ) THEN
-        CALL EXF_SET_FLD(
+      CALL EXF_SET_FLD(
      I     'apco2', apco2file, apco2mask,
      I     apco2StartTime, apco2period, apco2RepCycle,
      I     exf_inscal_apco2,
@@ -286,9 +240,7 @@ C     Atmospheric carbon dioxide concentration
      I     apco2_nlon, apco2_nlat, xC, yC, apco2_interpMethod,
 # endif
      I     myTime, myIter, myThid )
-       ENDIF
-      ENDIF
-#endif
+#endif /* USE_EXFCO2 */
 
 #endif /* ALLOW_BLING */
       RETURN

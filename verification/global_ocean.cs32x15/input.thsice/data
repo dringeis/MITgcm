@@ -31,7 +31,6 @@
  hFacMinDr=20.,
  readBinaryPrec=64,
 #writeBinaryPrec=64,
- useSingleCpuIO=.TRUE.,
  plotLevel=0,
  &
 

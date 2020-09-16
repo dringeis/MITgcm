@@ -6,6 +6,11 @@ import numpy as np
 
 __doc__ = """
 Density of Sea Water using McDougall et al. 2003 (JAOT 20) polynomial
+
+Functions:
+
+dens :: computes in-situ density from salinity, potential temperature
+        and pressure
 """
 
 # coefficients nonlinear equation of state in pressure coordinates for
@@ -39,34 +44,31 @@ eosMDJWFden =  [ 7.28606739e-03,
 
 def densmdjwf(s,theta,p):
     """
-    Computes in-situ density of sea water
+    densmdjwf    Density of sea water
+   =========================================================================
 
-    Density of Sea Water using McDougall et al. 2003 (JAOT 20)
-    polynomial (Gibbs Potential).
+    USAGE:  dens = densmdjwf(s,theta,p)
 
-    Parameters
-    ----------
-    s : array_like
-        salinity [psu (PSS-78)]
-    theta : array_like
-        potential temperature [degree C (IPTS-68)];
-        same shape as s
-    p : array_like
-        pressure [dbar]; broadcastable to shape of s
+    DESCRIPTION:
+       Density of Sea Water using McDougall et al. 2003 (JAOT 20)
+       polynomial (Gibbs Potential).
 
-    Returns
-    -------
-    dens : array
-        density [kg/m^3]
+    INPUT:  (all must have same dimensions)
+      S     = salinity    [psu      (PSS-78)]
+      Theta = potential temperature [degree C (IPTS-68)]
+      P     = pressure    [dbar]
+          (P may have dims 1x1, mx1, 1xn or mxn for S(mxn) )
 
-    Example
-    -------
-    >>> densmdjwf(35., 25., 2000.)
-    1031.654229
+    OUTPUT:
+      dens = density  [kg/m^3]
 
-    Notes
-    -----
     AUTHOR:  Martin Losch 2002-08-09  (Martin.Losch@awi.de)
+
+    check value
+    S     = 35 PSU
+    Theta = 25 degC
+    P     = 2000 dbar
+    rho   = 1031.654229 kg/m^3
 
     McDougall et al., 2003, JAOT 20(5), pp. 730-741
     """

@@ -318,11 +318,9 @@ C             Short wave radiative flux.
 #endif
 
 #ifdef ATMOSPHERIC_LOADING
-C-    subtract "surf_pRef" to fill in atmos. pressure anomaly "pLoad"
           DO j = jmin,jmax
             DO i = imin,imax
-             pLoad(i,j,bi,bj) =
-     &          exf_outscal_apressure*apressure(i,j,bi,bj) - surf_pRef
+             pLoad(i,j,bi,bj)=exf_outscal_apressure*apressure(i,j,bi,bj)
             ENDDO
           ENDDO
 #endif

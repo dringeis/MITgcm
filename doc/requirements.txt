@@ -1,4 +1,2 @@
-sphinx
+sphinx>=1.7.0b1
 sphinxcontrib-bibtex
-sphinxcontrib-programoutput
-numpy

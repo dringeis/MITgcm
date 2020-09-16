@@ -46,7 +46,6 @@ C     myThid :: my Thread Id number
         SEAICEuseDYNAMICS  = SEAICEuseDYNAMICSinFwdMode
       ENDIF
       SEAICEadjMODE=0
-      SINegFac      = SIregFacInFw
 #endif /* ALLOW_SEAICE */
       viscFacAdj=1. _d 0
 

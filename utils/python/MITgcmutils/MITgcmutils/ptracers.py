@@ -1,27 +1,24 @@
 import string
+__doc__ = """
+label = iolabel(itracer)
+
+    maps integers 1..3843 to length-two strings:
+
+    1..99      =>  01..99
+    100..619   =>  0a..0Z,1a..9Z
+    620..3843  =>  aa..ZZ
+
+itracer = iolabel2num(label)
+
+    does the inverse.
+"""
 
 _iolabel_set10 = string.digits
 _iolabel_set52 = string.ascii_letters
 _iolabel_set62 = _iolabel_set10 + _iolabel_set52
 
 def iolabel(i):
-    '''
-    Map tracer number (1..3843) to 2-character I/O label:
-
-    | 1..99      =>  01..99
-    | 100..619   =>  0a..0Z,1a..9Z
-    | 620..3843  =>  aa..ZZ
-
-    Parameters
-    ----------
-    i : int
-        ptracer number (1..3843)
-
-    Returns
-    -------
-    string
-        2-character I/O label
-    '''
+    ''' Map tracer number (1..3843) to 2-character I/O label. '''
     if i < 100:
         return '{0:02d}'.format(i)
     elif i < 620:  # 100 + 10*52
@@ -36,9 +33,7 @@ def iolabel(i):
 
 
 def iolabel2num(s):
-    '''
-    Map 2-character IO label to tracer number, the inverse of iolabel()
-    '''
+    ''' Map 2-character IO label to tracer number '''
     assert len(s) == 2
     try:
         i = int(s)

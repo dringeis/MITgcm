@@ -13,31 +13,31 @@
      I                        mythid
      &                      )
 
-C     ==================================================================
-C     SUBROUTINE ctrl_get_gen_rec
-C     ==================================================================
-C
-C     o Get flags, counters, and the linear interpolation factor for a
-C       given control vector contribution.
-C     o New, generic, for new routine ctrl_get_gen
-C
-C     ==================================================================
-C     SUBROUTINE ctrl_get_gen_rec
-C     ==================================================================
+c     ==================================================================
+c     SUBROUTINE ctrl_get_gen_rec
+c     ==================================================================
+c
+c     o Get flags, counters, and the linear interpolation factor for a
+c       given control vector contribution.
+c     o New, generic, for new routine ctrl_get_gen
+c
+c     ==================================================================
+c     SUBROUTINE ctrl_get_gen_rec
+c     ==================================================================
 
       implicit none
 
-C     == global variables ==
+c     == global variables ==
 
-#include "SIZE.h"
 #include "EEPARAMS.h"
-#include "PARAMS.h"
+#include "SIZE.h"
 #include "ctrl.h"
 #ifdef ALLOW_CAL
 # include "cal.h"
 #endif
+#include "PARAMS.h"
 
-C     == routine arguments ==
+c     == routine arguments ==
 
       integer xx_genstartdate(4)
       _RL     xx_genperiod
@@ -50,7 +50,7 @@ C     == routine arguments ==
       integer myiter
       integer mythid
 
-C     == local variables ==
+c     == local variables ==
 
 #ifdef ALLOW_CAL
 
@@ -67,7 +67,7 @@ C     == local variables ==
       integer fldstartdate(4)
       _RL     fldperiod
 
-c     integer startrec
+      integer startrec
 
       logical lArgErr
 #else
@@ -81,13 +81,13 @@ C     for simplied default model calendar without exf/cal
       character*(max_len_mbuf) msgbuf
 #endif
 
-C     == end of interface ==
+c     == end of interface ==
 
 #ifdef ALLOW_CAL
       lArgErr = .true.
       fldperiod = 0.
 
-C     Map the field parameters.
+c     Map the field parameters.
 
       call cal_CopyDate(
      I     xx_genstartdate,
@@ -97,7 +97,7 @@ C     Map the field parameters.
       fldperiod = xx_genperiod
       lArgErr = .false.
 
-C--   Check the field argument.
+c--   Check the field argument.
       if ( lArgErr ) then
          print*,' The subroutine *ctrl_get_gen_rec* has been called'
          print*,' with an illegal field specification.'
@@ -105,42 +105,42 @@ C--   Check the field argument.
       endif
 
       if ( xx_genperiod .eq. -12. _d 0 ) then
-C     record numbers are assumed 1 to 12 corresponding to
-C     Jan. through Dec.
+c     record numbers are assumed 1 to 12 corresponding to
+c     Jan. through Dec.
        call cal_GetMonthsRec(
      O      fac, first, changed,
      O      count0, count1,
      I      mytime, myiter, mythid
      &      )
       elseif ( fldperiod .eq. 0. _d 0 ) then
-C     Read field only once in the beginning. Hack: count1=count0 causes
-C     the model to read the first record twice, but since this this is
-C     done only the first time around it is not too much of an overhead.
+c     Read field only once in the beginning. Hack: count1=count0 causes
+c     the model to read the first record twice, but since this this is
+c     done only the first time around it is not too much of an overhead.
        first   = ((mytime - modelstart) .lt. 0.5*modelstep)
        changed = .false.
        fac     = 1. _d 0
        count0  = 1
        count1  = count0
       else
-C     fldperiod .ne. 0
-C--   Determine the current date.
+c     fldperiod .ne. 0
+c--   Determine the current date.
        call cal_GetDate( myiter, mytime, mydate, mythid )
 
-C     Determine first record:
-c      call cal_TimePassed( fldstartdate, modelstartdate,
-c    &                      difftime, mythid )
-c      call cal_ToSeconds ( difftime, fldsecs, mythid )
-c      startrec = int((modelstart + startTime - fldsecs)/
-c    &                fldperiod) + 1
+c     Determine first record:
+       call cal_TimePassed( fldstartdate, modelstartdate,
+     &                      difftime, mythid )
+       call cal_ToSeconds ( difftime, fldsecs, mythid )
+       startrec = int((modelstart + startTime - fldsecs)/
+     &                fldperiod) + 1
 
-C     Determine the flux record just before mycurrentdate.
+c     Determine the flux record just before mycurrentdate.
        call cal_TimePassed( fldstartdate, mydate, difftime,
      &                      mythid )
        call cal_ToSeconds( difftime, fldsecs, mythid )
        fldsecs  = int((fldsecs+0.5)/fldperiod)*fldperiod
        fldcount = int((fldsecs+0.5)/fldperiod) + 1
 
-C     Set switches for reading new records.
+c     Set switches for reading new records.
        first = ((mytime - modelstart) .lt. 0.5*modelstep)
 
        if ( first) then
@@ -162,25 +162,27 @@ C     Set switches for reading new records.
         endif
        endif
 
-       count0 = fldcount
-       count1 = fldcount + 1
+c      count0 = fldcount
+c      count1 = fldcount + 1
+       count0 = fldcount - startrec + 1
+       count1 = fldcount - startrec + 2
 
        call cal_TimeInterval( fldsecs, 'secs', difftime, mythid )
        call cal_AddTime( fldstartdate, difftime, flddate, mythid )
        call cal_TimePassed( flddate, mydate, difftime, mythid )
        call cal_ToSeconds( difftime, fldsecs, mythid )
 
-C     Weight belonging to irec for linear interpolation purposes.
-C     Note: The weight as chosen here is 1. - fac of the "old"
-C           MITgcm estimation program.
+c     Weight belonging to irec for linear interpolation purposes.
+c     Note: The weight as chosen here is 1. - fac of the "old"
+c           MITgcm estimation program.
        fac = 1. - fldsecs/fldperiod
 
-C     fldperiod .ne. 0.
+c     fldperiod .ne. 0.
       endif
 #else /* not ALLOW_CAL */
 C     Code, adapted from external_fields_load, for simplied
 C     default model calendar without exf/cal, but
-C     based on myTime, myIter, deltaTClock, externForcingCycle, and startTime
+C     based on myTime, myIter, deltaTclock, externForcingCycle, and startTime
 
       myRelTime = myTime - startTime
       first = (myRelTime .lt. 0.5*deltaTClock)
@@ -198,7 +200,7 @@ C--   Now calculate whether it is time to update the forcing arrays
        CALL GET_PERIODIC_INTERVAL(
      O                   countP, count0, count1, tmpFac, fac,
      I                   externForcingCycle, xx_genperiod,
-     I                   deltaTClock, myTime, myThid )
+     I                   deltaTclock, myTime, myThid )
 
        IF ( count0.NE.countP ) THEN
         changed = .true.
@@ -212,7 +214,7 @@ C--   Now calculate whether it is time to update the forcing arrays
 #endif /* ALLOW_CAL */
 
 #ifdef ECCO_VERBOSE
-C     Do some printing for the protocol.
+c     Do some printing for the protocol.
       _BEGIN_MASTER( mythid )
         write(msgbuf,'(a)') ' '
         call print_message( msgbuf, standardmessageunit,

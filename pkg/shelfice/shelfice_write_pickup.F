@@ -57,8 +57,6 @@ C     msgBuf      :: Informational/error message buffer
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 CEOP
 
-      IF ( SHELFICEMassStepping .OR.
-     &     SHELFICEremeshFrequency.GT.zeroRL ) THEN
         lChar = ILNBLNK(suff)
         IF ( lChar.EQ.0 ) THEN
           WRITE(fn,'(2A)') 'pickup_shelfice'
@@ -70,10 +68,10 @@ CEOP
 
 C       Firstly, write 3-D fields as consecutive records,
 
+        IF (shelficeMassStepping) then
+
 C-    switch to 2-D fields:
         nj = -j*Nr
-
-      IF ( SHELFICEMassStepping ) THEN
 
         j = j + 1
         nj = nj-1
@@ -81,19 +79,12 @@ C-    switch to 2-D fields:
      &                        nj, myIter, myThid )
         IF (j.LE.listDim) wrFldList(j) = 'SHI_mass'
 
-      ENDIF ! SHELFICEMassStepping
 
-#ifdef ALLOW_SHELFICE_REMESHING
-      IF ( SHELFICEremeshFrequency.GT.zeroRL ) THEN
-
-        j = j + 1
-        nj = nj-1
-        CALL WRITE_REC_3D_RS( fn, fp, 1, R_shelfIce,
-     &                        nj, myIter, myThid )
-        IF (j.LE.listDim) wrFldList(j) = 'R_Shelfi'
-
-      ENDIF ! shelfice-remeshing
-#endif /* ALLOW_SHELFICE_REMESHING */
+c       j = j + 1
+c       nj = nj-1
+c       CALL WRITE_REC_3D_RL( fn, fp, 1, myPa_Surf2,
+c    &                        nj, myIter, myThid )
+c       IF (j.LE.listDim) wrFldList(j) = 'myPaSur2'
 
 C--------------------------
         nWrFlds = j
@@ -124,7 +115,7 @@ C     uses this specific S/R to write (with more informations) only meta files
      &                         nj, myIter, myThid )
 #endif /* ALLOW_MDSIO */
 C--------------------------
-      ENDIF
+      ENDIF ! shelficeMassStepping
 
 #endif /* ALLOW_SHELFICE */
 

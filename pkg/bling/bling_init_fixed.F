@@ -8,8 +8,8 @@ C     | subroutine bling_init_fixed
 C     | o Initialize fixed parameters
 C     ==========================================================
 
-      IMPLICIT NONE
-
+      implicit none
+      
 C     === Global variables ===
 #include "SIZE.h"
 #include "EEPARAMS.h"
@@ -23,7 +23,9 @@ C     myThid       :: my Thread Id number
 CEOP
 
 #ifdef ALLOW_BLING
-c     CHARACTER*(MAX_LEN_MBUF) msgBuf
+      INTEGER k
+      CHARACTER*(MAX_LEN_MBUF) msgBuf
+      INTEGER iUnit
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -56,7 +58,7 @@ C coefficients for determining saturation O2
       oB3= -8.17083 _d -3
       oC0= -4.88682 _d -7
 
-#ifdef ALLOW_EXF
+#ifdef USE_EXFCO2
       apco2mask = 'c'
       IF ( useSEAICE ) THEN
        apco2mask = ' '

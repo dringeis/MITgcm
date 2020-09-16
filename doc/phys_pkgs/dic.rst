@@ -1,5 +1,3 @@
-.. _sub_pkg_dic:
-
 DIC Package
 -----------
 

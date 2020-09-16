@@ -2,7 +2,7 @@
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
-C     !ROUTINE: EXF_SET_UV
+C     !ROUTINE: EXF_INIT_FLD
 C     !INTERFACE:
       SUBROUTINE EXF_SET_UV(
      I     uVecName, uVecFile, uVecMask,
@@ -38,10 +38,9 @@ C     == global variables ==
 #include "SIZE.h"
 #include "PARAMS.h"
 #include "GRID.h"
+#include "EXF_INTERP_SIZE.h"
 #include "EXF_PARAM.h"
 #include "EXF_CONSTANTS.h"
-#include "EXF_INTERP_SIZE.h"
-#include "EXF_INTERP_PARAM.h"
 #include "EXF_FIELDS.h"
 
 C !INPUT/OUTPUT PARAMETERS:

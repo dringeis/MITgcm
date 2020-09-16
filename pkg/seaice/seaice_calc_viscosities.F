@@ -77,7 +77,8 @@ C     em            - e11-e22 (abbreviation)
       _RL deltaCreg(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
-      _RL k, ksq, x, a, ap1, etamax_TD ,cyc ,xma, recip_TDmu
+      _RL k,ksq,x,a,ap1,etamax_TD,zetamax_TD,cyc,xma,recip_TDmu
+      _RL eTD,tnsFacTD, recip_eTD2
 #endif /* SEAICE_ALLOW_TEARDROP */
 #if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
       _RL etaMaxFac
@@ -100,6 +101,7 @@ C--   basic constants
         recip_TDmu = ONE 
        ENDIF
       ENDIF
+
 #endif /* SEAICE_ALLOW_TEARDROP */
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
@@ -156,49 +158,107 @@ C     do nothing (hack to be able add code with different cpp-flag)
            ep = e11(i,j,bi,bj) + e22(i,j,bi,bj)
            em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
-           k   = ep / (shearDef+SEAICE_deltaMin) * recip_TDmu
+
+           k   =  SIGN( ABS(ep) + deltaMinSq, ep)
+     &         / (shearDef+ deltaMinSq)
            ksq = k*k
            a   = tnsFac(I,J,bi,bj)
+
 CDR    CYC Coordinate of the highest point of the yield curve, here eI changes sign
            cyc=(2. _d 0 - tnsFac(I,J,bi,bj) ) * oneThird
            ap1 = a + 1. _d 0
-           x = ( 2. _d 0*k*SQRT( ksq + 3. _d 0 * ap1 )
-     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) * oneNinth + a
+CDR           IF     (ksq .GE.  1e16) THEN 
+CDR            x =  a
+CDR           ELSEIF (ksq .LE. -1e16) THEN
+CDR            x = -1 _d 0
+CDR           ELSE 
+CDR            x = ( 2. _d 0*k*SQRT( ksq + 3. _d 0 * ap1 )
+CDR     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) * oneNinth + a
+CDR           ENDIF
+           
+           IF ( k < -1e3 ) THEN ! you could always make this even smaller, -1e5 should work, too
+            x = 3 _d 0 * ap1 /ksq
+            x = TWO *ksq * (0.125 _d 0 *x - 0.5 _d 0 )*x
+           ELSE
+            x = TWO *ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )
+           ENDIF
+           x = (x - (6 _d 0*ap1) ) * oneNinth + a
+           
+CDR Test of an ellipse for tensile deformation
+           IF (x .GT. 0 _d 0) THEN
+
+            tnsFacTD = a / TWO
+
+CDR            IF ( a .GT.  0 _d 0 ) THEN
+CDR             eTD = SQRT(tnsFacTD) / a
+CDR            ELSE 
+CDR             eTD = ONE
+CDR            ENDIF
+        
+            IF (tnsFacTD .GT. 0 _d 0 ) THEN 
+             recip_eTD2 = a*a / tnsFacTD
+            ELSE
+             recip_eTD2 = ONE  
+            ENDIF
+
+            shearDefSq = em*em + 4. _d 0*e12Csq(i,j)
+            deltaC(I,J,bi,bj) = SQRT(ep*ep + recip_eTD2*shearDefSq)
+            deltaCreg(I,J) = MAX(deltaC(I,J,bi,bj),SEAICE_deltaMin)
+            zeta(I,J,bi,bj) = HALF*( press0(I,J,bi,bj)
+     &          * ( ONE + tnsFacTD ) )/deltaCreg(I,J)
+            zeta(I,J,bi,bj)= MIN(zeta(I,J,bi,bj),ZMAX(I,J,bi,bj))
+            eta(I,J,bi,bj) = recip_eTD2 * zeta(I,J,bi,bj)
+            press(I,J,bi,bj) =
+     &          ( press0(I,J,bi,bj)*( ONE - SEAICEpressReplFac )
+     &          + TWO*zeta(I,J,bi,bj)*deltaC(I,J,bi,bj)
+     &          * SEAICEpressReplFac/( ONE + tnsFacTD )
+     &          ) * ( ONE - tnsFacTD )
+
+CDR Teardrop yield curve
+           ELSE 
 C     not necessary to limit x from below, it cannot be smaller than -1
 C     by definition
 CML           x = MAX( x, -1. _d 0 )
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
-           x = MIN( x, a )
-           zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj)
-     &          / SIGN( ABS(ep) + SEAICE_deltaMin, ep)           
+            x = MIN( x, a )
+            x = MAX( x,-1 _d 0 )
+
+            zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj)
+     &          / SIGN( ABS(ep) + deltaMinSq, ep)           
 CDR   Original formulation of Zhang 2005    
 C            zeta(I,J,bi,bj) = (x + 0.5 _d 0) * press0(I,J,bi,bj)
 C      &          / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
-C     only the sign of ep is required here, that is why we do not have to
-C     multiply by 0.5
 CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
-           eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
-     &                     / (shearDef + SEAICE_deltaMin) * SEAICEtdMU
+            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
+     &                     / (shearDef + deltaMinSq) * SEAICEtdMU
 
-           etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &               /(ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin)
-CDR   Not sure we need this now, with the modification, there is no negative zeta anymore
-           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), ZMIN(I,J,bi,bj))
-           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+CDR   Defining the max values for eta and zeta
+           etamax_TD = ZMAX(I,J,bi,bj) * MIN(eta(I,J,bi,bj)
+     &               /(ABS(zeta(I,J,bi,bj)) + deltaMinSq),1 _d 0)
+           zetamax_TD =ZMAX(I,J,bi,bj) * MIN(zeta(I,J,bi,bj)
+     &               /(ABS(eta(I,J,bi,bj)) + deltaMinSq),1 _d 0 )
 
-           eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
+           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), zetamax_TD)
+           eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj),  etamax_TD)
+CDR           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+CDR           eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+
+CDR JUST to be sure
+           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),deltaMinSq)
+           eta(I,J,bi,bj)  = MAX( eta(I,J,bi,bj),deltaMinSq)
 
            press(I,J,bi,bj) = 2. _d 0 * cyc * (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-     &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
-CDR   Original formulation of Zhang 2005           
-C            press(I,J,bi,bj) = 2* cyc * (
-C      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-C      &         + 2. _d 0 * SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
+
+C           eta(I,J,bi,bj)= eta(I,J,bi,bj) * press(I,J,bi,bj)
+C     &                   / (press0(I,J,bi,bj) * 2. _d 0  * cyc 
+C     &                   + deltaMinSq)
+  
+           ENDIF ! ellipse for tensile deformation stress 
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -212,7 +272,13 @@ C      &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
            k = ep / (shearDef+SEAICE_deltaMin) * recip_TDmu
            a = tnsFac(I,J,bi,bj)
-           x = 0.5 _d 0 * (k - 1. _d 0 + a)
+           IF     (ksq .GE.  1e16) THEN 
+            x =  a
+           ELSEIF (ksq .LE. -1e16) THEN
+            x = -1 _d 0
+           ELSE 
+            x = 0.5 _d 0 * (k - 1. _d 0 + a)
+           ENDIF
            x = MAX( x,-1. _d 0 )
            x = MIN( x, a )
            xma = x + 0.5 _d 0 *(1. _d 0 - a )
@@ -222,18 +288,25 @@ C           compute ZETA
 C           compute ETA
            eta(I,J,bi,bj) = -(x-a) * (1. _d 0+x) * press0(I,J,bi,bj)
      &                     / (shearDef+SEAICE_deltaMin) * SEAICEtdMU
-C           Maximum of eta
-           etamax_TD = eta(I,J,bi,bj)*ZMAX(I,J,bi,bj)
-     &          /( ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin )
+
+C          Maximum of eta and zeta
+           etamax_TD = ZMAX(I,J,bi,bj) * MIN(eta(I,J,bi,bj)
+     &               /(ABS(zeta(I,J,bi,bj)) + SEAICE_deltaMin),1 _d 0 )
+CDR           zetamax_TD = ZMAX(I,J,bi,bj)
+           zetamax_TD =ZMAX(I,J,bi,bj) * MIN(zeta(I,J,bi,bj)
+     &               /(ABS(eta(I,J,bi,bj)) + SEAICE_deltaMin), 1 _d 0 )
 C           Apply the maxiums on zeta and eta
            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj), ZMIN(I,J,bi,bj))
-           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), zetamax_TD)
            eta(I,J,bi,bj) = MIN( etamax_TD , eta(I,J,bi,bj))
 C            Compute the replacement pressure
            press(I,J,bi,bj) = (1. _d 0 - a )* (
      &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
      &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
      &         / SIGN( ABS(xma)+SEAICE_deltaMin, xma))
+
+CDR           eta(I,J,bi,bj)= eta(I,J,bi,bj) * press(I,J,bi,bj)
+CDR     &                   / (press0(I,J,bi,bj) * (1 _d 0 - a) )  
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -262,7 +335,7 @@ C     Replacement Pressure
      &      / ( ONE + tnsFac(I,J,bi,bj) ) )
 
 C     Computing ETA  (EMAX=ZMAX)
-           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 * press(I,J,bi,bj)
+           eta(I,J,bi,bj) = SEAICEmcMU * (0.5 _d 0 * press(I,J,bi,bj)
      &      - zeta(I,J,bi,bj)*ep+press0(I,J,bi,bj)*tnsFac(I,J,bi,bj))
      &      / (SQRT(shearDefSq + deltaMinSq))
 
@@ -358,13 +431,15 @@ C    &           * ( 1. _d 0 - tnsFac(I,J,bi,bj) ) - zetaLoc * ep
 C    &           + press0(I,J,bi,bj)*tnsFac(I,J,bi,bj)) / shearDef
 C     but in this formulation, only ep/deltaCreg(I,J) remains
             eta(I,J,bi,bj) = SEAICEmcMU * HALF * press0(I,J,bi,bj)
-     &           * ( ( 1. _d 0 + tnsFac(I,J,bi,bj) )
-     &             - ep/deltaCreg(I,J) ) / shearDef
+     &           * ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+     &           * ( 1. _d 0 - ep/deltaCreg(I,J) ) / shearDef
 C     Computing etaMaxFac = ZMAX/zetaLoc
-            etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg(I,J)
-     &           / ( 1. _d 0 + tnsFac(I,J,bi,bj) )
+CDR            etaMaxFac = SEAICE_zetaMaxFac * 2. _d 0 * deltaCreg(I,J)
+CDR     &           / ( 1. _d 0 + tnsFac(I,J,bi,bj) )
 C     Applying maximum
-            eta(I,J,bi,bj) = eta(I,J,bi,bj) * MIN( 1. _d 0, etaMaxFac )
+CDR            eta(I,J,bi,bj) = eta(I,J,bi,bj) * MIN( 1. _d 0, etaMaxFac )
+            eta(I,J,bi,bj)=MIN(eta(I,J,bi,bj)
+     &                    , ZMAX(I,J,bi,bj)*recip_efr2)
            ENDDO
           ENDDO
 C     closing the coulombic limbs with the ellipse for compression

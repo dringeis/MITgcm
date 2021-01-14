@@ -114,9 +114,9 @@ C     of a min(zeta,zmax). This improves convergence of iterative
 C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
 # define SEAICE_ZETA_SMOOTHREG
 C     allow the truncated ellipse rheology (runtime flag SEAICEuseTEM)
-# undef SEAICE_ALLOW_TEM
+# define SEAICE_ALLOW_TEM
 C     allow the use of full Mohr Coulomb rheology (runtime flag SEAICEuseFULLMC)
-# define SEAICE_USE_FULLMC
+# define SEAICE_ALLOW_FULLMC
 C     allow the teardrop and parabolic lens  rheology (runtime flag SEAICEuseTD and SEAICEusePL)
 # undef SEAICE_ALLOW_TEARDROP
 C     Use LSR vector code; not useful on non-vector machines, because it

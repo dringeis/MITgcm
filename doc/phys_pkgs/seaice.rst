@@ -5,7 +5,7 @@ SEAICE Package
 
 
 Authors: Martin Losch, Dimitris Menemenlis, An Nguyen, Jean-Michel
-Campin, Patrick Heimbach, Chris Hill and Jinlun Zhang
+Campin, Patrick Heimbach, Chris Hill, Jinlun Zhang, and Damien Ringeisen
 
 .. _ssub_phys_pkg_seaice_intro:
 
@@ -105,7 +105,15 @@ General flags and parameters
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
   |   SEAICEuseJFNK              |     F                        | use the JFNK-solver                                                     |
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
-  |   SEAICEuseTEM               |     F                        | use truncated ellipse method                                            |
+  |   SEAICEuseTEM               |     F                        | use truncated ellipse method or Coulombic yield curve                   |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  |   SEAICEuseFMC               |     F                        | use the Mohr-Coulomb yield curve with shear flow rule                   |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  |   SEAICEuseMCE               |     F                        | use the Mohr-Coulomb yield curve with elliptical plastic potential      |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  |   SEAICEuseTD                |     F                        | use the Teardrop yield curve with normal flow rule                      |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  |   SEAICEusePL                |     F                        | use the Parabolic Lens yield curve with normal flow rule                |
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
   |   SEAICEuseStrImpCpl         |     F                        | use strength implicit coupling in LSR/JFNK                              |
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
@@ -210,6 +218,12 @@ General flags and parameters
   | SEAICE_strength              | 2.75000E+04                  | sea-ice strength :math:`P^{\ast}`                                       |
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
   | SEAICE_cStar                 | 20.0000E+00                  | sea-ice strength paramter :math:`C^{\ast}`                              |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  | SEAICE_eccfr                 | = SEAICE_eccen               | sea ice plastic potential ellipse aspect ratio                          |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  | SEAICEmcMU                   | 1.00000E+00                  | Slope of the Mohr-Coulomb yield curve                                   |
+  +------------------------------+------------------------------+-------------------------------------------------------------------------+
+  | SEAICEtensilFac              | 0.00000E+00                  | Tensile factor for the yield curve                                      | 
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
   | SEAICE_rhoAir                | 1.3 (or ``exf`` value)       | density of air (kg/m:math:`^3`)                                         |
   +------------------------------+------------------------------+-------------------------------------------------------------------------+
@@ -498,6 +512,67 @@ bounding :math:`\zeta` by a smooth (differentiable) expression:
 
 where :math:`\Delta_{\min}=10^{-20}\,\text{s}^{-1}` is chosen to avoid
 divisions by zero.
+
+
+.. _para_phys_pkg_seaice_altVPrheologies_ellnnfr:
+
+Elliptical yield curve with non normal flow rules
+#################################################
+
+|  
+
+Defining the runtime parameter ``SEAICE_eccfr`` with a value different of ``SEAICE_eccen`` allow 
+to use an elliptical yield curve with a non-normal flow rule as described in :cite:`ringeisen20`. 
+In this case the viscosities are function of ``SEAICE_eccen`` abbreviated :math:`e_F`
+and ``SEAICE_eccfr`` abbreviated :math:`e_G`, and are defined as
+
+.. math::
+   \begin{align}
+     \zeta &= \frac{P(1+k_t)}{2\Delta} 
+     \eta = \frac{\zeta}{e_G^2} = \frac{P(1+k_t)}{2e_G^2\Delta} \\
+     \intertext{with the abbreviation}
+     \Delta &= \sqrt{(\dot{\epsilon}_{11}-\dot{\epsilon}_{22})^2
+       +\frac{e_F^2}{e_G^4}((\dot{\epsilon}_{11}
+       -\dot{\epsilon}_{22})^2+4\dot{\epsilon}_{12}^2)}.
+   \end{align}
+
+Note that if :math:`e_G=e_F=e`, then the formulation is same as with the normal flow rule.
+
+.. _para_phys_pkg_seaice_altVPrheologies_MCS:
+
+Mohr-Coulomb yield curve with shear flow rule
+#############################################
+
+|  
+
+If ``SEAICE_ALLOW_FULLMC`` is defined and ``SEAICEuseFMC = .TRUE.``, 
+then the Mohr-Coulomb rheology as defined in :cite:`ip1991` is used.
+
+The 
+
+
+.. _para_phys_pkg_seaice_altVPrheologies_MCE:
+
+Mohr-Coulomb yield curve with elliptical plastic potential
+##########################################################
+
+
+|  
+
+.. _para_phys_pkg_seaice_altVPrheologies_TD:
+
+Teardrop yield curve with normal flow rule
+##########################################
+
+|  
+
+.. _para_phys_pkg_seaice_altVPrheologies_PL:
+
+Parabolic lens yield curve with normal flow rule
+################################################
+
+|  
+
 
 .. _para_phys_pkg_seaice_LSRJFNK:
 

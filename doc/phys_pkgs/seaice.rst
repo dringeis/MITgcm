@@ -565,10 +565,7 @@ Mohr-Coulomb yield curve with shear flow rule
 
 |  
 
-If ``SEAICE_ALLOW_FULLMC`` is defined and ``SEAICEuseFMC = .TRUE.``, 
-then the Mohr-Coulomb rheology as defined in :cite:`ip1991` is used.
-
-
+If ``SEAICE_ALLOW_FULLMC`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEuseFMC = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology as defined in :cite:`ip1991` is used. The slope of the Mohr-Coulomb yield curve is defined by ``SEAICEmcMU`` in ``data.seaice``.
 
 
 .. _para_phys_pkg_seaice_altVPrheologies_MCE:
@@ -576,8 +573,9 @@ then the Mohr-Coulomb rheology as defined in :cite:`ip1991` is used.
 Mohr-Coulomb yield curve with elliptical plastic potential
 ##########################################################
 
-
 |  
+
+If ``SEAICE_ALLOW_MCE`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEuseMCE = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology is used. This Mohr-Coulomb yield curve use the elliptical plastic potential to define the flow rule. The slope of the Mohr-Coulomb yield curve is defined by ``SEAICEmcMU`` in ``data.seaice``, and the plastic potential ellipse aspect ratio is set by ``SEAICE_eccen`` in ``data.seaice``. 
 
 .. _para_phys_pkg_seaice_altVPrheologies_TD:
 
@@ -586,6 +584,8 @@ Teardrop yield curve with normal flow rule
 
 |  
 
+If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEuseTD = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``. 
+
 .. _para_phys_pkg_seaice_altVPrheologies_PL:
 
 Parabolic lens yield curve with normal flow rule
@@ -593,6 +593,7 @@ Parabolic lens yield curve with normal flow rule
 
 |  
 
+If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEusePL = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``.
 
 .. _para_phys_pkg_seaice_LSRJFNK:
 

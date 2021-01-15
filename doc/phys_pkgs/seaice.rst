@@ -513,7 +513,6 @@ bounding :math:`\zeta` by a smooth (differentiable) expression:
 where :math:`\Delta_{\min}=10^{-20}\,\text{s}^{-1}` is chosen to avoid
 divisions by zero.
 
-
 .. _para_phys_pkg_seaice_altVPrheologies_ellnnfr:
 
 Elliptical yield curve with non normal flow rules
@@ -538,6 +537,27 @@ and ``SEAICE_eccfr`` abbreviated :math:`e_G`, and are defined as
 
 Note that if :math:`e_G=e_F=e`, then the formulation is same as with the normal flow rule.
 
+.. _para_phys_pkg_seaice_TEM:
+
+Truncated ellipse method (TEM) for yield curve
+##############################################
+
+In the so-called truncated ellipse method the shear viscosity :math:`\eta` is capped to suppress any tensile stress:
+
+.. math::
+   :label: eq_etatem
+
+     \eta = \min\left(\frac{\zeta}{e^2},
+     \frac{\frac{P}{2}-\zeta(\dot{\epsilon}_{11}+\dot{\epsilon}_{22})}
+     {\sqrt{\max(\Delta_{\min}^{2},(\dot{\epsilon}_{11}-\dot{\epsilon}_{22})^2
+         +4\dot{\epsilon}_{12}^2})}\right).
+
+To enable this method, set ``#define SEAICE_ALLOW_TEM`` in
+``SEAICE_OPTIONS.h`` and turn it on with ``SEAICEuseTEM`` in ``data.seaice``.
+
+In addition, the yield curve can be truncated with a Mohr-Coulomb slope if ``SEAICEmcMU`` is set to be different than 1.0 in ``data.seaice``. By doing so, a Coulombic yield curve is used, similarly as the one shown in :cite:`hib2000`. 
+
+
 .. _para_phys_pkg_seaice_altVPrheologies_MCS:
 
 Mohr-Coulomb yield curve with shear flow rule
@@ -548,7 +568,7 @@ Mohr-Coulomb yield curve with shear flow rule
 If ``SEAICE_ALLOW_FULLMC`` is defined and ``SEAICEuseFMC = .TRUE.``, 
 then the Mohr-Coulomb rheology as defined in :cite:`ip1991` is used.
 
-The 
+
 
 
 .. _para_phys_pkg_seaice_altVPrheologies_MCE:
@@ -879,24 +899,6 @@ practice, aEVP leads to an overall better convergence than mEVP :cite:`kimmritz1
 
 Note, that probably because of the C-grid staggering of velocities and
 stresses, mEVP may not converge as successfully as in :cite:`kimmritz15`, and that convergence at very high resolution (order 5km) has not been studied yet.
-
-.. _para_phys_pkg_seaice_TEM:
-
-Truncated ellipse method (TEM) for yield curve
-##############################################
-
-In the so-called truncated ellipse method the shear viscosity :math:`\eta` is capped to suppress any tensile stress:
-
-.. math::
-   :label: eq_etatem
-
-     \eta = \min\left(\frac{\zeta}{e^2},
-     \frac{\frac{P}{2}-\zeta(\dot{\epsilon}_{11}+\dot{\epsilon}_{22})}
-     {\sqrt{\max(\Delta_{\min}^{2},(\dot{\epsilon}_{11}-\dot{\epsilon}_{22})^2
-         +4\dot{\epsilon}_{12}^2})}\right).
-
-To enable this method, set ``#define SEAICE_ALLOW_TEM`` in
-``SEAICE_OPTIONS.h`` and turn it on with ``SEAICEuseTEM`` in ``data.seaice``.
 
 .. _para_phys_pkg_seaice_iceoceanstress:
 

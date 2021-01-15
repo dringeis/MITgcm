@@ -542,6 +542,8 @@ Note that if :math:`e_G=e_F=e`, then the formulation is same as with the normal 
 Truncated ellipse method (TEM) for yield curve
 ##############################################
 
+|  
+
 In the so-called truncated ellipse method the shear viscosity :math:`\eta` is capped to suppress any tensile stress:
 
 .. math::
@@ -584,7 +586,10 @@ Teardrop yield curve with normal flow rule
 
 |  
 
-If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEuseTD = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``. 
+If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEuseTD = .TRUE.`` is set in ``data.seaice``,  then the Teardrop rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``. 
+
+This rheology is described in :cite:`zha2005`.
+
 
 .. _para_phys_pkg_seaice_altVPrheologies_PL:
 
@@ -593,7 +598,9 @@ Parabolic lens yield curve with normal flow rule
 
 |  
 
-If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEusePL = .TRUE.`` is set in ``data.seaice``,  then the Mohr-Coulomb rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``.
+If ``SEAICE_ALLOW_TEARDROP`` is defined in ``SEAICE_OPTIONS.h`` and ``SEAICEusePL = .TRUE.`` is set in ``data.seaice``,  then the Parabolic Lens rheology is used. The size of the yield curve can be varied by changing the tensile strength, using ``SEAICE_tensFac`` in ``data.seaice``.
+
+This rheology is described in :cite:`zha2005`.
 
 .. _para_phys_pkg_seaice_LSRJFNK:
 

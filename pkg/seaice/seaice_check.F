@@ -873,12 +873,12 @@ C     end if usePW79thermodynamics
       ENDIF
 #endif
 
-#if !defined(SEAICE_ALLOW_FMC) || !defined(SEAICE_CGRID)
-      IF ( SEAICEuseFMC ) THEN
-       WRITE(msgBuf,'(A)') 'SEAICE_CHECK: SEAICEuseFMC requires that'
+#if !defined(SEAICE_ALLOW_FULLMC) || !defined(SEAICE_CGRID)
+      IF ( SEAICEuseFULLMC ) THEN
+       WRITE(msgBuf,'(A)') 'SEAICE_CHECK: SEAICEuseFULLMC requires that'
        CALL PRINT_ERROR( msgBuf, myThid )
        WRITE(msgBuf,'(A)')
-     &  'SEAICE_CHECK: SEAICE_ALLOW_FMC and SEAICE_CGRID are defined'
+     &  'SEAICE_CHECK: SEAICE_ALLOW_FULLMC and SEAICE_CGRID are defined'
        CALL PRINT_ERROR( msgBuf, myThid )
        STOP 'ABNORMAL END: S/R SEAICE_CHECK'
       ENDIF

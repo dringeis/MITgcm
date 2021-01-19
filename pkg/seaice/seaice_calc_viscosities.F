@@ -163,7 +163,7 @@ C      Handling errors when k is negative and very large
      &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
            ELSE
             x = TWO * ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )
-           ENDIF
+           endif
            x = (x - (6 _d 0 * ap1) ) * oneNinth + a
 C      Original formulation of Zhang 2005:
 C            x = ( TWO * ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )  
@@ -195,17 +195,14 @@ C      Replacing tip by an ellipse for tensile stresses
 
 C   Teardrop yield curve
            ELSE 
-C     not necessary to limit x from below, it cannot be smaller than -1
-C     by definition
-C             x = MAX( x, -1. _d 0 )
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
             x = MIN( x, a )
-            x = MAX( x,-1 _d 0 ) ! to be sure
+C             x = MAX( x,-1 _d 0 ) ! to be sure
 
-            zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj) * ep 
-     &          / (ep * ep + deltaMinSq)
+            zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj) 
+     &          / SIGN( MAX( ABS(ep),deltaMinSq ), ep)
 C      Original formulation of Zhang 2005    
 C            zeta(I,J,bi,bj) = (x + 0.5 _d 0) * press0(I,J,bi,bj)
 C      &          / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
@@ -234,8 +231,8 @@ C      To be sure that viscosities are positive (should not be needed)
 C      Compute the replacement pressure
            press(I,J,bi,bj) = TWO * cyc * (
      &          press0(I,J,bi,bj)*( ONE - SEAICEpressReplFac )
-     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) * (x+cyc)
-     &         / ((x+cyc)*(x+cyc) + deltaMinSq) )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
+     &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
 
 C      Reducing eta with the replacement pressure
            eta(I,J,bi,bj) = eta(I,J,bi,bj) * (ONE - SEAICEpressReplFac) 

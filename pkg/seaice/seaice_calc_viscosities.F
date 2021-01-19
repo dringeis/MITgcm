@@ -101,8 +101,8 @@ C--   basic constants
         recip_TDmu = ONE 
        ENDIF
       ENDIF
-
 #endif /* SEAICE_ALLOW_TEARDROP */
+
       recip_e2=0. _d 0
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
       recip_efr2=0. _d 0
@@ -159,42 +159,30 @@ C     do nothing (hack to be able add code with different cpp-flag)
            em = e11(i,j,bi,bj) - e22(i,j,bi,bj)
            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
 
-           k   =  SIGN( ABS(ep) + deltaMinSq, ep)
-     &         / (shearDef+ deltaMinSq)
-           ksq = k*k
+           k   = ep / (shearDef+ deltaMinSq)
+           ksq = k * k
            a   = tnsFac(I,J,bi,bj)
 
-CDR    CYC Coordinate of the highest point of the yield curve, here eI changes sign
-           cyc=(2. _d 0 - tnsFac(I,J,bi,bj) ) * oneThird
-           ap1 = a + 1. _d 0
-CDR           IF     (ksq .GE.  1e16) THEN 
-CDR            x =  a
-CDR           ELSEIF (ksq .LE. -1e16) THEN
-CDR            x = -1 _d 0
-CDR           ELSE 
-CDR            x = ( 2. _d 0*k*SQRT( ksq + 3. _d 0 * ap1 )
-CDR     &          - ( 6. _d 0*ap1 - 2. _d 0 * ksq ) ) * oneNinth + a
-CDR           ENDIF
-           
+C      CYC Coordinate of the highest point of the yield curve, here eI changes sign
+           cyc=(TWO - tnsFac(I,J,bi,bj) ) * oneThird
+           ap1 = a + ONE
+
+C      Handling errors when k is negative and very large 
            IF ( k < -1e3 ) THEN ! you could always make this even smaller, -1e5 should work, too
-            x = 3 _d 0 * ap1 /ksq
-            x = TWO *ksq * (0.125 _d 0 *x - 0.5 _d 0 )*x
+            x = -3 _d 0 * ap1 + 0.125*(3 _d 0 * ap1 )**2 / ksq
            ELSE
-            x = TWO *ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )
+            x = TWO * ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )
            ENDIF
-           x = (x - (6 _d 0*ap1) ) * oneNinth + a
+           x = (x - (6 _d 0 * ap1) ) * oneNinth + a
+C      Original formulation of Zhang 2005:
+C            x = ( TWO * ksq + TWO *k*sqrt(ksq + 3 _d 0 * ap1 )  
+C      &         - (6 _d 0 * ap1) ) * oneNinth + a
            
-CDR Test of an ellipse for tensile deformation
+C      Replacing tip by an ellipse for tensile stresses
            IF (x .GT. 0 _d 0) THEN
 
             tnsFacTD = a / TWO
-
-CDR            IF ( a .GT.  0 _d 0 ) THEN
-CDR             eTD = SQRT(tnsFacTD) / a
-CDR            ELSE 
-CDR             eTD = ONE
-CDR            ENDIF
-        
+            
             IF (tnsFacTD .GT. 0 _d 0 ) THEN 
              recip_eTD2 = a*a / tnsFacTD
             ELSE
@@ -214,49 +202,54 @@ CDR            ENDIF
      &          * SEAICEpressReplFac/( ONE + tnsFacTD )
      &          ) * ( ONE - tnsFacTD )
 
-CDR Teardrop yield curve
+C   Teardrop yield curve
            ELSE 
 C     not necessary to limit x from below, it cannot be smaller than -1
 C     by definition
-CML           x = MAX( x, -1. _d 0 )
+C             x = MAX( x, -1. _d 0 )
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
             x = MIN( x, a )
-            x = MAX( x,-1 _d 0 )
+            x = MAX( x,-1 _d 0 ) ! to be sure
 
-            zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj)
-     &          / SIGN( ABS(ep) + deltaMinSq, ep)           
-CDR   Original formulation of Zhang 2005    
+            zeta(I,J,bi,bj) = (x + cyc) * press0(I,J,bi,bj) * ep 
+     &          / (ep * ep + deltaMinSq)
+C      Original formulation of Zhang 2005    
 C            zeta(I,J,bi,bj) = (x + 0.5 _d 0) * press0(I,J,bi,bj)
 C      &          / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
-CML     &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
-            eta(I,J,bi,bj) = -(x-a) * SQRT(1. _d 0+x) * press0(I,J,bi,bj)
+C      &                    / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
+
+            eta(I,J,bi,bj) = -(x-a) * SQRT(ONE+x) * press0(I,J,bi,bj)
      &                     / (shearDef + deltaMinSq) * SEAICEtdMU
 
-CDR   Defining the max values for eta and zeta
+C      Defining the max values for eta and zeta
            etamax_TD = ZMAX(I,J,bi,bj) * MIN(eta(I,J,bi,bj)
      &               /(ABS(zeta(I,J,bi,bj)) + deltaMinSq),1 _d 0)
            zetamax_TD =ZMAX(I,J,bi,bj) * MIN(zeta(I,J,bi,bj)
-     &               /(ABS(eta(I,J,bi,bj)) + deltaMinSq),1 _d 0 )
+     &               /(ABS(eta(I,J,bi,bj)) + deltaMinSq),1 _d 0 )    
 
+C      Applying the max values
            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), zetamax_TD)
            eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj),  etamax_TD)
-CDR           zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
-CDR           eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+C      Original formulation of Zhang 2005
+C            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
+C            eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
-CDR JUST to be sure
+C      To be sure that viscosities are positive (should not be needed)
            zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),deltaMinSq)
            eta(I,J,bi,bj)  = MAX( eta(I,J,bi,bj),deltaMinSq)
 
-           press(I,J,bi,bj) = 2. _d 0 * cyc * (
-     &          press0(I,J,bi,bj)*( 1. _d 0 - SEAICEpressReplFac )
-     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj)
-     &         / SIGN(MAX(ABS(x+cyc), deltaMinSq), x+cyc) )
+C      Compute the replacement pressure
+           press(I,J,bi,bj) = TWO * cyc * (
+     &          press0(I,J,bi,bj)*( ONE - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(I,J,bi,bj) * (x+cyc)
+     &         / ((x+cyc)*(x+cyc) + deltaMinSq) )
 
-C           eta(I,J,bi,bj)= eta(I,J,bi,bj) * press(I,J,bi,bj)
-C     &                   / (press0(I,J,bi,bj) * 2. _d 0  * cyc 
-C     &                   + deltaMinSq)
+C      Reducing eta with the replacement pressure
+           eta(I,J,bi,bj) = eta(I,J,bi,bj) * (ONE - SEAICEpressReplFac) 
+     &         + eta(I,J,bi,bj) * press(I,J,bi,bj) * SEAICEpressReplFac 
+     &         / (press0(I,J,bi,bj) * TWO  * cyc + deltaMinSq)
   
            ENDIF ! ellipse for tensile deformation stress 
 

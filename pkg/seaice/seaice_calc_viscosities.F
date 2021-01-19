@@ -78,7 +78,7 @@ C     em            - e11-e22 (abbreviation)
       _RL shearDefSq, shearDef
 #ifdef SEAICE_ALLOW_TEARDROP
       _RL k,ksq,x,a,ap1,etamax_TD,zetamax_TD,cyc,xma
-      _RL eTD,tnsFacTD, recip_eTD2
+      _RL tnsFacTD, recip_eTD2
 #endif /* SEAICE_ALLOW_TEARDROP */
 #if (defined SEAICE_ALLOW_MCE || defined SEAICE_ALLOW_TEM)
       _RL etaMaxFac

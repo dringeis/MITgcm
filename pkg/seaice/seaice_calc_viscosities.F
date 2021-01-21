@@ -225,8 +225,8 @@ C            zeta(I,J,bi,bj) = MIN(zeta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 C            eta(I,J,bi,bj) =  MIN( eta(I,J,bi,bj), ZMAX(I,J,bi,bj))
 
 C      To be sure that viscosities are positive (should not be needed)
-           zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),deltaMinSq)
-           eta(I,J,bi,bj)  = MAX( eta(I,J,bi,bj),deltaMinSq)
+C          zeta(I,J,bi,bj) = MAX(zeta(I,J,bi,bj),deltaMinSq)
+C          eta(I,J,bi,bj)  = MAX( eta(I,J,bi,bj),deltaMinSq)
 
 C      Compute the replacement pressure
            press(I,J,bi,bj) = TWO * cyc * (

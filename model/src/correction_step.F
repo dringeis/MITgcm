@@ -55,6 +55,12 @@ C     gV_dpy       :: implicit part of pressure gradient tendency
       _RL     psFac, nhFac
       _RL     gU_dpx(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL     gV_dpy(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
+#ifdef ALLOW_DIAGNOSTICS
+      LOGICAL dPhiDiagIsOn, implDisDiagIsOn
+# ifdef ALLOW_SOLVE4_PS_AND_DRAG
+      _RL tmpFac
+# endif
+#endif /* ALLOW_DIAGNOSTICS */
 CEOP
 
 C--   Loop over all layers, top to bottom

@@ -49,30 +49,40 @@ at compile time
 
 Parts of the OBCS code can be enabled or disabled at compile time
 via CPP preprocessor flags. These options are set in
-`OBCS_OPTIONS.h`. :numref:`pkg_obcs_cpp_opts` summarizes these options.
+:filelink:`OBCS_OPTIONS.h <pkg/obcs/OBCS_OPTIONS.h>`.
+:numref:`tab_phys_pkg_obcs_cpp_opts` summarizes these options.
 
 
 .. tabularcolumns:: |l|l|
 
-.. _pkg_obcs_cpp_opts:
+.. table:: CPP flags for the obcs package
+   :name: tab_phys_pkg_obcs_cpp_opts
 
-.. csv-table:: OBCS CPP options
-
-  **CPP option**        ,  **Description**
-  `ALLOW_OBCS_NORTH`    ,  enable Northern OB 
-  `ALLOW_OBCS_SOUTH`    ,  enable Southern OB
-   ALLOW_OBCS_EAST      ,  enable Eastern OB 
-   ALLOW_OBCS_WEST      ,  enable Western OB
-
-   ALLOW_OBCS_PRESCRIBE ,  enable code for prescribing OB's
-   ALLOW_OBCS_SPONGE    ,  enable sponge layer code
-   ALLOW_OBCS_BALANCE   ,  enable code for balancing transports through OB's
-   ALLOW_ORLANSKI       ,  enable Orlanski radiation conditions at OB's
-   ALLOW_OBCS_STEVENS   ,  enable Stevens (1990) boundary conditions at OB's 
-                        ,  (currently only implemented for eastern and 
-                        ,  western boundaries and NOT for ptracers)
-
-
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | CPP option               | Default | Description                                                                                              |
+   +==========================+=========+==========================================================================================================+
+   | ALLOW_OBCS_NORTH         | #define | enable Northern OB                                                                                       |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_SOUTH         | #define | enable Southern OB                                                                                       |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_EAST          | #define | enable Eastern OB                                                                                        |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_WEST          | #define | enable Western OB                                                                                        |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_PRESCRIBE     | #define | enable code for prescribing OB's                                                                         |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_SPONGE        | #undef  | enable sponge layer code                                                                                 |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_BALANCE       | #define | enable code for balancing transports through OB's                                                        |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_ORLANSKI           | #define | enable Orlanski radiation conditions at OB's                                                             |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_STEVENS       | #undef  | enable Stevens (1990) boundary conditions at OB's (currently NOT implemented for ptracers)               |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_SEAICE_SPONGE | #undef  | Include hooks to sponge layer treatment of pkg/seaice variables                                          |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
+   | ALLOW_OBCS_TIDES         | #undef  | Add tidal contributions to normal OB flow (At the moment tidal forcing is applied only to "normal" flow) |
+   +--------------------------+---------+----------------------------------------------------------------------------------------------------------+
 
 
 .. _pkg_obcs_runtime:
@@ -104,53 +114,91 @@ The OBCS package is switched on at runtime by setting
 Package flags and parameters
 ############################
 
-:numref:`pkg_obcs_runtime_flags` summarizes the
-runtime flags that are set in :code:`data.obcs`, and
+:numref:`tab_phys_pkg_obcs_runtime_flags` summarizes the
+runtime flags that are set in :code:`data.obcs` and
 their default values.
 
 
 .. tabularcolumns:: |l|c|l|
 
-.. _pkg_obcs_runtime_flags:
+.. table:: OBCS runtime parameters
+   :name: tab_phys_pkg_obcs_runtime_flags
 
-.. csv-table:: pkg OBCS run-time parameters
-
-  **Flag/parameter** , **default** , **Description**
-  *basic flags & parameters* (OBCS_PARM01) , ,
-  OB_Jnorth        , 0           , Nx-vector of J-indices (w.r.t. Ny) of Northern OB at each I-position (w.r.t. Nx) 
-  OB_Jsouth        , 0           , Nx-vector of J-indices (w.r.t. Ny) of Southern OB at each I-position (w.r.t. Nx)
-  OB_Ieast         ,  0          , Ny-vector of I-indices (w.r.t. Nx) of Eastern OB at each J-position (w.r.t. Ny)
-  OB_Iwest         ,  0          , Ny-vector of I-indices (w.r.t. Nx) of Western OB at each J-position (w.r.t. Ny)
-  useOBCSprescribe  , :code:`.FALSE.` , 
-  useOBCSsponge     , :code:`.FALSE.` , 
-  useOBCSbalance    , \code{.FALSE.}  ,
-  OBCS_balanceFacN/S/E/W , 1 , factor(s) determining the details of the balaning code
-  useOrlanskiNorth/South/EastWest, :code:`.FALSE.` , turn on Orlanski boundary conditions for individual boundary
-  useStevensNorth/South/EastWest , :code:`.FALSE.` , turn on Stevens boundary conditions for individual boundary
-  OB\ **Xy**\ File , , file name of OB field
-             , , **X**: **N**\ (orth) **S**\ (outh) **E**\ (ast) **W**\ (est) 
-             , , **y**: **t**\ (emperature) **s**\ (salinity) **u**\ (-velocity) **v**\ (-velocity)
-             , , **w**\ (-velocity) **eta** (sea surface height)
-             , , **a** (sea ice area) **h** (sea ice thickness) **sn** (snow thickness) **sl** (sea ice salinity)
-             , , 
-  *Orlanski parameters (OBCS_PARM02)* , ,
-  cvelTimeScale , 2000 sec , averaging period for phase speed
-  CMAX          , 0.45 m/s , maximum allowable phase speed-CFL for AB-II 
-  CFIX          , 0.8 m/s  , fixed boundary phase speed 
-  useFixedCEast , :code:`.FALSE.` ,
-  useFixedCWest , :code:`.FALSE.` ,
-                , , 
-  *Sponge-layer parameters (OBCS_PARM03)*
-  spongeThickness , 0 , sponge layer thickness (in grid points)
-  Urelaxobcsinner , 0 sec , relaxation time scale at the innermost sponge layer point of a meridional OB
-  Vrelaxobcsinner , 0 sec , relaxation time scale at the innermost sponge layer point of a zonal OB
-  Urelaxobcsbound , 0 sec , relaxation time scale at the outermost sponge layer point of a meridional OB
-  Vrelaxobcsbound , 0 sec , relaxation time scale at the outermost sponge layer point of a zonal OB
-              , , 
-  *Stevens parameters (OBCS_PARM04)*
-  T/SrelaxStevens , 0 sec , relaxation time scale for temperature/salinity
-  useStevensPhaseVel , \code{.TRUE.} ,
-  useStevensAdvection , \code{.TRUE.} ,
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   |         Flag/parameter         |    default    |                                             Description                                             |
+   +================================+===============+=====================================================================================================+
+   | :varlink:`OB_Jnorth`           | 0             | Nx-vector of J-indices (w.r.t. Ny) of Northern OB at each I-position (w.r.t. Nx)                    |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`OB_Jsouth`           | 0             | Nx-vector of J-indices (w.r.t. Ny) of Southern OB at each I-position (w.r.t. Nx)                    |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`OB_Ieast`            | 0             | Ny-vector of I-indices (w.r.t. Nx) of Eastern OB at each J-position (w.r.t. Ny)                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`OB_Iwest`            | 0             | Ny-vector of I-indices (w.r.t. Nx) of Western OB at each J-position (w.r.t. Ny)                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useOBCSprescribe`    | FALSE         |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useOBCSsponge`       | FALSE         |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useOBCSbalance`      | FALSE         |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`OBCS_balanceFacN`,   | 1             | Factor(s) determining the details of the balancing code                                             |
+   | :varlink:`OBCS_balanceFacS`,   |               |                                                                                                     |
+   | :varlink:`OBCS_balanceFacE`,   |               |                                                                                                     |
+   | :varlink:`OBCS_balanceFacW`    |               |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`OBCSbalanceSurf`     | FALSE         | include surface mass flux in balance                                                                |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useOrlanskiNorth`,   | FALSE         | Turn on Orlanski boundary conditions for individual boundary.                                       |
+   | :varlink:`useOrlanskiSouth`,   |               |                                                                                                     |
+   | :varlink:`useOrlanskiEast`,    |               |                                                                                                     |
+   | :varlink:`useOrlanskiWest`     |               |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useStevensNorth`,    | FALSE         | Turn on Stevens boundary conditions for individual boundary                                         |
+   | :varlink:`useStevensSouth`,    |               |                                                                                                     |
+   | :varlink:`useStevensEast`,     |               |                                                                                                     |
+   | :varlink:`useStevensWest`      |               |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | OB\ **Xy**\ File               | :kbd:`' '`    | File name of OB field:                                                                              |
+   |                                |               |                                                                                                     |
+   |                                |               | **X**: **N**\ (orth), **S**\ (outh), **E**\ (ast), **W**\(est)                                      |
+   |                                |               |                                                                                                     |
+   |                                |               | **y**: **t**\(emperature), **s**\ (salinity), **eta** (sea surface height),                         |
+   |                                |               | **u**\ (-velocity),  **v**\(-velocity), **w**\ (-velocity),                                         |
+   |                                |               | **a** (seaice area), **h** (sea ice thickness), **sn** (snow thickness), **sl** (sea ice salinity ) |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | **Orlanski Parameters**        | *OBCS_PARM02* |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`cvelTimeScale`       | 2000.0        | Averaging period for phase speed (seconds)                                                          |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`CMAX`                | 0.45          | Maximum allowable phase speed-CFL for AB-II (m/s)                                                   |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`CFIX`                | 0.8           | Fixed boundary phase speed (m/s)                                                                    |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useFixedCEast`       | FALSE         |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useFixedCWest`       | FALSE         |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | **Sponge layer parameters**    | *OBCS_PARM03* |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`spongeThickness`     | 0             | sponge layer thickness (in grid points)                                                             |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`Urelaxobcsinner`     | 0.0           | relaxation time scale at the innermost sponge layer point of a meridional OB (s)                    |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`Vrelaxobcsinner`     | 0.0           | relaxation time scale at the innermost sponge layer point of a zonal OB (s)                         |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`Urelaxobcsbound`     | 0.0           | relaxation time scale at the outermost sponge layer point of a meridional OB (s)                    |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`Vrelaxobcsbound`     | 0.0           | relaxation time scale at the outermost sponge layer point of a zonal OB (s)                         |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | **Stevens parameters**         | *OBCS_PARM04* |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`TrelaxStevens`       | 0             | Relaxation time scale for temperature/salinity (s)                                                  |
+   | :varlink:`SrelaxStevens`       |               |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useStevensPhaseVel`  | TRUE          |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
+   | :varlink:`useStevensAdvection` | TRUE          |                                                                                                     |
+   +--------------------------------+---------------+-----------------------------------------------------------------------------------------------------+
 
 
 .. _ssub_phys_pkg_obcs_defining_open_boundaries:
@@ -233,8 +281,8 @@ OBCS\_READPARMS:
 ################
 
 Set OB positions through arrays OB\_Jnorth(Nx), OB\_Jsouth(Nx),
-OB\_Ieast(Ny), OB\_Iwest(Ny), and runtime flags (see Table
-[tab:pkg:obcs:runtime:sub:`f`\ lags]).
+OB\_Ieast(Ny), OB\_Iwest(Ny) and runtime flags (see Table
+:numref:`tab_phys_pkg_obcs_runtime_flags`).
 
 OBCS\_CALC:
 ###########

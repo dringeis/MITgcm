@@ -123,6 +123,9 @@ C     intermediate time level centered (C) between n and n-1
 C     auxillary fields
       _RL uTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL vTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+C     auxillary fields to store intermediate FORCEX/Y0
+      _RL fxTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL fyTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 C     fractional area at velocity points
       _RL areaW(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL areaS(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -200,8 +203,8 @@ C     initialise fractional areas at velocity points
          DO i=1-OLx,sNx+OLx
           areaW(i,j,bi,bj) = 1. _d 0
           areaS(i,j,bi,bj) = 1. _d 0
+          ENDDO
          ENDDO
-        ENDDO
         areaMinLoc = 0. _d 0
         IF ( SEAICEscaleSurfStress ) THEN
          areaMinLoc = 1. _d -10
@@ -218,21 +221,26 @@ CML         areaMinLoc = SEAICE_EPS
        ENDDO
       ENDDO
 
-C     this is the rhs contribution of the time derivative and
-C     does not change in the iteration
+#ifdef ALLOW_AUTODIFF_TAMC
+CADJ STORE uice    = comlev1, key=ikey_dynamics, kind=isbyte
+CADJ STORE vice    = comlev1, key=ikey_dynamics, kind=isbyte
+#endif /*  ALLOW_AUTODIFF_TAMC */
+C     This is the rhs contribution of the time derivative.
+C     We add it here, because it does not change in the iteration.
+C     We store this update on a local field to avoid touching FORCEX/Y0.
+C     As a side effect, this avoids TAF recomputation warnings.
       DO bj=myByLo(myThid),myByHi(myThid)
        DO bi=myBxLo(myThid),myBxHi(myThid)
         DO j=1-OLy,sNy+OLy
          DO i=1-OLx,sNx+OLx
           uIceNm1(i,j,bi,bj) = uIce(i,j,bi,bj)
           vIceNm1(i,j,bi,bj) = vIce(i,j,bi,bj)
-C     this contribution should be here, but that changes results
-CML          FORCEX0(i,j,bi,bj)=FORCEX0(i,j,bi,bj)
-CML     &         +seaiceMassU(i,j,bi,bj)*recip_deltaT
-CML     &         *uIceNm1(i,j,bi,bj)
-CML          FORCEY0(i,j,bi,bj)=FORCEY0(i,j,bi,bj)
-CML     &         +seaiceMassV(i,j,bi,bj)*recip_deltaT
-CML     &         *vIceNm1(i,j,bi,bj)
+          fxTmp  (i,j,bi,bj) = FORCEX0(i,j,bi,bj)
+     &         +seaiceMassU(i,j,bi,bj)*recip_deltaT
+     &         *uIceNm1(i,j,bi,bj)
+          fyTmp  (i,j,bi,bj) = FORCEY0(i,j,bi,bj)
+     &         +seaiceMassV(i,j,bi,bj)*recip_deltaT
+     &         *vIceNm1(i,j,bi,bj)
          ENDDO
         ENDDO
        ENDDO
@@ -283,43 +291,44 @@ C SET SOME VALUES
       S1A=0.80 _d 0
       S2A=0.80 _d 0
 
-      IF ( ipass .EQ. 1 ) THEN
+      DO bj=myByLo(myThid),myByHi(myThid)
+       DO bi=myBxLo(myThid),myBxHi(myThid)
+        IF ( ipass .EQ. 1 ) THEN
 C     This is the predictor time step
-       DO bj=myByLo(myThid),myByHi(myThid)
-        DO bi=myBxLo(myThid),myBxHi(myThid)
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
            uIceC(i,j,bi,bj) = uIce(i,j,bi,bj)
            vIceC(i,j,bi,bj) = vIce(i,j,bi,bj)
           ENDDO
          ENDDO
-        ENDDO
-       ENDDO
-      ELSEIF ( ipass .EQ. 2 .AND. SEAICEnonLinIterMax .LE. 2 ) THEN
+        ELSEIF ( ipass .EQ. 2 .AND. SEAICEnonLinIterMax .LE. 2 ) THEN
 C     This is the modified Euler step
-       DO bj=myByLo(myThid),myByHi(myThid)
-        DO bi=myBxLo(myThid),myBxHi(myThid)
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
-           uIce (i,j,bi,bj)=HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
-           vIce (i,j,bi,bj)=HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
+           uIce (i,j,bi,bj)=HALF*( uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj) )
+           vIce (i,j,bi,bj)=HALF*( vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj) )
            uIceC(i,j,bi,bj)=uIce(i,j,bi,bj)
            vIceC(i,j,bi,bj)=vIce(i,j,bi,bj)
           ENDDO
          ENDDO
-        ENDDO
-       ENDDO
-      ELSE
+        ELSE
 C     This is the case for SEAICEnonLinIterMax > 2, and here we use
 C     a different iterative scheme. u/vIceC = u/vIce is unstable, and
 C     different stabilisation methods are possible.
+         DO j=1-OLy,sNy+OLy
+          DO i=1-OLx,sNx+OLx
 C     This is stable but slow to converge.
-C      uIceC = HALF*( uIce + uIceNm1 )
-C      vIceC = HALF*( vIce + vIceNm1 )
-C     This converges slightly faster the the previous one.
-       uIceC = HALF*( uIce + uIceC )
-       vIceC = HALF*( vIce + vIceC )
-      ENDIF
+C          uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
+C          vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
+C     This converges slightly faster than the previous lines.
+           uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
+           vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
+          ENDDO
+         ENDDO
+        ENDIF
+C     bi/bj-loops
+       ENDDO
+      ENDDO
 
 #ifdef ALLOW_AUTODIFF_TAMC
 C     That is an important one! Note, that
@@ -389,7 +398,7 @@ C
          DO i=iMin,iMax
 C     set up anti symmetric drag force and add in current force
 C     ( remember to average to correct velocity points )
-          FORCEX(i,j,bi,bj)=FORCEX0(i,j,bi,bj)+
+          FORCEX(i,j,bi,bj) = fxTmp(i,j,bi,bj)+
      &         ( 0.5 _d 0 * ( DWATN(i,j,bi,bj)+DWATN(i-1,j,bi,bj) ) *
      &         COSWAT * uVel(i,j,kSrf,bi,bj)
      &         - SIGN(SINWAT, _fCori(i,j,bi,bj))* 0.5 _d 0 *
@@ -400,7 +409,7 @@ C     ( remember to average to correct velocity points )
      &          (vVel(i-1,j  ,kSrf,bi,bj)-vIceC(i-1,j  ,bi,bj)
      &          +vVel(i-1,j+1,kSrf,bi,bj)-vIceC(i-1,j+1,bi,bj))
      &         ) ) * areaW(i,j,bi,bj)
-          FORCEY(i,j,bi,bj)=FORCEY0(i,j,bi,bj)+
+          FORCEY(i,j,bi,bj) = fyTmp(i,j,bi,bj)+
      &         ( 0.5 _d 0 * ( DWATN(i,j,bi,bj)+DWATN(i,j-1,bi,bj) ) *
      &         COSWAT * vVel(i,j,kSrf,bi,bj)
      &         + SIGN(SINWAT, _fCori(i,j,bi,bj)) * 0.5 _d 0 *
@@ -431,17 +440,8 @@ C-    add Coriolis term
 C      mask the forcing so far
         DO j=jMin,jMax
          DO i=iMin,iMax
-C     this is the rhs contribution of the time derivative and it
-C     should be outside of the nonlinear loop, but for some reason
-C     this changes the results, so we leave it here for now.
-          FORCEX(i,j,bi,bj)=FORCEX(i,j,bi,bj)
-     &         +seaiceMassU(i,j,bi,bj)*recip_deltaT
-     &         *uIceNm1(i,j,bi,bj)
-          FORCEY(i,j,bi,bj)=FORCEY(i,j,bi,bj)
-     &         +seaiceMassV(i,j,bi,bj)*recip_deltaT
-     &         *vIceNm1(i,j,bi,bj)
-          FORCEX(i,j,bi,bj)=FORCEX(i,j,bi,bj) * seaiceMaskU(i,j,bi,bj)
-          FORCEY(i,j,bi,bj)=FORCEY(i,j,bi,bj) * seaiceMaskV(i,j,bi,bj)
+          FORCEX(i,j,bi,bj) = FORCEX(i,j,bi,bj)*seaiceMaskU(i,j,bi,bj)
+          FORCEY(i,j,bi,bj) = FORCEY(i,j,bi,bj)*seaiceMaskV(i,j,bi,bj)
          ENDDO
         ENDDO
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
@@ -786,7 +786,7 @@ C     end bi,bj-loops
 CADJ STORE uice(:,:,bi,bj) = comlev1_bibj_lsr,kind=isbyte,key=itmpkey3
 CADJ STORE vice(:,:,bi,bj) = comlev1_bibj_lsr,kind=isbyte,key=itmpkey3
 #endif /* ALLOW_AUTODIFF_TAMC */
-C-jmc: get less TAF warnings when always (no if doIterate) saving uIce,vIce:
+C-jmc: get fewer TAF warnings when always (no if doIterate) saving uIce,vIce:
 C     save u/vIce prior to iteration
           DO j=1-OLy,sNy+OLy
            DO i=1-OLx,sNx+OLx

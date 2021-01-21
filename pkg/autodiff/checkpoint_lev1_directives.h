@@ -33,40 +33,20 @@ CADJ &     kind = isbyte
 #endif
 
 #ifdef NONLIN_FRSURF
-c
-CADJ STORE hfac_surfc  = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE hFac_surfNm1C = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE hfac_surfs  = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE hFac_surfNm1S = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE hfac_surfw  = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE hFac_surfNm1W = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-c
-CADJ STORE detahdt            = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-# ifndef ALLOW_ADAMSBASHFORTH_3
-CADJ STORE gsnm1,gtnm1        = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE gunm1,gvnm1        = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-# else
-CADJ STORE gsnm,gtnm          = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-cphCADJ STORE gunm,gvnm          = comlev1, key = ikey_dynamics,
-cphCADJ &     kind = isbyte
-# endif
-CADJ STORE salt,theta         = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE uvel,vvel,wvel     = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-CADJ STORE surfaceforcingtice = comlev1, key = ikey_dynamics,
-CADJ &     kind = isbyte
-c
+
+CADJ STORE hFac_surfC    = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE hFac_surfW    = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE hFac_surfS    = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE hfac_surfNm1C = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE hfac_surfNm1W = comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE hfac_surfNm1S = comlev1, key = ikey_dynamics, kind = isbyte
+
+CADJ STORE aW2d,aS2d,aC2d= comlev1, key = ikey_dynamics, kind = isbyte
+CADJ STORE pW, pS, pC    = comlev1, key = ikey_dynamics, kind = isbyte
+
+CADJ STORE theta, salt   = comlev1, key = ikey_dynamics,kind = isbyte
+CADJ STORE uVel, vVel    = comlev1, key = ikey_dynamics,kind = isbyte
+
 # ifndef DISABLE_RSTAR_CODE
 CADJ STORE rstarfacc
 CADJ &     = comlev1, key = ikey_dynamics, kind = isbyte

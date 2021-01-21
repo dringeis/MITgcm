@@ -327,7 +327,7 @@ class netcdf_file(object):
         sync : Identical function
 
         """
-        if hasattr(self, 'mode') and self.mode is 'w':
+        if hasattr(self, 'mode') and self.mode == 'w':
             self._write()
     sync = flush
 
@@ -702,8 +702,8 @@ class netcdf_file(object):
         values = self.fp.read(int(count))
         self.fp.read(-count % 4)  # read padding
 
-        if typecode is not 'c':
-            values = fromstring(values, dtype='>%s' % typecode)
+        if typecode != 'c':
+            values = frombuffer(values, dtype='>%s' % typecode)
             if values.shape == (1,):
                 values = values[0]
         else:

@@ -30,7 +30,7 @@ C                                 (not melting/freezing) def: F
 C     SHELFICEboundaryLayer    :: turn on vertical merging of cells to for a
 C                                 boundary layer of drF thickness, def: F
 C     SHELFICEadvDiffHeatFlux  :: use advective-diffusive heat flux into the
-C                                 ice shelf instead of default diffusive heat
+C                                 shelf instead of default diffusive heat
 C                                 flux, see Holland and Jenkins (1999),
 C                                 eq.21,22,26,31; def: F
 C     SHELFICEheatTransCoeff   :: constant heat transfer coefficient that

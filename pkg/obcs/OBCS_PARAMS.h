@@ -64,6 +64,7 @@ C useLinearSponge  :: use linear instead of exponential sponge (def=false)
 C
 C useOBCSbalance   :: balance the volume flux through boundary
 C                     at every time step
+C OBCSbalanceSurf  :: also include surface flux of mass into balance
 C useOBCStides     :: modify OB normal flow to add tidal forcing
 C                     NOTE that at the moment tidal forcing is applied
 C                     only to "normal" flow.                                                     
@@ -92,7 +93,7 @@ C                     concentration, snow) at the open boundary conditions,
      & OBCSsponge_UatNS, OBCSsponge_UatEW,
      & OBCSsponge_VatNS, OBCSsponge_VatEW,
      & OBCSsponge_Theta, OBCSsponge_Salt, useLinearSponge,
-     & useOBCSbalance, useOBCStides, useOBCSprescribe,
+     & useOBCSbalance, OBCSbalanceSurf, useOBCStides, useOBCSprescribe,
      & OBCSprintDiags,
      & OBCSfixTopo,
      & OBCS_Cont_uice_N,OBCS_Cont_uice_S,
@@ -124,6 +125,7 @@ C                     concentration, snow) at the open boundary conditions,
       LOGICAL OBCSsponge_Salt
       LOGICAL useLinearSponge
       LOGICAL useOBCSbalance
+      LOGICAL OBCSbalanceSurf
       LOGICAL useOBCStides
       LOGICAL useOBCSprescribe
       LOGICAL OBCSprintDiags

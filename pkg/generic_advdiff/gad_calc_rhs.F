@@ -12,7 +12,7 @@ C !INTERFACE: ==========================================================
      I           deltaTLev, trIdentity,
      I           advectionScheme, vertAdvecScheme,
      I           calcAdvection, implicitAdvection, applyAB_onTracer,
-     I           trUseDiffKr4, trUseGMRedi, trUseKPP,
+     I           trUseDiffKr4, trUseGMRedi, trUseKPP, trUseSmolHack,
      O           fZon, fMer,
      U           fVerT, gTracer,
      I           myTime, myIter, myThid )
@@ -79,6 +79,7 @@ C applyAB_onTracer :: apply Adams-Bashforth on Tracer (rather than on gTr)
 C trUseDiffKr4     :: true if this tracer uses vertical bi-harmonic diffusion
 C trUseGMRedi      :: true if this tracer uses GM-Redi
 C trUseKPP         :: true if this tracer uses KPP
+C trUseSmolHack    :: true if this tracer uses Smolarkiewicz-Hack to remain > 0
 C myTime           :: current time
 C myIter           :: iteration number
 C myThid           :: thread number
@@ -104,7 +105,7 @@ C myThid           :: thread number
       INTEGER advectionScheme, vertAdvecScheme
       LOGICAL calcAdvection
       LOGICAL implicitAdvection, applyAB_onTracer
-      LOGICAL trUseDiffKr4, trUseGMRedi, trUseKPP
+      LOGICAL trUseDiffKr4, trUseGMRedi, trUseKPP, trUseSmolHack
       _RL     myTime
       INTEGER myIter, myThid
 
@@ -141,7 +142,7 @@ C locABT           :: local copy of (AB-extrapolated) tracer field
       _RL locABT(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL advFac, rAdvFac
 #ifdef GAD_SMOLARKIEWICZ_HACK
-      _RL outFlux, trac, fac, gTrFac
+      _RL outFlux, trac, gTrFac
 #endif
 #ifdef ALLOW_DIAGNOSTICS
       CHARACTER*8 diagName
@@ -610,11 +611,15 @@ C           boundary condition.
         ENDDO
        ENDDO
       ELSE
-        CALL GAD_DIFF_R(bi,bj,k,KappaR,TracerN,df,myThid)
+        CALL GAD_DIFF_R(
+     I                    bi,bj,k, maskup, KappaR, TracerN,
+     O                    df, myThid )
       ENDIF
 
       IF ( trUseDiffKr4 ) THEN
-        CALL GAD_BIHARM_R( bi,bj,k, diffKr4, TracerN, df, myThid )
+        CALL GAD_BIHARM_R(
+     I                    bi,bj,k, maskUp, diffKr4, TracerN,
+     U                    df, myThid )
       ENDIF
 
 #ifdef ALLOW_GMREDI
@@ -622,7 +627,7 @@ C-    GM/Redi flux in R
       IF ( trUseGMRedi ) THEN
         CALL GMREDI_RTRANSPORT(
      I         trIdentity, bi, bj, k, iMin, iMax, jMin, jMax,
-     I         TracerN,
+     I         maskUp, TracerN,
      U         df,
      I         myThid )
       ENDIF
@@ -630,7 +635,7 @@ C-    GM/Redi flux in R
 
       DO j=1-OLy,sNy+OLy
        DO i=1-OLx,sNx+OLx
-        fVerT(i,j,kUp) = fVerT(i,j,kUp) + df(i,j)*maskUp(i,j)
+        fVerT(i,j,kUp) = fVerT(i,j,kUp) + df(i,j)
        ENDDO
       ENDDO
 
@@ -709,10 +714,7 @@ C        does it only if k=1 (never the case here)
 coj   Hack to make redi (and everything else in this s/r) positive
 coj   (see Smolarkiewicz MWR 1989 and Bott MWR 1989).
 coj   Only works if 'down' is k+1 and k loop in thermodynamics is k=Nr,1,-1
-coj
-coj   Apply to all tracers except temperature
-      IF ( trIdentity.NE.GAD_TEMPERATURE .AND.
-     &     trIdentity.NE.GAD_SALINITY ) THEN
+      IF ( trUseSmolHack ) THEN
        DO j=1-OLy,sNy+OLy-1
         DO i=1-OLx,sNx+OLx-1
 coj   Add outgoing fluxes
@@ -730,14 +732,14 @@ coj   SmolarkiewiczMaxFrac, scale them down
          IF (outFlux.GT.0. _d 0 .AND.
      &       outFlux.GT.SmolarkiewiczMaxFrac*trac) THEN
 coj   If tracer is already negative, scale flux to zero
-           fac = MAX(0. _d 0,SmolarkiewiczMaxFrac*trac/outFlux)
+           gTrFac = MAX(0. _d 0,SmolarkiewiczMaxFrac*trac/outFlux)
 
-           IF (fZon(i+1,j).GT.0. _d 0) fZon(i+1,j)=fac*fZon(i+1,j)
-           IF (-fZon(i,j) .GT.0. _d 0) fZon(i,j)  =fac*fZon(i,j)
-           IF (fMer(i,j+1).GT.0. _d 0) fMer(i,j+1)=fac*fMer(i,j+1)
-           IF (-fMer(i,j) .GT.0. _d 0) fMer(i,j)  =fac*fMer(i,j)
+           IF (fZon(i+1,j).GT.0. _d 0) fZon(i+1,j)=gTrFac*fZon(i+1,j)
+           IF (-fZon(i,j) .GT.0. _d 0) fZon(i,j)  =gTrFac*fZon(i,j)
+           IF (fMer(i,j+1).GT.0. _d 0) fMer(i,j+1)=gTrFac*fMer(i,j+1)
+           IF (-fMer(i,j) .GT.0. _d 0) fMer(i,j)  =gTrFac*fMer(i,j)
            IF (-fVerT(i,j,kUp)*rkSign .GT.0. _d 0)
-     &       fVerT(i,j,kUp)=fac*fVerT(i,j,kUp)
+     &       fVerT(i,j,kUp)=gTrFac*fVerT(i,j,kUp)
 
            IF (k.LT.Nr .AND. fVerT(i,j,kDown)*rkSign.GT.0. _d 0) THEN
 coj   Down flux is special: it has already been applied in lower layer,
@@ -749,7 +751,7 @@ coj   undo down flux, ...
      &         *recip_rhoFacC(k+1)
      &         *( -fVerT(i,j,kDown)*rkSign )
 coj   ... scale ...
-             fVerT(i,j,kDown)=fac*fVerT(i,j,kDown)
+             fVerT(i,j,kDown)=gTrFac*fVerT(i,j,kDown)
 coj   ... and reapply
              gTracer(i,j,k+1) = gTracer(i,j,k+1)
      &        +_recip_hFacC(i,j,k+1,bi,bj)*recip_drF(k+1)
@@ -762,7 +764,7 @@ coj   ... and reapply
         ENDDO
        ENDDO
       ENDIF
-#endif
+#endif /* GAD_SMOLARKIEWICZ_HACK */
 
 C--   Divergence of fluxes
 C     Anelastic: scale vertical fluxes by rhoFac and leave Horizontal fluxes unchanged

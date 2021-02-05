@@ -1,9 +1,12 @@
+.. _chap_state_estimation:
+
 Ocean State Estimation Packages
 ===============================
 
 This chapter describes packages that have been introduced for ocean
 state estimation purposes and in relation with automatic differentiation
-(see :ref:`chap_autodiff`).
+(see :ref:`chap_autodiff`). Various examples in this chapter rely on two
+model configurations that can be setup as explained in :ref:`sec:exp:llc`
 
 .. _sec:pkg:ecco:
 
@@ -48,7 +51,7 @@ from adjustable model parameters (:math:`\vec{v}`) through model
 dynamics integration (:math:`\mathcal{M}`), diagnostic calculations
 (:math:`\mathcal{D}`), and averaging in space and time
 (:math:`\mathcal{S}`). Alternatively :math:`\mathcal{S}` stands for
-subsampling in space and time in the context of 
+subsampling in space and time in the context of
 :numref:`sec:pkg:profiles` (:ref:`sec:pkg:profiles`). Plain
 model-data misfits (:math:`\vec{m}_i-\vec{o}_i`) can be penalized
 directly in Eq. :eq:`Jtotal` but penalized misfits
@@ -181,11 +184,11 @@ YC.
 
 .. table:: Run-time parameters used in formulating generic cost functions
            and defined via `ecco_gencost_nml`` namelist in ``data.ecco``.
-           All parameters are vectors of length ``NGENCOST`` (the # of 
+           All parameters are vectors of length ``NGENCOST`` (the # of
            available cost terms) except for ``gencost_proc*`` are arrays
            of size ``NGENPPROC``\ :math:`\times`\ ``NGENCOST`` (10 :math:`\times`\
            20 by default; can be changed in ``ecco.h`` at compile time). In addition,
-           the ``gencost_is3d`` internal parameter is reset to true on the 
+           the ``gencost_is3d`` internal parameter is reset to true on the
            fly in all 3D cases in :numref:`gencost_ecco_barfile`.
   :name: gencost_ecco_params
 
@@ -462,6 +465,18 @@ section (non quadratic cost function). To this end one sets
 with ``‘_’``, and set ``gencost_barfile`` to one of ``m_trVol``,
 ``m_trHeat``, and ``m_trSalt``.
 
+Note: the functionality in ``cost_gencost_transp.F`` is not regularly tested.
+Users interested in computing volumetric transports through a section
+are recommended to use the ``m_horflux_vol`` capabilities described above as
+it is regularly tested. Users interested in computing heat and salt transport
+should note the following about ``m_trHeat`` and ``m_trSalt``:
+
+    1. The associated advection scheme with transports may be inconsistent with
+       the model unless ``ENUM_CENTERED_2ND`` is implemented
+    2. Bolus velocities are not included
+    3. Diffusion components are not included
+
+
 .. table:: Pre-defined ``gencost_name`` special cases (as of checkpoint
            65z; :numref:`v4custom`).
   :name: gencost_ecco_name
@@ -551,7 +566,7 @@ comparison online and formulate a least-squares problem (ECCO
 application).
 
 The pkg/profiles namelist is called data.profiles. In the example below,
-it includes two input netcdf file names (ARGOifremer_r8.nc 
+it includes two input netcdf file names (ARGOifremer_r8.nc
 and XBT_v5.nc) that should be linked to the run directory
 and *cost function* multipliers that only matter in the
 context of automatic differentiation (see :ref:`chap_autodiff`). The
@@ -563,7 +578,7 @@ velocity, sea surface height anomaly, and passive tracer.
 .. more updates are needed below
 
 The netcdf input file structure is illustrated in the case of XBT_v5.nc
-To create such files, one can use the MITprof matlab toolbox obtained 
+To create such files, one can use the MITprof matlab toolbox obtained
 from https://github.com/gaelforget/MITprof .
 At run time, each file is scanned to determine which
 variables are included; these will be interpolated. The (final) output
@@ -643,8 +658,24 @@ CTRL: Model Parameter Adjustment Capability
 
 Author: Gael Forget
 
-The parameters available for configuring generic cost terms in
-``data.ctrl`` are given in :numref:`gencost_ctrl_params`.
+Package :filelink:`ctrl <pkg/ctrl>` provides an interface to defining
+the control variables for an optimization. After defining CPP-flags
+:varlink:`ALLOW_GENTIM2D_CONTROL`, :varlink:`ALLOW_GENARR2D_CONTROL`,
+:varlink:`ALLOW_GENARR3D_CONTROL` in :filelink:`CTRL_OPTIONS.h
+<pkg/ctrl/CTRL_OPTIONS.h`, the parameters available for configuring
+generic cost terms in ``data.ctrl`` are given in
+:numref:`gencost_ctrl_params`.  The control variables are stored as
+fields on the model grid in files ``$ctrlvar.$iternumber.data/meta``,
+and corresponding gradients in ``ad$ctrlvar.$iternumber.data/meta``,
+where ``$ctrl`` is defined in ``data.ctrl`` (see :numref:`gencost_ctrl_files` for
+possible options) and ``$iternumber`` is the
+10-digit iteration number of the optimization. Further,
+:filelink:`ctrl <pkg/ctrl>` maps the gradient fields to a vector that
+can be handed over to an optimization routine (see
+:numref:`sectionoptim`) and maps the resulting new control vector
+to the model grid unless CPP-flag :varlink:`EXCLUDE_CTRL_PACK` is defined in
+:filelink:`CTRL_OPTIONS.h <pkg/ctrl/CTRL_OPTIONS.h>`.
+
 
 .. table:: Parameters in ``ctrl_nml_genarr`` namelist in ``data.ctrl``.
            The ``*`` can be replaced by ``arr2d``, ``arr3d``, or ``tim2d`` for
@@ -735,6 +766,12 @@ The parameters available for configuring generic cost terms in
   +-----------------------+-----------------------+-----------------------+
   |                       | ``xx_salt``           | initial salinity      |
   +-----------------------+-----------------------+-----------------------+
+  |                       | ``xx_uvel``           | initial zonal         |
+  |                       |                       | velocity              |
+  +-----------------------+-----------------------+-----------------------+
+  |                       | ``xx_vvel``           | initial meridional    |
+  |                       |                       | velocity              |
+  +-----------------------+-----------------------+-----------------------+
   |                       | ``xx_kapgm``          | GM coefficient        |
   +-----------------------+-----------------------+-----------------------+
   |                       | ``xx_kapredi``        | isopycnal diffusivity |
@@ -755,6 +792,8 @@ The parameters available for configuring generic cost terms in
   |                       | ``xx_lwdown``         | downward longwave     |
   +-----------------------+-----------------------+-----------------------+
   |                       | ``xx_precip``         | precipitation         |
+  +-----------------------+-----------------------+-----------------------+
+  |                       | ``xx_runoff``         | river runoff          |
   +-----------------------+-----------------------+-----------------------+
   |                       | ``xx_uwind``          | zonal wind            |
   +-----------------------+-----------------------+-----------------------+
@@ -1050,7 +1089,7 @@ iteration to update Hessian:
 
     Example 2: jmin = 3, jmax = 7, mupd = 5   ---> jmax = 2
 
-      1   2   3   |  
+      1   2   3   |
     |___|___|___| | |___|___| |___|___| |___|___| |___|___| |___|___|
                   |     6         7         3         4         5
 
@@ -1070,7 +1109,7 @@ Error handling
           |             create or open OPWARMD
           |
           |---- check consistency between OPWARMI and model parameters
-          | 
+          |
           |---- >>> if COLD start: <<<
           |      |  first simulation with f.g. xx_0; output: first ff_0, gg_0
           |      |  set first preconditioner value xdiff_0 to 1
@@ -1091,7 +1130,7 @@ Error handling
           |      )       |      |  first optimization after cold start:
           |      (       |      |  preconditioner estimated via ff_0 - ff_(first guess)
           |      )       |      |  dd(i-1) = -gg(i-1)*preco
-          |      (       |      |  
+          |      (       |      |
           |      )       |     >>> if jmax > 0 <<<
           |      (       |         dd(i-1) = -gg(i-1)
           |      )       |         CALL HESSUPD
@@ -1118,7 +1157,7 @@ Error handling
           |      (---- CALL OPTLINE / LSLINE
           |      )       |
           |      (       |---- /// loop over simulations
-          |      )              (  
+          |      )              (
           |      (              )---- CALL SIMUL
           |      )              (       |
           |      (              )       |----  input: xdiff(i)
@@ -1160,7 +1199,7 @@ Error handling
           |      (                               for new simulation
           |      )                               N.B.: new xx is thus not based on new gg, but
           |      (                                     rather on new step size tact
-          |      )        
+          |      )
           |      (---- store new values xx(i), gg(i) to OPWARMD (first 2 entries)
           |      )---- >>> if ifail = 7,8,9 <<<
           |      (         goto 1000
@@ -1170,7 +1209,7 @@ Error handling
 ::
 
          ...    ...
-          |      )        
+          |      )
           |      (---- store new values xx(i), gg(i) to OPWARMD (first 2 entries)
           |      )---- >>> if ifail = 7,8,9 <<<
           |      (         goto 1000
@@ -1224,3 +1263,131 @@ Error handling
    The quadratic option in fact does not yet exist in
    ``cost_gencost_boxmean.F``...
 
+
+.. _subsectionoptimm1qn3:
+
+Alternative code to :filelink:`optim` and :filelink:`lsopt`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The non-MITgcm package `optim_m1qn3
+<https://github.com/mjlosch/optim_m1qn3>`_ is based on the same
+quasi-Newton variable storage method (BFGS) :cite:`gil-lem:89` as the
+package in subdirectory ``lsopt``, but it uses a reverse communication
+version of the latest (and probably last) release of the subroutine
+`m1qn3
+<https://who.rocq.inria.fr/Jean-Charles.Gilbert/modulopt/optimization-routines/m1qn3/m1qn3.html>`_.
+This avoids having to define a dummy subroutine ``simul`` and also
+simplifies the code structure. As a consequence this package is
+simple(r) to compile and use, because ``m1qn3.f`` contains all necessary
+subroutines and only one extra routine (``ddot``, which was copied
+from `BLAS <http://www.netlib.org/blas/>`_) is required.
+
+The principle of reverse communication is outlined in this example::
+
+  external simul_rc
+  ...
+  reverse = .true.
+  do while (.true.)
+    call m1qn3 (simul_rc,...,x,f,g,...,reverse,indic,...)
+    if (reverse) break
+    call simul (indic,n,x,f,g)
+  end while
+
+``simul_rc`` is an empty ''model simulator'', and ``simul`` generates a
+new state based on the value of ``indic``.
+
+The original ``m1qn3`` has been modified to work "offline", i.e. the
+simulator and the driver of ``m1qn3_offline`` are separate programs
+that are called alternatingly from a (shell-)script. This requires
+that the "state" of ``m1qn3`` is saved before this program
+terminates. This state is saved in a single file ``OPWARM.optXXX`` per
+simulation, where ``XXX`` is the simulation number. Communication with
+the routine, writing and restoring the state of ``m1qn3`` is achieved
+via three new common-blocks that are contained in three header
+files. ``simul`` is replaced by reading and storing the model state
+and gradient vectors. Schematically the driver routine ``optim_sub``
+does the following: ::
+
+  external simul_rc
+  ...
+
+  call optim_readdata( nn, ctrlname, ...,   xx ) ! read control vector
+  call optim_readdata( nn, costname, ..., adxx ) ! read gradient vector
+  call optim_store_m1qn3( ..., .false. )         ! read state of m1qn3
+  reverse = .true.
+  call m1qn3 (simul_rc,...,xx,objf,adxx,...,reverse,indic,...)
+  call optim_store_m1qn3( ..., .true. )          ! write state of m1qn3
+  call optim_writedata( nn, ctrlname, ..., xx )  ! write control vector
+
+The optimization loop is executed outside of this program within a script.
+
+The code can be obtained at https://github.com/mjlosch/optim_m1qn3
+. The ``README`` contains short instructions how to build and use the
+code in combination with the ``tutorial_global_oce_optim``
+experiment. The usage is very similar to the :filelink:`optim`
+package.
+
+.. _sec:exp:llc:
+
+
+Test Cases For Estimation Package Capabilities
+----------------------------------------------
+
+First, download the model as explained in :ref:`chap_getting_started` via the MITgcm git server
+::
+
+    % git clone https://github.com/user_name/MITgcm.git
+
+Then, download the setup from the `MITgcm_contrib/` area by logging into the cvs server
+::
+
+    % setenv CVSROOT ':pserver:cvsanon@mitgcm.org:/u/gcmpack'
+    % cvs login
+    %     ( enter the CVS password: "cvsanon" )
+
+and following the directions provided `here for global_oce_cs32 <https://github.com/MITgcm/verification_other/tree/master/global_oce_cs32>`__
+or `here for global_oce_llc90 <https://github.com/MITgcm/verification_other/tree/master/global_oce_llc90>`__. These model configurations
+are used for daily regression tests to ensure continued availability of the tested estimation package features discussed in :ref:`chap_state_estimation`.
+Daily results of these tests, which currently run on the `glacier` cluster, are reported `on this site <http://mitgcm.org/public/testing.html>`__.
+To this end, one sets a `crontab job <https://www.computerhope.com/unix/ucrontab.htm>`__ that typically executes the script reported below.
+The various commands can also be used to run these examples outside of crontab, directly at the command line via the `testreport capability <http://mitgcm.org/public/devel_HOWTO/devel_HOWTO_onepage/>`__.
+
+.. note::
+
+   Users are advised against running `global_oce_llc90/` tests with fewer than 12 cores (96 for adjoint tests) to avoid potential memory overloads. `global_oce_llc90/ <http://mitgcm.org/viewvc/MITgcm/MITgcm_contrib/verification_other/global_oce_llc90/>`__ (595M) uses the same LLC90 grid as the production `ECCO version 4` setup does :cite:`for-eta:15`. The much coarser resolution `global_oce_cs32/ <http://mitgcm.org/viewvc/MITgcm/MITgcm_contrib/verification_other/global_oce_cs32/>`__ (614M) uses the CS32 grid and can run on any modern laptop.
+
+::
+
+    % #!/bin/csh -f
+    % setenv PATH ~/bin:$PATH
+    % setenv MODULESHOME /usr/share/Modules
+    % source /usr/share/Modules/init/csh
+    % module use /usr/share/Modules
+    % module load openmpi-x86_64
+    % setenv MPI_INC_DIR $MPI_INCLUDE
+    %
+    % cd ~/MITgcm
+    % #mkdir gitpull.log
+    % set D=`date +%Y-%m-%d`
+    % git pull -v > gitpull.log/gitpull.$D.log
+    %
+    % cd verification
+    %
+    % #ieee case:
+    % ./testreport -clean -t 'global_oce_*'
+    % ./testreport -of=../tools/build_options/linux_amd64_gfortran -MPI 24 -t 'global_oce_*' -addr username@something.whatever
+    % ../tools/do_tst_2+2 -t 'global_oce_*' -mpi -exe 'mpirun -np 24 ./mitgcmuv' -a username@something.whatever
+    %
+    % #devel case:
+    % ./testreport -clean -t 'global_oce_*'
+    % ./testreport -of=../tools/build_options/linux_amd64_gfortran -MPI 24 -devel -t 'global_oce_*' -addr username@something.whatever
+    % ../tools/do_tst_2+2 -t 'global_oce_*' -mpi -exe 'mpirun -np 24 ./mitgcmuv' -a username@something.whatever
+    %
+    % #fast case:
+    % ./testreport -clean -t 'global_oce_*'
+    % ./testreport -of=../tools/build_options/linux_amd64_gfortran -MPI 24 -t 'global_oce_*' -fast -addr username@something.whatever
+    % ../tools/do_tst_2+2 -t 'global_oce_*' -mpi -exe 'mpirun -np 24 ./mitgcmuv' -a username@something.whatever
+    %
+    % #adjoint case:
+    % ./testreport -clean -t 'global_oce_*'
+    % ./testreport -of=../tools/build_options/linux_amd64_gfortran -MPI 24 -ad -t 'global_oce_*' -addr username@something.whatever

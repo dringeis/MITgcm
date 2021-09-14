@@ -10,7 +10,7 @@ C     !ROUTINE: SEAICE_CALC_STRAINRATES
 C     !INTERFACE:
       SUBROUTINE SEAICE_CALC_STRAINRATES(
      I     uFld, vFld,
-     O     e11Loc, e22Loc, e12Loc,
+     O     e11Loc, e22Loc, e12Loc, e21Loc
      I     iStep, myTime, myIter, myThid )
 
 C     !DESCRIPTION: \bv
@@ -50,6 +50,8 @@ C     myThid :: My Thread Id. number
       _RL e11Loc (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL e22Loc (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL e12Loc (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL e21Loc (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+
       INTEGER iStep
       _RL     myTime
       INTEGER myIter
@@ -137,6 +139,7 @@ C     evaluate strain rates at Z-points
          DO i=1-OLx+1,sNx+OLx
           hFacU = SIMaskU(i,j,bi,bj) - SIMaskU(i,j-1,bi,bj)
           hFacV = SIMaskV(i,j,bi,bj) - SIMaskV(i-1,j,bi,bj)
+#ifdef ROTATION_VP
           e12Loc(i,j,bi,bj) = 0.5 _d 0 * (
      &         dudy(i,j) + dvdx(i,j)
      &         - k1AtZ(i,j,bi,bj) * vave(i,j)
@@ -148,6 +151,53 @@ C     evaluate strain rates at Z-points
      &           2.0 _d 0 * uave(i,j) * _recip_dyU(i,j,bi,bj) * hFacU
      &         + 2.0 _d 0 * vave(i,j) * _recip_dxV(i,j,bi,bj) * hFacV
      &         )
+     &         + SEAICEuseROT * 0.5 _d 0 * (
+     &         dvdx(i,j) - dudy(i,j)
+     &         - k1AtZ(i,j,bi,bj) * vave(i,j)
+     &         - k2AtZ(i,j,bi,bj) * uave(i,j)
+     &         )
+     &         *HEFFM(i  ,j  ,bi,bj)*HEFFM(i-1,j  ,bi,bj)
+     &         *HEFFM(i  ,j-1,bi,bj)*HEFFM(i-1,j-1,bi,bj)
+     &         + noSlipFac * (
+     &           2.0 _d 0 * uave(i,j) * _recip_dyU(i,j,bi,bj) * hFacU
+     &         + 2.0 _d 0 * vave(i,j) * _recip_dxV(i,j,bi,bj) * hFacV
+     &         )
+          e21Loc(i,j,bi,bj) = 0.5 _d 0 * (
+     &         dudy(i,j) + dvdx(i,j)
+     &         - k1AtZ(i,j,bi,bj) * vave(i,j)
+     &         - k2AtZ(i,j,bi,bj) * uave(i,j)
+     &         )
+     &         *HEFFM(i  ,j  ,bi,bj)*HEFFM(i-1,j  ,bi,bj)
+     &         *HEFFM(i  ,j-1,bi,bj)*HEFFM(i-1,j-1,bi,bj)
+     &         + noSlipFac * (
+     &           2.0 _d 0 * uave(i,j) * _recip_dyU(i,j,bi,bj) * hFacU
+     &         + 2.0 _d 0 * vave(i,j) * _recip_dxV(i,j,bi,bj) * hFacV
+     &         )  
+     &         + SEAICEuseROT * 0.5 _d 0 * (
+     &         dudy(i,j) - dvdx(i,j)
+     &         - k1AtZ(i,j,bi,bj) * vave(i,j)
+     &         - k2AtZ(i,j,bi,bj) * uave(i,j)
+     &         )
+     &         *HEFFM(i  ,j  ,bi,bj)*HEFFM(i-1,j  ,bi,bj)
+     &         *HEFFM(i  ,j-1,bi,bj)*HEFFM(i-1,j-1,bi,bj)
+     &         + noSlipFac * (
+     &           2.0 _d 0 * uave(i,j) * _recip_dyU(i,j,bi,bj) * hFacU
+     &         + 2.0 _d 0 * vave(i,j) * _recip_dxV(i,j,bi,bj) * hFacV
+     &         )  
+#else /* ROTATION VP */
+          e12Loc(i,j,bi,bj) = 0.5 _d 0 * (
+     &         dudy(i,j) + dvdx(i,j)
+     &         - k1AtZ(i,j,bi,bj) * vave(i,j)
+     &         - k2AtZ(i,j,bi,bj) * uave(i,j)
+     &         )
+     &         *HEFFM(i  ,j  ,bi,bj)*HEFFM(i-1,j  ,bi,bj)
+     &         *HEFFM(i  ,j-1,bi,bj)*HEFFM(i-1,j-1,bi,bj)
+     &         + noSlipFac * (
+     &           2.0 _d 0 * uave(i,j) * _recip_dyU(i,j,bi,bj) * hFacU
+     &         + 2.0 _d 0 * vave(i,j) * _recip_dxV(i,j,bi,bj) * hFacV
+     &         )
+          e21Loc(i,j,bi,bj) = e12Loc(i,j,bi,bj)
+#endif /* ROTATION VP */
 C     no slip at the boundary implies u(j)+u(j-1)=0 and v(i)+v(i-1)=0
 C     accross the boundary; this is already accomplished by masking so
 C     that the following lines are not necessary
@@ -184,6 +234,18 @@ C     The masking is ugly, but hopefully effective.
      &          - vFld(i-2,j,bi,bj)*SIMaskV(i-1,j,bi,bj)
      &          - vFld(i+1,j,bi,bj)*SIMaskV(i  ,j,bi,bj) ) * hFacV
      &          )
+#ifdef ROTATION_VP
+           e21Loc(i,j,bi,bj) = e21Loc(i,j,bi,bj) + 0.5 _d 0 * (
+     &            _recip_dyU(i,j,bi,bj) * ( 6.0 _d 0 * uave(i,j)
+     &          - uFld(i,j-2,bi,bj)*SIMaskU(i,j-1,bi,bj)
+     &          - uFld(i,j+1,bi,bj)*SIMaskU(i,j  ,bi,bj) ) * hFacU
+     &          + _recip_dxV(i,j,bi,bj) * ( 6.0 _d 0 * vave(i,j)
+     &          - vFld(i-2,j,bi,bj)*SIMaskV(i-1,j,bi,bj)
+     &          - vFld(i+1,j,bi,bj)*SIMaskV(i  ,j,bi,bj) ) * hFacV
+     &          )
+#else /* ROTATION_VP */
+           e21Loc(i,j,bi,bj) = e12Loc(i,j,bi,bj)      
+#endif /* ROTATION_VP */
           ENDDO
          ENDDO
         ENDIF

@@ -468,7 +468,7 @@ C     first recompute strainrates from up-to-date velocities
      &      diag_SIpRfric_isOn .OR. diag_SIpSfric_isOn ) THEN
         CALL SEAICE_CALC_STRAINRATES(
      I       uIce, vIce,
-     O       e11, e22, e12,
+     O       e11, e22, e12, e21
      I       0, myTime, myIter, myThid )
 C     but use old viscosities and pressure for the
 C     principle stress components
@@ -513,8 +513,8 @@ C     PRESS = PRESS(n-1), n = number of sub-cycling steps
           IF ( .TRUE. ) THEN
 #endif /* SEAICE_ALLOW_EVP */
            CALL SEAICE_CALC_STRESS(
-     I          e11, e22, e12, press, zeta, eta, etaZ,
-     O          sig1, sig2, sig12,
+     I          e11, e22, e12, e21, press, zeta, eta, etaZ,
+     O          sig1, sig2, sig12, sig21
      I          bi, bj, myTime, myIter, myThid )
            DO j=1,sNy
             DO i=1,sNx

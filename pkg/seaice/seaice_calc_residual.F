@@ -93,10 +93,10 @@ C     viscosities are required
 #endif /* SEAICE_ALLOW_BOTTOMDRAG */
       CALL SEAICE_CALC_STRAINRATES(
      I     uIceLoc, vIceLoc,
-     O     e11, e22, e12,
+     O     e11, e22, e12, e21
      I     krylovIter, myTime, myIter, myThid )
       CALL SEAICE_CALC_VISCOSITIES(
-     I     e11, e22, e12, zMin, zMax, HEFFM, press0, tensileStrFac,
+     I     e11, e22, e12, e21, zMin, zMax, HEFFM, press0, tensileStrFac,
      O     eta, etaZ, zeta, zetaZ, press, deltaC,
      I     krylovIter, myTime, myIter, myThid )
 

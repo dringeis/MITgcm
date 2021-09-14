@@ -6,7 +6,7 @@
 CBOP
 CStartOfInterface
       SUBROUTINE SEAICE_CALC_VISCOSITIES(
-     I     e11, e22, e12, zMin, zMax, HEFFM, press0, tnsFac,
+     I     e11, e22, e12, e21, zMin, zMax, HEFFM, press0, tnsFac,
      O     eta, etaZ, zeta, zetaZ, press, deltaC,
      I     iStep, myTime, myIter, myThid )
 C     *==========================================================*
@@ -40,6 +40,7 @@ C     strain rate tensor
       _RL e11   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL e22   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL e12   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL e21   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 C
       _RL zMin  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL zMax  (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -62,7 +63,7 @@ CEndOfInterface
 #if ( defined (SEAICE_CGRID) && defined (SEAICE_ALLOW_DYNAMICS) )
 C     === Local variables ===
 C     i,j,bi,bj - Loop counters
-C     e11, e12, e22 - components of strain rate tensor
+C     e11, e12, e22, e21 - components of strain rate tensor
 C     recip_e2      - inverse of square of ratio of yield curve main axes
 C     ep            - e11+e22 (abbreviation)
 C     em            - e11-e22 (abbreviation)

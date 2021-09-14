@@ -215,12 +215,12 @@ C     the Krylov iteration)
 #endif /* SEAICE_ALLOW_BOTTOMDRAG */
        CALL SEAICE_CALC_STRAINRATES(
      I      uIceLin, vIceLin,
-     O      e11, e22, e12,
+     O      e11, e22, e12, e21
      I      0, myTime, myIter, myThid )
        CALL SEAICE_CALC_VISCOSITIES(
-     I      e11, e22, e12, zMin, zMax, HEFFM, press0, tensileStrFac,
-     O      eta, etaZ, zeta, zetaZ, press, deltaC,
-     I      0, myTime, myIter, myThid )
+     I     e11, e22, e12, e21, zMin, zMax, HEFFM, press0, tensileStrFac,
+     O     eta, etaZ, zeta, zetaZ, press, deltaC,
+     I     0, myTime, myIter, myThid )
 C     compute rhs that does not change during Krylov iteration
        CALL SEAICE_CALC_RHS(
      O      uIceRHS, vIceRHS,
@@ -348,7 +348,7 @@ C     Call preconditioner
 C     Compute lhs of equations (A*x)
           CALL SEAICE_CALC_STRAINRATES(
      I         uWork, vWork,
-     O         e11, e22, e12,
+     O         e11, e22, e12, e21
      I         krylovIter, myTime, myIter, myThid )
           CALL SEAICE_CALC_LHS(
      I         uWork, vWork,

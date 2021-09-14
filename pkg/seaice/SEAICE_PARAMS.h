@@ -485,6 +485,8 @@ C     SEAICEsnowFracRidge :: fraction of snow that remains on ridged
 C     SINegFac        :: SIADV over/undershoot factor in FW/Adjoint
 C     SEAICEmcMu      :: parameter for MC yield curve for useMCE, useMCS and
 C                        useTEM options, default is one
+C     SEAICEuseROT :: use the asymmetrical stress and strain-rate
+C                         ( default it false)
 C
       _RL SEAICE_deltaTtherm, SEAICE_deltaTdyn, SEAICE_deltaTevp
       _RL SEAICE_LSRrelaxU, SEAICE_LSRrelaxV
@@ -504,7 +506,7 @@ C
       _RL SEAICE_strength, SEAICE_cStar, SEAICEpressReplFac
       _RL SEAICE_tensilFac, SEAICE_tensilDepth
       _RL SEAICE_eccen, SEAICE_eccfr
-      _RL SEAICEmcMu, SEAICEtdMU
+      _RL SEAICEmcMu, SEAICEtdMU, SEAICEuseROT
       _RL SEAICE_lhFusion, SEAICE_lhEvap
       _RL SEAICE_dalton
       _RL SEAICE_iceConduct, SEAICE_snowConduct
@@ -559,7 +561,7 @@ C
      &    SEAICEbasalDragK1, SEAICEbasalDragK2,
      &    SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
      &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen, SEAICE_eccfr,
-     &    SEAICEtdMU, SEAICEmcMu,
+     &    SEAICEtdMU, SEAICEmcMu, SEAICEuseROT,
      &    SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      &    SEAICE_lhFusion, SEAICE_lhEvap,
      &    SEAICE_dalton, SEAICE_cpAir,

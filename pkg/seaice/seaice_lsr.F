@@ -340,11 +340,11 @@ CADJ STORE vicec = comlev1_dynsol, kind=isbyte, key = itmpkey
 
       CALL SEAICE_CALC_STRAINRATES(
      I     uIceC, vIceC,
-     O     e11, e22, e12,
+     O     e11, e22, e12, e21
      I     ipass, myTime, myIter, myThid )
 
       CALL SEAICE_CALC_VISCOSITIES(
-     I     e11, e22, e12, zMin, zMax, HEFFM, press0, tensileStrFac,
+     I     e11, e22, e12, e21, zMin, zMax, HEFFM, press0, tensileStrFac,
      O     eta, etaZ, zeta, zetaZ, press, deltaC,
      I     ipass, myTime, myIter, myThid )
 
@@ -985,14 +985,14 @@ C
 C     compute strain rate from latest velocities
        CALL SEAICE_CALC_STRAINRATES(
      I       uIce, vIce,
-     O       e11, e22, e12,
+     O       e11, e22, e12, e21
      I       3, myTime, myIter, myThid )
 C     compute internal stresses with updated ice velocities
 C     and evaluate divergence of stress and apply to forcing
        DO bj=myByLo(myThid),myByHi(myThid)
         DO bi=myBxLo(myThid),myBxHi(myThid)
          CALL SEAICE_CALC_STRESSDIV(
-     I        e11, e22, e12, press, zeta, eta, etaZ,
+     I        e11, e22, e12, e21, press, zeta, eta, etaZ,
      O        stressDivergenceX, stressDivergenceY,
      I        bi, bj, myTime, myIter, myThid )
         ENDDO

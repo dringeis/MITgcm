@@ -194,7 +194,7 @@ C     Teardrop yield curve:
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
-           x = MIN( x, a )
+           x = MIN( x, 0.95 _d 0 * a )
 C          x = MAX( x,-1 _d 0 ) ! to be sure
 
 #ifdef SEAICE_DELTA_SMOOTHREG
@@ -232,11 +232,11 @@ C      compute the replacement pressure
      &         / SIGN(MAX(ABS(x+cyc), smallNbr), x+cyc) )
 
 C      reduce eta according to replacement pressure
-           etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
-     &                    * recip_shear(i,j)
-           etapr = MIN( etapr, etamax_TD )
-           eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
-     &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
+C           etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
+C     &                    * recip_shear(i,j)
+C           etapr = MIN( etapr, etamax_TD )
+C           eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
+C     &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
 
           ENDDO ! x loop
          ENDDO ! y loop
@@ -250,8 +250,8 @@ C      reduce eta according to replacement pressure
            k = ep * recip_shear(i,j)
            a = tnsFac(i,j,bi,bj)
            x = 0.5 _d 0 * (k - 1. _d 0 + a)
-           x = MAX( x, -1. _d 0 )
-           x = MIN( x, a )
+           x = MAX( x, -0.95 _d 0 )
+           x = MIN( x, 0.9 _d 0 * a )
            xma = x + 0.5 _d 0 *(1. _d 0 - a )
 C     compute zeta
 #ifdef SEAICE_DELTA_SMOOTHREG
@@ -360,7 +360,7 @@ C     better differentiability
            deltaCreg(i,j) = SQRT(deltaCsq + deltaMinSq)
 CML          deltaCreg(i,j) = deltaC(i,j,bi,bj) + SEAICE_deltaMin
 #else
-           deltaCreg(i,j) = MAX(deltaC(i,j,bi,bj),SEAICE_deltaMin)
+           deltaCreg(i,j) = MAX(deltaC(i,j,bi,bj),1 _d -20)
 #endif /* SEAICE_DELTA_SMOOTHREG */
 #ifdef SEAICE_ZETA_SMOOTHREG
 C     regularize zeta to zmax with a smooth tanh-function instead
@@ -375,9 +375,9 @@ C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
      &          * ( 1. _d 0 + tnsFac(i,j,bi,bj) )
      &          )/deltaCreg(i,j)
 C     put min and max viscosities in
-           zeta (i,j,bi,bj) = MIN(ZMAX(i,j,bi,bj),zeta(i,j,bi,bj))
+C          zeta (i,j,bi,bj) = MIN(ZMAX(i,j,bi,bj),zeta(i,j,bi,bj))
 #endif /*  SEAICE_ZETA_SMOOTHREG */
-           zeta (i,j,bi,bj) = MAX(ZMIN(i,j,bi,bj),zeta(i,j,bi,bj))
+C           zeta (i,j,bi,bj) = MAX(ZMIN(i,j,bi,bj),zeta(i,j,bi,bj))
 C     set viscosities to zero at HEFFM flow pts
            zeta (i,j,bi,bj) = zeta(i,j,bi,bj)*HEFFM(i,j,bi,bj)
 C     "replacement pressure"

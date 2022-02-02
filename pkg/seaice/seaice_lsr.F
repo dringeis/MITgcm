@@ -87,6 +87,9 @@ C     i,j,bi,bj  :: Loop counters
       _RL S1, S2, S1A, S2A
       _RL recip_deltaT
 
+      _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv, residini
+      _RL residUm, residVm, residm
+
 C     diagonals of coefficient matrices
       _RL AU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL BU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -121,6 +124,8 @@ C     intermediate time level centered (C) between n and n-1
 C     auxillary fields
       _RL uTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL vTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL uTmp2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL vTmp2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 C     auxillary fields to store intermediate FORCEX/Y0
       _RL fxTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL fyTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -246,6 +251,7 @@ C     As a side effect, this avoids TAF recomputation warnings.
        ENDDO
       ENDDO
 
+C     Start of non-linear iteration ====================================
       DO ipass=1,nonLinIterLoc
 
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -663,6 +669,15 @@ CML#endif /* ALLOW_AUTODIFF_TAMC */
       ICOUNT1 = linearIterLoc
       ICOUNT2 = linearIterLoc
 
+      residini=SQRT(residUini*residUini+residVini*residVini)
+
+      if (residini.LT.SEAICEnonLinTol) exit
+
+      LSRflexFac = SQRT(ABS(LOG10(residini*0.1)*0.05)**2+1.05**2)
+
+      LSR_ERRORfu = residUini/LSRflexFac
+      LSR_ERRORfv = residVini/LSRflexFac
+
       DO m = 1, linearIterLoc
 
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -805,6 +820,11 @@ C     end bi,bj-loops
 #ifdef SEAICE_GLOBAL_3DIAG_SOLVER
         ENDIF
 #endif /* SEAICE_GLOBAL_3DIAG_SOLVER */
+        CALL SEAICE_RESIDUAL(
+     I       rhsU, rhsV, uRt1, uRt2, vRt1, vRt2,
+     I       AU, BU, CU, AV, BV, CV, uIce, vIce,
+     O       residUm, residVm, uTmp2, vTmp2,
+     I       printResidual, myIter, myThid )
 
         IF ( doIterate4u.AND.MOD(m,SOLV_NCHECK).EQ.0) THEN
          S1=ZERO
@@ -823,9 +843,10 @@ C     end bi,bj-loops
 c        WRITE(standardMessageUnit,'(A,2I6,1P4E16.9)')
 c    &   ' U iters,error,WF = ',ipass,M,S1,S1A,WFAU
 C SAFEGUARD AGAINST BAD FORCING ETC
-         IF(m.GT.1.AND.S1.GT.S1A) WFAU=WFAU2
-         S1A=S1
-         IF(S1.LT.LSR_ERROR) THEN
+C          IF(m.GT.1.AND.S1.GT.S1A) WFAU=WFAU2
+C          S1A=S1
+C          IF(S1.LT.LSR_ERROR) THEN
+         IF((residUm.LT.LSR_ERRORfu) .OR. (S1.LT.LSR_ERROR)) THEN
           ICOUNT1=m
           doIterate4u = .FALSE.
          ENDIF
@@ -846,9 +867,10 @@ C SAFEGUARD AGAINST BAD FORCING ETC
          ENDDO
          _GLOBAL_MAX_RL( S2, myThid )
 C SAFEGUARD AGAINST BAD FORCING ETC
-         IF(m.GT.1.AND.S2.GT.S2A) WFAV=WFAV2
-         S2A=S2
-         IF(S2.LT.LSR_ERROR) THEN
+C          IF(m.GT.1.AND.S2.GT.S2A) WFAV=WFAV2
+C          S2A=S2
+C          IF(S2.LT.LSR_ERROR) THEN
+         IF((residVm.LT.LSR_ERRORfv) .OR. (S2.LT.LSR_ERROR)) THEN
           ICOUNT2=m
           doIterate4v = .FALSE.
          ENDIF
@@ -860,6 +882,10 @@ C--    end doIterate4u or doIterate4v
        ENDIF
       ENDDO
 C ITERATION END -----------------------------------------------------
+
+C       residm=SQRT(residUm*residUm+residVm*residVm)
+
+C       if (residm.LT.SEAICEnonLinTol) exit
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 

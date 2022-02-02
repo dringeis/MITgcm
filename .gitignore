@@ -23,7 +23,7 @@ core
 .DS_store
 
 /doc/_build/
-
+exps/
 /eesupp/src/exch_xy_r[ls48].F
 /eesupp/src/exch_3d_r[ls48].F
 /eesupp/src/exch_xyz_r[ls48].F

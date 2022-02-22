@@ -87,7 +87,8 @@ C     i,j,bi,bj  :: Loop counters
       _RL S1, S2, S1A, S2A
       _RL recip_deltaT
 
-      _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv, residini
+      _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv
+      _RL residini, residkm1, residkm2, residiniFac
       _RL residUm, residVm, residm
 
 C     diagonals of coefficient matrices
@@ -250,6 +251,9 @@ C     As a side effect, this avoids TAF recomputation warnings.
         ENDDO
        ENDDO
       ENDDO
+    
+      residkm1=1 _d 0
+      residkm2=1 _d 0
 
 C     Start of non-linear iteration ====================================
       DO ipass=1,nonLinIterLoc
@@ -672,15 +676,26 @@ CML#endif /* ALLOW_AUTODIFF_TAMC */
 
       ICOUNT1 = linearIterLoc
       ICOUNT2 = linearIterLoc
-
+      
       residini=SQRT(residUini*residUini+residVini*residVini)
-
+        
       if (residini.LT.SEAICEnonLinTol) exit
 
-      LSRflexFac = SQRT(ABS(LOG10(residini*0.1)*0.05)**2+1.05**2)
+C      LSRflexFac = SQRT(ABS(LOG10(residini*0.1)*0.05)**2+1.05**2)
+     
+      residiniFac = MAX(MIN(ONE/ABS(LOG10(residini)), ONE), 0.1 _d 0)
 
-      LSR_ERRORfu = residUini/LSRflexFac
-      LSR_ERRORfv = residVini/LSRflexFac
+      LSRflexFac = residkm1/residkm2 
+      LSRflexFac = MIN(LSRflexFac, 0.9 _d 0 )
+      LSRflexFac = MAX(LSRflexFac, 0.1 _d 0 )
+      
+      IF ( ipass .LE. 3 ) THEN
+       LSRflexFac = 0.9 _d 0
+      ENDIF
+
+      LSR_ERRORfu = residUini*LSRflexFac* residiniFac
+      LSR_ERRORfv = residVini*LSRflexFac* residiniFac
+
 
       DO m = 1, linearIterLoc
 
@@ -925,6 +940,10 @@ C--   Calculate final residual of the linearised system
      &    ' SEAICE_LSR (ipass=',ipass,') iters,dV,Resid=',
      &      ICOUNT2, S2, residVend
         _END_MASTER( myThid )
+
+      residkm2=residkm1
+      residkm1=SQRT(residUend*residUend+residVend*residVend)
+
       ENDIF
 #ifdef ALLOW_DEBUG
       IF ( debugLevel .GE. debLevD ) THEN

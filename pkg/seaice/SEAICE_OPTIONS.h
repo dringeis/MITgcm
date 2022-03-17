@@ -122,6 +122,12 @@ C     use with caution
 C     allow the use of Mohr Coulomb with elliptical plastic potential
 C     (runtime flag SEAICEuseMCE)
 # undef SEAICE_ALLOW_MCE
+C     allow the use of Mohr Coulomb with elliptical plastic potential
+C     derived rigorously (runtime flag SEAICEuseMCE2)
+# undef SEAICE_ALLOW_MCE2
+C     allow the use of Mohr Coulomb with teardrop plastic potential
+C     (runtime flag SEAICEuseMCTD)
+# undef SEAICE_ALLOW_MCTD
 C     allow the teardrop and parabolic lens  rheology
 C     (runtime flag SEAICEuseTD and SEAICEusePL)
 # undef SEAICE_ALLOW_TEARDROP

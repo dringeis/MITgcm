@@ -43,6 +43,13 @@ C     SEAICEuseMCE      :: to use the Mohr-Coulomb yield curve with elliptical
 C                          plastic potential (similarly to Hibler and Schulson
 C                          2000 without the elliptical cap) set this parameter
 C                          to true, default is false
+C     SEAICEuseMCE2     :: to use the Mohr-Coulomb yield curve with elliptical
+C                          plastic potential rigourously derived set this parameter
+C                          to true, default is false
+C     SEAICEuseMCTD     :: to use the Mohr-Coulomb yield curve with teardrop
+C                          plastic potential (similarly to Hibler and Schulson
+C                          2000 without the elliptical cap) set this parameter
+C                          to true, default is false
 C     SEAICEuseTD       :: to use the teardrop yield curve (Zhang and Rothrock,
 C                          2005) set this parameter to true, default is false
 C     SEAICEusePL       :: to use the parabolic lens yield curve (Zhang and
@@ -138,7 +145,7 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     useHibler79IceStrength, SEAICEsimpleRidging,
      &     SEAICEuseLinRemapITD, SEAICEuseTD, SEAICEusePL,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
-     &     SEAICEuseMCS, SEAICEuseMCE,
+     &     SEAICEuseMCS, SEAICEuseMCE, SEAICEuseMCE2, SEAICEuseMCTD,
      &     SEAICE_no_slip, SEAICE_2ndOrderBC,
      &     SEAICE_maskRHS, SEAICEscaleSurfStress,
      &     SEAICE_clipVelocities, SEAICEaddSnowMass,
@@ -168,7 +175,7 @@ C     SEAICE_mon_mnc    :: write monitor to netcdf file
      &     useHibler79IceStrength, SEAICEsimpleRidging,
      &     SEAICEuseLinRemapITD, SEAICEuseTD, SEAICEusePL,
      &     SEAICEuseTEM, SEAICEuseTilt, SEAICEuseMetricTerms,
-     &     SEAICEuseMCS, SEAICEuseMCE,
+     &     SEAICEuseMCS, SEAICEuseMCE, SEAICEuseMCE2, SEAICEuseMCTD,
      &     SEAICE_no_slip, SEAICE_2ndOrderBC,
      &     SEAICE_maskRHS, SEAICEscaleSurfStress,
      &     SEAICE_clipVelocities, SEAICEaddSnowMass,

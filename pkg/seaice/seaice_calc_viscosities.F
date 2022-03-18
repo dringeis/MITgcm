@@ -196,7 +196,8 @@ C     Teardrop yield curve:
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
-           x = MIN( x, a )
+           x = MIN( x, 0.95 _d 0 * a )
+C            x = MIN( x, a )
 C          x = MAX( x,-1 _d 0 ) ! to be sure
 
 #ifdef SEAICE_DELTA_SMOOTHREG
@@ -430,7 +431,7 @@ C     Teardrop yield curve:
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
-           x = MIN( x, a )
+           x = MIN( x, 0.95 _d 0 * a )
 C          x = MAX( x,-1 _d 0 ) ! to be sure
 
 #ifdef SEAICE_DELTA_SMOOTHREG
@@ -477,6 +478,62 @@ C      reduce eta according to replacement pressure
           ENDDO ! x loop
          ENDDO ! y loop
 #endif /* SEAICE_ALLOw_MCTD */
+#ifdef SEAICE_ALLOW_MCPL
+        ELSEIF ( SEAICEuseMCPL ) THEN
+
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+
+           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+           k = ep * recip_shear(i,j)
+           a = tnsFac(i,j,bi,bj)
+           x = 0.5 _d 0 * (k - 1. _d 0 + a)
+           x = MAX( x, -1. _d 0 )
+           x = MIN( x, a )
+           xma = x + 0.5 _d 0 *(1. _d 0 - a )
+C     compute zeta
+#ifdef SEAICE_DELTA_SMOOTHREG
+           zeta(i,j,bi,bj) = xma * press0(i,j,bi,bj)
+     &                    / SIGN( SQRT(ep*ep + smallNbrSq) , ep)
+#else
+           zeta(i,j,bi,bj) = xma * press0(i,j,bi,bj)
+     &                    / SIGN( MAX(ABS(ep),smallNbr) , ep)
+#endif /* SEAICE_DELTA_SMOOTHREG */
+C      original formulation of Zhang 2005
+C          zeta(i,j,bi,bj) = (x + 0.5 _d 0) * press0(i,j,bi,bj)
+C      &        / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
+C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
+
+C     compute eta
+           eta(i,j,bi,bj) = -(x-a) * SEAICEmcMU * press0(i,j,bi,bj)
+     &                    * recip_shear(i,j)
+
+C     maximum of eta and zeta
+           etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
+     &               /(ABS(zeta(i,j,bi,bj)) + smallNbr),ONE )
+           zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
+     &               /(ABS(eta(i,j,bi,bj))  + smallNbr),ONE )
+
+C     apply the maxiums on zeta and eta
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj),zetamax_TD)
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), etamax_TD)
+
+C     replacement pressure
+           press(i,j,bi,bj) =
+     &          ( press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
+     &          + zeta(i,j,bi,bj) * ep * SEAICEpressReplFac
+     &          / SIGN(ABS(xma) + smallNbr, xma ) )
+     &          * ( ONE - a )
+
+C     change eta according to replacement pressure
+           etapr = -(x-a) * (ONE + x) * press(i,j,bi,bj)/(ONE-a)
+     &                    * recip_shear(i,j)
+           etapr = MIN( etapr, etamax_TD )
+           eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
+     &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
+          ENDDO !i loop
+         ENDDO !j loop
+#endif /* SEAICE_ALLOW_MCPL*/
         ELSE
 C     For all elliptic yield curves, the computation of deltaC and zeta
 C     is identical so we do it first.

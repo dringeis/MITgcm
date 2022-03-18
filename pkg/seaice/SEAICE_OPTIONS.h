@@ -128,6 +128,9 @@ C     derived rigorously (runtime flag SEAICEuseMCE2)
 C     allow the use of Mohr Coulomb with teardrop plastic potential
 C     (runtime flag SEAICEuseMCTD)
 # undef SEAICE_ALLOW_MCTD
+C     allow the use of Mohr Coulomb with parabolic lens plastic potential
+C     (runtime flag SEAICEuseMCPL)
+# undef SEAICE_ALLOW_MCPL
 C     allow the teardrop and parabolic lens  rheology
 C     (runtime flag SEAICEuseTD and SEAICEusePL)
 # undef SEAICE_ALLOW_TEARDROP

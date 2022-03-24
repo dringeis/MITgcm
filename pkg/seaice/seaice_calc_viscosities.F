@@ -68,8 +68,8 @@ C     ep            - e11+e22 (abbreviation)
 C     em            - e11-e22 (abbreviation)
       INTEGER i, j, bi, bj
       _RL recip_e2, deltaCsq, deltaMinSq, tmp, ep, em, smallNbr, efr2
-      _RL recip_efr4, recip_efr2, oneThird, oneNinth, smallNbrSq
-      _RL lim_eta, lim_zeta
+      _RL recip_efr4, recip_efr2, oneThird, oneNinth, smallNbrSq, p
+      _RL lim_eta, lim_zeta, muc
       _RL e12Csq     (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL deltaCreg  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL recip_shear(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -91,6 +91,8 @@ C--   basic constants
       oneNinth = 1. _d 0 / 9. _d 0
       smallNbr = 1. _d -20
       smallNbrSq = smallNbr * smallNbr
+
+      p = 0.8 _d 0
 
       recip_e2=0. _d 0
       efr2 = SEAICE_eccfr*SEAICE_eccfr
@@ -412,7 +414,7 @@ C            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
 
 C     cyc: coordinate of the maximum point of the yield curve,
 C     where eI changes sign
-           cyc=( TWO - tnsFac(i,j,bi,bj) ) * oneThird
+           cyc=( TWO - a ) * oneThird
            ap1 = a + ONE
 
 C     handle floating point errors when k is negative and very large
@@ -449,6 +451,11 @@ C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            eta(i,j,bi,bj) = -(x-a) * SEAICEmcMU * press0(i,j,bi,bj)
      &                    * recip_shear(i,j)
 
+           IF (x .LE. -p) THEN
+            muc = ( - p - a ) / (ONE - p) * SEAICEmcMU
+            eta(i,j,bi,bj) = - ( x + ONE ) * muc * press0(i,j,bi,bj)
+     &                     * recip_shear(i,j)
+           ENDIF
 C      define the max values for eta and zeta
            etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
      &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
@@ -459,8 +466,8 @@ C      apply the max values
            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
 C      original formulation of Zhang 2005
-C          zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
-C          eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
 
 C      compute the replacement pressure
            press(i,j,bi,bj) = TWO * cyc * (
@@ -488,8 +495,9 @@ C      reduce eta according to replacement pressure
            k = ep * recip_shear(i,j)
            a = tnsFac(i,j,bi,bj)
            x = 0.5 _d 0 * (k - 1. _d 0 + a)
-           x = MAX( x, -1. _d 0 )
-           x = MIN( x, a )
+
+           x = MAX( x, -1. _d 0+ 0.95 _d 0 * a )
+           x = MIN( x, 0.95 _d 0 * a )
            xma = x + 0.5 _d 0 *(1. _d 0 - a )
 C     compute zeta
 #ifdef SEAICE_DELTA_SMOOTHREG

@@ -810,6 +810,29 @@ C=============== dynamics ============
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
+C=============== numerics ============
+
+      diagName  = 'SIlsrReU'
+      diagTitle = 'SEAICE LSR residual zonal U'
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIlsrReV'
+      diagTitle = 'SEAICE LSR residual meridional V'
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIlsrRe '
+      diagTitle = 'SEAICE LSR residual norm'
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I    diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
 #ifdef SEAICE_ITD
 C=============== ice thickness categories ============
 

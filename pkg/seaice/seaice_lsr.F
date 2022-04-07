@@ -66,6 +66,12 @@ C     myThid     :: my Thread Id. number
 CEOP
 
 #ifdef SEAICE_CGRID
+
+#ifdef ALLOW_DIAGNOSTICS
+      LOGICAL  DIAGNOSTICS_IS_ON
+      EXTERNAL DIAGNOSTICS_IS_ON
+#endif /* ALLOW_DIAGNOSTICS */
+
 #ifdef SEAICE_ALLOW_DYNAMICS
 C     !FUNCTIONS:
       LOGICAL  DIFFERENT_MULTIPLE
@@ -80,7 +86,8 @@ C     i,j,bi,bj  :: Loop counters
       INTEGER iMin, iMax, jMin, jMax
       INTEGER ICOUNT1, ICOUNT2, linearIterLoc, nonLinIterLoc
       INTEGER kSrf
-      LOGICAL doIterate4u, doIterate4v
+      LOGICAL doIterate4u, doIterate4v, diag_SIlsrReU_isOn
+      LOGICAL diag_SIlsrReV_isOn, diag_SIlsrRe_isOn 
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
       _RL WFAU, WFAV, WFAU2, WFAV2
@@ -891,11 +898,11 @@ C--   Calculate final residual of the linearised system
        IF (diag_SIlsrReU_isOn .OR. diag_SIlsrReV_isOn) THEN
         DO bj = myByLo(myThid), myByHi(myThid)
          DO bi = myBxLo(myThid), myBxHi(myThid)
-          IF diag_SIlsrReU_isOn THEN
+          IF ( diag_SIlsrReU_isOn ) THEN
            CALL DIAGNOSTICS_FILL(uTmp,'SIlsrReU',0,1,2,bi,bj,myThid)
           ENDIF
-          IF diag_SIlsrReU_isOn THEN
-           CALL DIAGNOSTICS_FILL(vTmp,'SIlsrReU',0,1,2,bi,bj,myThid)
+          IF ( diag_SIlsrReU_isOn ) THEN
+           CALL DIAGNOSTICS_FILL(vTmp,'SIlsrReV',0,1,2,bi,bj,myThid)
           ENDIF
          ENDDO
         ENDDO
@@ -907,7 +914,7 @@ C--   Calculate final residual of the linearised system
           DO j=1,sNy
            DO i=1,sNx
             RTmp(i,j,bi,bj)=SQRT( uTmp(i,j,bi,bj) * uTMP(i,j,bi,bj)
-             + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
+     &        + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
            ENDDO
           ENDDO
           CALL DIAGNOSTICS_FILL(RTmp,'SIlsrRe ',0,1,2,bi,bj,myThid)

@@ -451,36 +451,37 @@ C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
            eta(i,j,bi,bj) = -(x-a) * SEAICEmcMU * press0(i,j,bi,bj)
      &                    * recip_shear(i,j)
 
+C      adding a compressive cap
            IF (x .LE. -p) THEN
             muc = ( - p - a ) / (ONE - p) * SEAICEmcMU
             eta(i,j,bi,bj) = - ( x + ONE ) * muc * press0(i,j,bi,bj)
      &                     * recip_shear(i,j)
            ENDIF
 C      define the max values for eta and zeta
-           etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
-     &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
-           zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
-     &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
+C            etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
+C      &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
+C            zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
+C      &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
 
 C      apply the max values
-           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
-           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
+C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
+C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
 C      original formulation of Zhang 2005
-C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
-C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
 
 C      compute the replacement pressure
-           press(i,j,bi,bj) = TWO * cyc * (
-     &          press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
-     &         + SEAICEpressReplFac * ep * zeta(i,j,bi,bj)
-     &         / SIGN(MAX(ABS(x+cyc), smallNbr), x+cyc) )
+           press(i,j,bi,bj) = TWO * cyc * press0(i,j,bi,bj)
+C      &         ( press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
+C      &         + SEAICEpressReplFac * ep * zeta(i,j,bi,bj)
+C      &         / SIGN(MAX(ABS(x+cyc), smallNbr), x+cyc) )
 
 C      reduce eta according to replacement pressure
-           etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
-     &                    * recip_shear(i,j)
-           etapr = MIN( etapr, etamax_TD )
-           eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
-     &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
+C            etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
+C      &                    * recip_shear(i,j)
+C            etapr = MIN( etapr, etamax_TD )
+C            eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
+C      &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
 
           ENDDO ! x loop
          ENDDO ! y loop

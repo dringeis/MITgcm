@@ -1017,22 +1017,7 @@ C--   Calculate final residual of the linearised system
      &    ' SEAICE_LSR: Residual Initial ipass,Uice,Vice=',
      &        ipass, residUini, residVini
 
-       diag_SIlsrReU_isOn = DIAGNOSTICS_IS_ON('SIlsrReU',myThid)
-       diag_SIlsrReV_isOn = DIAGNOSTICS_IS_ON('SIlsrReV',myThid)
        diag_SIlsrRe_isOn  = DIAGNOSTICS_IS_ON('SIlsrRe ',myThid)
-
-       IF (diag_SIlsrReU_isOn .OR. diag_SIlsrReV_isOn) THEN
-        DO bj = myByLo(myThid), myByHi(myThid)
-         DO bi = myBxLo(myThid), myBxHi(myThid)
-          IF diag_SIlsrReU_isOn THEN
-           CALL DIAGNOSTICS_FILL(uTmp,'SIlsrReU',0,1,2,bi,bj,myThid)
-          ENDIF
-          IF diag_SIlsrReU_isOn THEN
-           CALL DIAGNOSTICS_FILL(vTmp,'SIlsrReU',0,1,2,bi,bj,myThid)
-          ENDIF
-         ENDDO
-        ENDDO
-       ENDIF
 
        IF ( diag_SIlsrRe_isOn ) THEN
         DO bj = myByLo(myThid), myByHi(myThid)
@@ -1040,7 +1025,7 @@ C--   Calculate final residual of the linearised system
           DO j=1,sNy
            DO i=1,sNx
             RTmp(i,j,bi,bj)=SQRT( uTmp(i,j,bi,bj) * uTMP(i,j,bi,bj)
-             + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
+     &        + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
            ENDDO
           ENDDO
           CALL DIAGNOSTICS_FILL(RTmp,'SIlsrRe ',0,1,2,bi,bj,myThid)

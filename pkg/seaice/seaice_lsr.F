@@ -83,6 +83,12 @@ C     i,j,bi,bj  :: Loop counters
       LOGICAL doIterate4u, doIterate4v
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
+#ifdef ALLOW_DIAGNOSTICS
+      LOGICAL  DIAGNOSTICS_IS_ON, diag_SIlsrRe_isOn
+      EXTERNAL DIAGNOSTICS_IS_ON
+      _RL RTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif /* ALLOW_DIAGNOSTICS */
+
       _RL WFAU, WFAV, WFAU2, WFAV2
       _RL S1, S2, S1A, S2A
       _RL recip_deltaT
@@ -915,6 +921,25 @@ C--   Calculate final residual of the linearised system
      I                  AU, BU, CU, AV, BV, CV, uIce, vIce,
      O                  residUend, residVend, uTmp, vTmp,
      I                  printResidual, myIter, myThid )
+
+#ifdef ALLOW_DIAGNOSTICS
+       diag_SIlsrRe_isOn  = DIAGNOSTICS_IS_ON('SIlsrRe ',myThid)
+
+       IF ( diag_SIlsrRe_isOn ) THEN
+        DO bj = myByLo(myThid), myByHi(myThid)
+         DO bi = myBxLo(myThid), myBxHi(myThid)
+          DO j=1,sNy
+           DO i=1,sNx
+            RTmp(i,j,bi,bj)=SQRT( uTmp(i,j,bi,bj) * uTmp(i,j,bi,bj)
+     &        + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
+           ENDDO
+          ENDDO
+          CALL DIAGNOSTICS_FILL(RTmp,'SIlsrRe ',0,1,2,bi,bj,myThid)
+         ENDDO
+        ENDDO
+       ENDIF
+#endif   /* ALLOW_DIAGNOSTICS */
+
         _BEGIN_MASTER( myThid )
         WRITE(standardMessageUnit,'(A,1X,I9,1P3E16.8)')
      &    ' SEAICE_LSR: Residual Initial ipass,Uice,Vice=',

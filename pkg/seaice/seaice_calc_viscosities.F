@@ -347,7 +347,7 @@ C     Strains definitions
            shearDef = SQRT(em*em + 4. _d 0*e12Csq(i,j))
 
 C     Delta
-           deltaC(i,j,bi,bj) = ABS( ep + SEAICEmcMU * efr2 * shearDef )
+           deltaC(i,j,bi,bj) = ABS( shearDef + SEAICEmcMU * efr2 * ep )
 
 #ifdef SEAICE_DELTA_SMOOTHREG
 C     smooth regularization (without max-function) of delta for
@@ -365,10 +365,11 @@ C     Zeta
 C     regularize zeta to zmax with a smooth tanh-function instead
 C     of a min(zeta,zmax). This improves convergence of iterative
 C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
-           argTmp = exp(-1. _d 0/(deltaCreg(i,j)*SEAICE_zetaMaxFac))
+           argTmp = exp(-1. _d 0/(deltaCreg(i,j)*SEAICE_zetaMaxFac)
+     &            * SEAICEmcMU * efr2  )
            zeta (i,j,bi,bj) = ZMAX(i,j,bi,bj)
      &          *(1. _d 0 - argTmp)/(1. _d 0 + argTmp)
-     &          *(1. _d 0 + tnsFac(i,j,bi,bj)* SEAICEmcMU * efr2 )
+     &          *(1. _d 0 + tnsFac(i,j,bi,bj))
 #else
            zeta (i,j,bi,bj) = HALF*( SEAICEmcMU * efr2
      &          * press0(i,j,bi,bj) * ( 1. _d 0 + tnsFac(i,j,bi,bj) )

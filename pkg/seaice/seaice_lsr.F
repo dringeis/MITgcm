@@ -166,10 +166,18 @@ C     tendency due to advection of momentum
 #endif /* SEAICE_ALLOW_FREEDRIFT */
       _RL areaMinLoc
 
+#ifdef SEAICE_LSR_FLEX
+      LOGICAL CompResIni
+#endif /* SEAICE_LSR_FLEX */
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       printResidual = debugLevel.GE.debLevA
      &  .AND. DIFFERENT_MULTIPLE( SEAICE_monFreq, myTime, deltaTClock )
+
+C #ifdef SEAICE_LSR_FLEX
+      CompResIni = .TRUE.
+C #endif /* SEAICE_LSR_FLEX */
 
 C     extra overlap for (restricted) additive Schwarz method
       jMin = 1   - SEAICE_OLy
@@ -257,7 +265,7 @@ C     As a side effect, this avoids TAF recomputation warnings.
         ENDDO
        ENDDO
       ENDDO
-    
+
       residkm1=1 _d 0
       residkm2=1 _d 0
 
@@ -331,11 +339,11 @@ C     different stabilisation methods are possible.
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
 C     This is stable but slow to converge.
-C          uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
-C          vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
+         uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
+         vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
 C     This converges slightly faster than the previous lines.
-           uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
-           vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
+C            uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
+C            vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
           ENDDO
          ENDDO
         ENDIF
@@ -563,7 +571,11 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 #endif /* ALLOW_DEBUG */
 
 C--   Calculate initial residual of the linearised system
-      IF ( printResidual .OR. LSR_mixIniGuess.GE.1 )
+#ifdef SEAICE_LSR_FLEX
+      IF ( printResidual .OR. LSR_mixIniGuess.GE.1 .OR. CompResIni)
+#else /* SEAICE_LSR_FLEX */
+      IF ( printResidual .OR. LSR_mixIniGuess.GE.1)
+#endif /* SEAICE_LSR_FLEX */
      & CALL SEAICE_RESIDUAL(
      I                  rhsU, rhsV, uRt1, uRt2, vRt1, vRt2,
      I                  AU, BU, CU, AV, BV, CV, uIce, vIce,
@@ -678,26 +690,32 @@ CML#endif /* ALLOW_AUTODIFF_TAMC */
 
       ICOUNT1 = linearIterLoc
       ICOUNT2 = linearIterLoc
-      
-      residini=SQRT(residUini*residUini+residVini*residVini)
-        
-      if (residini.LT.SEAICEnonLinTol) exit
 
-C      LSRflexFac = SQRT(ABS(LOG10(residini*0.1)*0.05)**2+1.05**2)
-     
-      residiniFac = MAX(MIN(ONE/ABS(LOG10(residini)), ONE), 0.1 _d 0)
+      residini = SQRT(residUini*residUini+residVini*residVini)
 
-      LSRflexFac = residkm1/residkm2 
-      LSRflexFac = MIN(LSRflexFac, 0.9 _d 0 )
-      LSRflexFac = MAX(LSRflexFac, 0.1 _d 0 )
-      
-      IF ( ipass .LE. 3 ) THEN
-       LSRflexFac = 0.9 _d 0
+      IF ( residini .LT. SEAICEnonLinTol ) exit
+
+#ifdef SEAICE_LSR_FLEX
+C       LSRflexFac = ABS(LOG10(residkm2))/ABS(LOG10(residkm1))
+      LSRflexFac = (residkm1/residkm2)/(1+ABS(LOG10(residini)))
+C       LSRflexFac = MIN(LSRflexFac, 0.99 _d 0 )
+C       LSRflexFac = MAX(LSRflexFac, 0.3 _d 0 )
+
+      IF ( (residini .GE. 0.25 _d 0) .OR. (ipass .LE. 3) ) THEN
+       LSRflexFac = 0.99 _d 0
       ENDIF
 
-      LSR_ERRORfu = residUini*LSRflexFac* residiniFac
-      LSR_ERRORfv = residVini*LSRflexFac* residiniFac
+      IF ( printResidual ) THEN
+       _BEGIN_MASTER( myThid )
+       WRITE(standardMessageUnit,'(A,1X,I9,1X,F10.6)')
+     &    ' SEAICE_LSR: FLEX_FACTOR =', ipass, LSRflexFac
+       _END_MASTER( myThid )
+      ENDIF
 
+      LSR_ERRORfu = residUini*LSRflexFac
+      LSR_ERRORfv = residVini*LSRflexFac
+
+#endif /* SEAICE_LSR_FLEX */
 
       DO m = 1, linearIterLoc
 
@@ -841,11 +859,33 @@ C     end bi,bj-loops
 #ifdef SEAICE_GLOBAL_3DIAG_SOLVER
         ENDIF
 #endif /* SEAICE_GLOBAL_3DIAG_SOLVER */
-        CALL SEAICE_RESIDUAL(
+
+#ifdef SEAICE_LSR_FLEX
+        IF ( doIterate4u .OR. doIterate4v ) THEN
+         IF ( MOD(m,SOLV_NCHECK) .EQ. 0 ) THEN
+          CALL SEAICE_RESIDUAL(
      I       rhsU, rhsV, uRt1, uRt2, vRt1, vRt2,
      I       AU, BU, CU, AV, BV, CV, uIce, vIce,
      O       residUm, residVm, uTmp2, vTmp2,
      I       printResidual, myIter, myThid )
+         ENDIF
+        ENDIF
+
+        IF ( doIterate4u.AND.MOD(m,SOLV_NCHECK).EQ.0) THEN
+         IF( (residUm.LT.LSR_ERRORfu) ) THEN
+          ICOUNT1=m
+          doIterate4u = .FALSE.
+         ENDIF
+        ENDIF
+
+        IF ( doIterate4v.AND.MOD(m,SOLV_NCHECK).EQ.0) THEN
+         IF( (residVm.LT.LSR_ERRORfv) ) THEN
+          ICOUNT2=m
+          doIterate4v = .FALSE.
+         ENDIF
+        ENDIF
+
+#else /* SEAICE_LSR_FLEX */
 
         IF ( doIterate4u.AND.MOD(m,SOLV_NCHECK).EQ.0) THEN
          S1=ZERO
@@ -866,8 +906,7 @@ c    &   ' U iters,error,WF = ',ipass,M,S1,S1A,WFAU
 C SAFEGUARD AGAINST BAD FORCING ETC
 C          IF(m.GT.1.AND.S1.GT.S1A) WFAU=WFAU2
 C          S1A=S1
-C          IF(S1.LT.LSR_ERROR) THEN
-         IF((residUm.LT.LSR_ERRORfu) .OR. (S1.LT.LSR_ERROR)) THEN
+         IF(S1.LT.LSR_ERROR) THEN
           ICOUNT1=m
           doIterate4u = .FALSE.
          ENDIF
@@ -890,12 +929,12 @@ C          IF(S1.LT.LSR_ERROR) THEN
 C SAFEGUARD AGAINST BAD FORCING ETC
 C          IF(m.GT.1.AND.S2.GT.S2A) WFAV=WFAV2
 C          S2A=S2
-C          IF(S2.LT.LSR_ERROR) THEN
-         IF((residVm.LT.LSR_ERRORfv) .OR. (S2.LT.LSR_ERROR)) THEN
+         IF(S2.LT.LSR_ERROR) THEN
           ICOUNT2=m
           doIterate4v = .FALSE.
          ENDIF
         ENDIF
+#endif /* SEAICE_LSR_FLEX */
 
         CALL EXCH_UV_XY_RL( uIce, vIce,.TRUE.,myThid)
 
@@ -903,7 +942,6 @@ C--    end doIterate4u or doIterate4v
        ENDIF
       ENDDO
 C ITERATION END -----------------------------------------------------
-
 C       residm=SQRT(residUm*residUm+residVm*residVm)
 
 C       if (residm.LT.SEAICEnonLinTol) exit
@@ -961,10 +999,6 @@ C--   Calculate final residual of the linearised system
      &    ' SEAICE_LSR (ipass=',ipass,') iters,dV,Resid=',
      &      ICOUNT2, S2, residVend
         _END_MASTER( myThid )
-
-      residkm2=residkm1
-      residkm1=SQRT(residUend*residUend+residVend*residVend)
-
       ENDIF
 #ifdef ALLOW_DEBUG
       IF ( debugLevel .GE. debLevD ) THEN

@@ -175,9 +175,9 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       printResidual = debugLevel.GE.debLevA
      &  .AND. DIFFERENT_MULTIPLE( SEAICE_monFreq, myTime, deltaTClock )
 
-C #ifdef SEAICE_LSR_FLEX
+#ifdef SEAICE_LSR_FLEX
       CompResIni = .TRUE.
-C #endif /* SEAICE_LSR_FLEX */
+#endif /* SEAICE_LSR_FLEX */
 
 C     extra overlap for (restricted) additive Schwarz method
       jMin = 1   - SEAICE_OLy

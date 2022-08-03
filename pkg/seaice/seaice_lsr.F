@@ -93,9 +93,11 @@ C     i,j,bi,bj  :: Loop counters
       _RL S1, S2, S1A, S2A
       _RL recip_deltaT
 
+#ifdef SEAICE_LSR_FLEX
       _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv
       _RL residini, residkm1, residkm2, residiniFac
-      _RL residUm, residVm, residm
+      _RL residUm, residVm
+#endif /* SEAICE_LSR_FLEX */
 
 C     diagonals of coefficient matrices
       _RL AU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -700,10 +702,14 @@ CML#endif /* ALLOW_AUTODIFF_TAMC */
       IF ( residini .LT. SEAICEnonLinTol ) exit
 
 #ifdef SEAICE_LSR_FLEX
+C     From Lemieux et al. 2010
+      LSRflexFac = (residkm1/residkm2)*0.5
+C     Other possibilities:Q
+
 C       LSRflexFac = ABS(LOG10(residkm2))/ABS(LOG10(residkm1))
-      LSRflexFac = (residkm1/residkm2)/(1+ABS(LOG10(residini)))
-C       LSRflexFac = MIN(LSRflexFac, 0.99 _d 0 )
-C       LSRflexFac = MAX(LSRflexFac, 0.3 _d 0 )
+C       LSRflexFac = (residkm1/residkm2)/(1+ABS(LOG10(residini)))
+      LSRflexFac = MIN(LSRflexFac, 0.99 _d 0 )
+      LSRflexFac = MAX(LSRflexFac, 0.3 _d 0 )
 
       IF ( (residini .GE. 0.25 _d 0) .OR. (ipass .LE. 3) ) THEN
        LSRflexFac = 0.99 _d 0
@@ -946,9 +952,6 @@ C--    end doIterate4u or doIterate4v
        ENDIF
       ENDDO
 C ITERATION END -----------------------------------------------------
-C       residm=SQRT(residUm*residUm+residVm*residVm)
-
-C       if (residm.LT.SEAICEnonLinTol) exit
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -985,7 +988,7 @@ C--   Calculate final residual of the linearised system
         _BEGIN_MASTER( myThid )
         WRITE(standardMessageUnit,'(A,1X,I9,1P3E16.8)')
      &    ' SEAICE_LSR: Residual Initial ipass,Uice,Vice=',
-     &        ipass, residUini, residVini
+     &        ipass, residUend, residVend
 #ifdef SEAICE_ALLOW_FREEDRIFT
         IF ( LSR_mixIniGuess.GE.0 )
      &  WRITE(standardMessageUnit,'(A,1P3E16.8)')

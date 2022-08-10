@@ -100,6 +100,10 @@ C     i,j,bi,bj  :: Loop counters
       _RL residUm, residVm
 #endif /* SEAICE_LSR_FLEX */
 
+      _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv
+      _RL residini, residkm1, residkm2, residiniFac
+      _RL residUm, residVm, residm
+
 C     diagonals of coefficient matrices
       _RL AU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL BU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -169,18 +173,14 @@ C     tendency due to advection of momentum
 #endif /* SEAICE_ALLOW_FREEDRIFT */
       _RL areaMinLoc
 
-
       LOGICAL CompResIni
-
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       printResidual = debugLevel.GE.debLevA
      &  .AND. DIFFERENT_MULTIPLE( SEAICE_monFreq, myTime, deltaTClock )
 
-
       CompResIni = .TRUE.
-
 
 C     extra overlap for (restricted) additive Schwarz method
       jMin = 1   - SEAICE_OLy
@@ -348,11 +348,11 @@ C     different stabilisation methods are possible.
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
 C     This is stable but slow to converge.
-C          uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
-C          vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
+         uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
+         vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
 C     This converges slightly faster than the previous lines.
-           uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
-           vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
+C            uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
+C            vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
           ENDDO
          ENDDO
         ENDIF
@@ -876,7 +876,6 @@ C     end bi,bj-loops
      I       AU, BU, CU, AV, BV, CV, uIce, vIce,
      O       residUm, residVm, uTmp2, vTmp2,
      I       printResidual, myIter, myThid )
-
          IF ( doIterate4u ) THEN
           IF( (residUm.LT.LSR_ERRORfu) ) THEN
            ICOUNT1=m
@@ -891,7 +890,6 @@ C     end bi,bj-loops
           ENDIF
          ENDIF
         ENDIF
-
 
 #else /* SEAICE_LSR_FLEX */
 
@@ -956,6 +954,9 @@ C--    end doIterate4u or doIterate4v
 #endif /* SEAICE_LSR_FLEX */
 
 C ITERATION END -----------------------------------------------------
+C       residm=SQRT(residUm*residUm+residVm*residVm)
+
+C       if (residm.LT.SEAICEnonLinTol) exit
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 

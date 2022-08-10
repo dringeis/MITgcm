@@ -375,9 +375,9 @@ C     solvers (Lemieux and Tremblay 2009, JGR). No effect on EVP
      &          * ( 1. _d 0 + tnsFac(i,j,bi,bj) )
      &          )/deltaCreg(i,j)
 C     put min and max viscosities in
-         zeta (i,j,bi,bj) = MIN(ZMAX(i,j,bi,bj),zeta(i,j,bi,bj))
+           zeta (i,j,bi,bj) = MIN(ZMAX(i,j,bi,bj),zeta(i,j,bi,bj))
 #endif /*  SEAICE_ZETA_SMOOTHREG */
-          zeta (i,j,bi,bj) = MAX(ZMIN(i,j,bi,bj),zeta(i,j,bi,bj))
+           zeta (i,j,bi,bj) = MAX(ZMIN(i,j,bi,bj),zeta(i,j,bi,bj))
 C     set viscosities to zero at HEFFM flow pts
            zeta (i,j,bi,bj) = zeta(i,j,bi,bj)*HEFFM(i,j,bi,bj)
 C     "replacement pressure"

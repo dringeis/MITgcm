@@ -1,4 +1,7 @@
 #include "CTRL_OPTIONS.h"
+#ifdef ALLOW_GMREDI
+# include "GMREDI_OPTIONS.h"
+#endif
 #ifdef ALLOW_EXF
 # include "EXF_OPTIONS.h"
 #endif
@@ -53,7 +56,10 @@ C     msgBuf     :: Informational/error message buffer
 #endif
 
 #if ( defined ALLOW_GENARR2D_CONTROL || defined ALLOW_GENARR3D_CONTROL || defined ALLOW_GENTIM2D_CONTROL )
-      INTEGER iarr, k2
+      INTEGER iarr
+#endif
+#if ( defined ALLOW_GENARR2D_CONTROL || defined ALLOW_GENARR3D_CONTROL )
+      INTEGER k2
 #endif
 #if ( defined ALLOW_GENARR3D_CONTROL && defined ALLOW_PTRACERS )
       INTEGER iLen, iPtr, ascii_1
@@ -192,6 +198,26 @@ C-    to use DIFFKR_CONTROL, needs to define ALLOW_3D_DIFFKR in CPP_OPTIONS.h
 # endif
 #endif /* ALLOW_DIFFKR_CONTROL */
 
+#ifdef ALLOW_KAPGM_CONTROL
+C-    to use KAPGM_CONTROL, needs to define GM_READ_K3D_GM in GMREDI_OPTIONS.h
+# ifndef GM_READ_K3D_GM
+      WRITE(msgBuf,'(A)')
+     &        'Needs to define GM_READ_K3D_GM to use KAPGM_CONTROL'
+      CALL PRINT_ERROR( msgBuf, myThid )
+      errCount = errCount + 1
+# endif
+#endif /* ALLOW_KAPGM_CONTROL */
+
+#ifdef ALLOW_KAPREDI_CONTROL
+C-    to use KAPREDI_CONTROL, needs to define GM_READ_K3D_REDI in GMREDI_OPTIONS.h
+# ifndef GM_READ_K3D_REDI
+      WRITE(msgBuf,'(A)')
+     &        'Needs to define GM_READ_K3D_REDI to use KAPREDI_CONTROL'
+      CALL PRINT_ERROR( msgBuf, myThid )
+      errCount = errCount + 1
+# endif
+#endif /* ALLOW_KAPREDI_CONTROL */
+
 #if (defined (ALLOW_HFLUX_CONTROL) && defined (ALLOW_ATEMP_CONTROL))
       WRITE(msgBuf,'(A)')
      &     'Cannot have both ALLOW_HFLUX_CONTROL & ALLOW_ATEMP_CONTROL'
@@ -320,6 +346,25 @@ C     which in turn require a particular set of input fields
 #  endif
 # endif /* ndef EXCLUDE_CTRL_PACK */
 #endif /* ALLOW_PACKUNPACK_METHOD2 */
+
+#ifdef ALLOW_HFLUXM_CONTROL
+      WRITE(msgBuf,'(2A)') 'CTRL_CHECK: ',
+     &     'CPP-flag ALLOW_HFLUXM_CONTROL has been retired.'
+      CALL PRINT_ERROR( msgBuf, myThid )
+      WRITE(msgBuf,'(2A)') 'CTRL_CHECK: ',
+     &     'tutorial_global_oce_optim, which was the only experiment'
+      CALL PRINT_ERROR( msgBuf, myThid )
+      WRITE(msgBuf,'(2A)') 'CTRL_CHECK: ',
+     &     'that used this flag, now uses the generic control xx_qnet'
+      CALL PRINT_ERROR( msgBuf, myThid )
+      WRITE(msgBuf,'(2A)') 'CTRL_CHECK: ',
+     &     'to achieve the same thing.'
+      CALL PRINT_ERROR( msgBuf, myThid )
+C     For now only print the error message, but do not increase the
+C     error count so that the model does not stop as along as we have to
+C     put up with the OpenAD version of tutorial_global_oce_optim
+C      errCount = errCount + 1
+#endif /* ALLOW_HFLUXM_CONTROL */
 
       IF ( errCount.GE.1 ) THEN
         WRITE(msgBuf,'(A,I3,A)')

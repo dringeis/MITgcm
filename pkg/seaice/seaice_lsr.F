@@ -1122,8 +1122,10 @@ C--   Calculate residual of the linearised system
        _GLOBAL_SUM_RL( residU, myThid )
        _GLOBAL_SUM_RL( residV, myThid )
 C     scale residuals by globalArea so that they do not get ridiculously large
-       IF ( residU.GT.0. ) residU = SQRT(residU/globalArea)
-       IF ( residV.GT.0. ) residV = SQRT(residV/globalArea)
+CDR    IF ( residU.GT.0. ) residU = SQRT(residU/globalArea)
+CDR    IF ( residV.GT.0. ) residV = SQRT(residV/globalArea)
+       IF ( residU.GT.0. ) residU = SQRT(residU)/(Nx*Ny)
+       IF ( residV.GT.0. ) residV = SQRT(residV)/(Nx*Ny)
       ENDIF
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|

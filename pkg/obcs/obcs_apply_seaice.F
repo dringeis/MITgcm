@@ -57,8 +57,10 @@ C     Set model variables to OB values on Northern Boundary
          DO i=1-OLx,sNx+OLx
           Jobc = OB_Jn(I,bi,bj)
           IF ( Jobc.NE.OB_indexNone ) THEN
-            HEFF (i,Jobc,bi,bj) = OBNh (i,bi,bj)
-            AREA (i,Jobc,bi,bj) = OBNa (i,bi,bj)
+C            HEFF (i,Jobc,bi,bj) = OBNh (i,bi,bj)
+            HEFF (i,Jobc,bi,bj) = HEFF(i,Jobc-1,bi,bj)
+C            AREA (i,Jobc,bi,bj) = OBNa (i,bi,bj)
+            AREA (i,Jobc,bi,bj) = AREA(i,Jobc-1,bi,bj)
             HSNOW(i,Jobc,bi,bj) = OBNsn(i,bi,bj)
 # ifdef SEAICE_VARIABLE_SALINITY
             HSALT(i,Jobc,bi,bj) = OBNsl(i,bi,bj)

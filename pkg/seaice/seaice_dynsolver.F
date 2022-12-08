@@ -472,6 +472,12 @@ C     If any of the stress or energy diagnostics are required,
 C     first recompute strainrates from up-to-date velocities
        diag_SIsigma_isOn  = DIAGNOSTICS_IS_ON('SIsig1  ',myThid)
      &                 .OR. DIAGNOSTICS_IS_ON('SIsig2  ',myThid)
+     &                 .OR. DIAGNOSTICS_IS_ON('SIsig11 ',myThid)
+     &                 .OR. DIAGNOSTICS_IS_ON('SIsig12 ',myThid)
+     &                 .OR. DIAGNOSTICS_IS_ON('SIsig22 ',myThid)
+       diag_SIeps_isOn    = DIAGNOSTICS_IS_ON('SIeps11 ',myThid)
+     &                 .OR. DIAGNOSTICS_IS_ON('SIsig12 ',myThid)
+     &                 .OR. DIAGNOSTICS_IS_ON('SIsig22 ',myThid)
        diag_SIshear_isOn  = DIAGNOSTICS_IS_ON('SIshear ',myThid)
        diag_SIenpi_isOn   = DIAGNOSTICS_IS_ON('SIenpi  ',myThid)
        diag_SIenpot_isOn  = DIAGNOSTICS_IS_ON('SIenpot ',myThid)
@@ -479,11 +485,17 @@ C     first recompute strainrates from up-to-date velocities
        diag_SIpSfric_isOn = DIAGNOSTICS_IS_ON('SIpSfric',myThid)
        IF ( diag_SIsigma_isOn  .OR. diag_SIshear_isOn .OR.
      &      diag_SIenpi_isOn   .OR. diag_SIenpot_isOn .OR.
-     &      diag_SIpRfric_isOn .OR. diag_SIpSfric_isOn ) THEN
+     &      diag_SIpRfric_isOn .OR. diag_SIpSfric_isOn .OR.
+     &      diag_SIeps_isOn ) THEN
         CALL SEAICE_CALC_STRAINRATES(
      I       uIce, vIce,
      O       e11, e22, e12,
      I       0, myTime, myIter, myThid )
+        IF ( diag_SIeps_isOn ) THEN
+         CALL DIAGNOSTICS_FILL(e11 ,'SIeps11  ',0,1,0,1,1,myThid)
+         CALL DIAGNOSTICS_FILL(e12 ,'SIeps12  ',0,1,0,1,1,myThid)
+         CALL DIAGNOSTICS_FILL(e22 ,'SIeps22  ',0,1,0,1,1,myThid)
+        ENDIF
 C     but use old viscosities and pressure for the
 C     principle stress components
 CML     CALL SEAICE_CALC_VISCOSITIES(
@@ -530,6 +542,9 @@ C     PRESS = PRESS(n-1), n = number of sub-cycling steps
      I          e11, e22, e12, press, zeta, eta, etaZ,
      O          sig1, sig2, sig12,
      I          bi, bj, myTime, myIter, myThid )
+           CALL DIAGNOSTICS_FILL(sig1 ,'SIsig11  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig2 ,'SIsig12  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig12,'SIsig22  ',0,1,2,bi,bj,myThid)
            DO j=1,sNy
             DO i=1,sNx
              sigp   = sig1(i,j) + sig2(i,j)

@@ -789,8 +789,50 @@ C=============== dynamics ============
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
+      diagName  = 'SIsig11 '
+      diagTitle = 'SEAICE stress, component  '
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIsig12 '
+      diagTitle = 'SEAICE stress, component one two (shear)'
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIsig22 '
+      diagTitle = 'SEAICE stress, component two two (y-direction) '
+      diagUnits = 'N/m             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
       diagName  = 'SIshear '
       diagTitle = 'SEAICE shear deformation rate'
+      diagUnits = '1/s             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps11 '
+      diagTitle = 'SEAICE deformation rate, comp. one one (x-direction)'
+      diagUnits = '1/s             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps12 '
+      diagTitle = 'SEAICE deformation rate, comp. one two (shear)'
+      diagUnits = '1/s             '
+      diagCode  = 'SM      M1      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+      diagName  = 'SIeps22 '
+      diagTitle = 'SEAICE deformation rate, comp. two two (y-direction)'
       diagUnits = '1/s             '
       diagCode  = 'SM      M1      '
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,

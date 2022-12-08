@@ -82,7 +82,7 @@ C     bi,bj  :: tile counters
       _RL areaW, areaS, COSWAT
       _RS SINWAT
       INTEGER kSrf
-      LOGICAL diag_SIsigma_isOn, diag_SIshear_isOn
+      LOGICAL diag_SIsigma_isOn, diag_SIshear_isOn, diag_SIeps_isOn
       LOGICAL diag_SIenpi_isOn, diag_SIenpot_isOn
       LOGICAL diag_SIpRfric_isOn, diag_SIpSfric_isOn
 #endif /* ALLOW_DIAGNOSTICS */

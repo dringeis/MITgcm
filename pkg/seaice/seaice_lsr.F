@@ -87,7 +87,7 @@ C     i,j,bi,bj  :: Loop counters
       INTEGER ICOUNT1, ICOUNT2, linearIterLoc, nonLinIterLoc
       INTEGER kSrf
       LOGICAL doIterate4u, doIterate4v, diag_SIlsrReU_isOn
-      LOGICAL diag_SIlsrReV_isOn, diag_SIlsrRe_isOn 
+      LOGICAL diag_SIlsrReV_isOn, diag_SIlsrRe_isOn
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
       _RL WFAU, WFAV, WFAU2, WFAV2

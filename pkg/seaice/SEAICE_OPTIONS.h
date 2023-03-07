@@ -134,6 +134,9 @@ C     (runtime flag SEAICEuseMCPL)
 C     allow the teardrop and parabolic lens  rheology
 C     (runtime flag SEAICEuseTD and SEAICEusePL)
 # undef SEAICE_ALLOW_TEARDROP
+C     allow the teardrop and parabolic lens  rheology
+C     (runtime flag SEAICEuseTD and SEAICEusePL)
+# undef SEAICE_ALLOW_ETD
 C     Use LSR vector code; not useful on non-vector machines, because it
 C     slows down convergence considerably, but the extra iterations are
 C     more than made up by the much faster code on vector machines. For

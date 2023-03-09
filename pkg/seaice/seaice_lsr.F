@@ -325,11 +325,11 @@ C     different stabilisation methods are possible.
          DO j=1-OLy,sNy+OLy
           DO i=1-OLx,sNx+OLx
 C     This is stable but slow to converge.
-          uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
-          vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
+C          uIceC(i,j,bi,bj) = HALF*(uIce(i,j,bi,bj)+uIceNm1(i,j,bi,bj))
+C          vIceC(i,j,bi,bj) = HALF*(vIce(i,j,bi,bj)+vIceNm1(i,j,bi,bj))
 C     This converges slightly faster than the previous lines.
-C           uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
-C           vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
+           uIceC(i,j,bi,bj) = HALF*( uIce(i,j,bi,bj)+uIceC(i,j,bi,bj) )
+           vIceC(i,j,bi,bj) = HALF*( vIce(i,j,bi,bj)+vIceC(i,j,bi,bj) )
           ENDDO
          ENDDO
         ENDIF

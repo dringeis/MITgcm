@@ -322,13 +322,14 @@ C     where eI changes sign
            ap1 = a + ONE
 
 C     handle floating point errors when k is negative and very large
-           IF ( k .LT. -1. _d 3 ) THEN
-            x = (3. _d 0 * ap1)
-     &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
-           ELSE
-            x = TWO * ksq + TWO *k*SQRT(ksq + 3. _d 0 * ap1 )
-           ENDIF
-           x = (x - (6. _d 0 * ap1) ) * oneNinth + a
+C            IF ( k .LT. -1. _d 3 ) THEN
+C             x = (3. _d 0 * ap1)
+C      &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
+C            ELSE
+C             x = TWO * ksq + TWO *k*SQRT(ksq + 3. _d 0 * ap1 )
+C            ENDIF
+C            x = (x - (6. _d 0 * ap1) ) * oneNinth + a
+            x = (-(6*(1+a)-2*ksq)+2*k*SQRT(ksq+3 * (1+a)))/9 + a
 C     original formulation of Zhang 2005:
 C          x = ( TWO * ksq + TWO *k*sqrt(ksq + 3. _d 0 * ap1 )
 C      &          - (6. _d 0 * ap1) ) * oneNinth + a
@@ -343,7 +344,7 @@ C          x = MAX( x,-1 _d 0 ) ! to be sure
 
 #ifdef SEAICE_DELTA_SMOOTHREG
            zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
-     &          / SIGN( SQRT(ep*ep+smallNbrSq), ep)
+     &          / SIGN( SQRT(ep*ep+smallNbrSq ), ep)
 #else
            zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
      &          / SIGN( MAX( ABS(ep),smallNbr ), ep)
@@ -354,7 +355,8 @@ C      &        / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
 C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
            eta(i,j,bi,bj) = press0(i,j,bi,bj) * recip_e *
-     &                      SQRT( a - x*x - x*(1-a) ) * recip_shear(i,j)
+     &                      SQRT( a - x*x - x*(ONE - a) )
+     &                      * recip_shear(i,j)
 
 C      define the max values for eta and zeta
 C            etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
@@ -366,8 +368,8 @@ C      apply the max values
 C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
 C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
 C      original formulation of Zhang 2005
-         zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
-         eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
 
 C      compute the replacement pressure
            press(i,j,bi,bj) = TWO * cyc * press0(i,j,bi,bj)

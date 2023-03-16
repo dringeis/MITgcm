@@ -322,14 +322,14 @@ C     where eI changes sign
            ap1 = a + ONE
 
 C     handle floating point errors when k is negative and very large
-C            IF ( k .LT. -1. _d 3 ) THEN
-C             x = (3. _d 0 * ap1)
-C      &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
-C            ELSE
-C             x = TWO * ksq + TWO *k*SQRT(ksq + 3. _d 0 * ap1 )
-C            ENDIF
-C            x = (x - (6. _d 0 * ap1) ) * oneNinth + a
-            x = (-(6*(1+a)-2*ksq)+2*k*SQRT(ksq+3 * (1+a)))/9 + a
+           IF ( k .LT. -1. _d 3 ) THEN
+            x = (3. _d 0 * ap1)
+     &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
+           ELSE
+            x = TWO * ksq + TWO *k*SQRT(ksq + 3. _d 0 * ap1 )
+           ENDIF
+           x = (x - (6. _d 0 * ap1) ) * oneNinth + a
+
 C     original formulation of Zhang 2005:
 C          x = ( TWO * ksq + TWO *k*sqrt(ksq + 3. _d 0 * ap1 )
 C      &          - (6. _d 0 * ap1) ) * oneNinth + a
@@ -364,15 +364,16 @@ C      &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
 C            zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
 C      &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
 
-C      apply the max values
+C C      apply the max values
 C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
 C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
 C      original formulation of Zhang 2005
            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
 
-C      compute the replacement pressure
+C      compute the pressure withour replacement
            press(i,j,bi,bj) = TWO * cyc * press0(i,j,bi,bj)
+C      compute the replacement pressure
 C            press(i,j,bi,bj) = TWO * cyc * (
 C      &          press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
 C      &         + SEAICEpressReplFac * ep * zeta(i,j,bi,bj)

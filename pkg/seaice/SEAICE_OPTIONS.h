@@ -169,9 +169,13 @@ C     allow the teardrop and parabolic lens  rheology
 C     (runtime flag SEAICEuseTD and SEAICEusePL)
 # undef SEAICE_ALLOW_TEARDROP
 
-C     allow the teardrop and parabolic lens  rheology
-C     (runtime flag SEAICEuseTD and SEAICEusePL)
+C     allow the ellipse with teardrop plastic pot. rheology
+C     (runtime flag SEAICEuseETD )
 # undef SEAICE_ALLOW_ETD
+
+C     allow the ellipse with teardrop plastic pot. rheology
+C     (runtime flag SEAICEuseEPL)
+# undef SEAICE_ALLOW_EPL
 
 C--   LSR solver settings
 

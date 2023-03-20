@@ -359,17 +359,17 @@ C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
      &                      * recip_shear(i,j)
 
 C      define the max values for eta and zeta
-C            etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
-C      &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
-C            zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
-C      &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
+           etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
+     &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
+           zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
+     &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
 
-C C      apply the max values
-C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
-C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
+C      apply the max values
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
 C      original formulation of Zhang 2005
-           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
-           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
 
 C      compute the pressure withour replacement
            press(i,j,bi,bj) = TWO * cyc * press0(i,j,bi,bj)
@@ -389,6 +389,72 @@ C      &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
           ENDDO ! x loop
          ENDDO ! y loop
 #endif /* SEAICE_ALLOW_ETD*/
+#ifdef SEAICE_ALLOW_EPL
+        ELSEIF ( SEAICEuseEPL ) THEN
+
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+C            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+
+           k   = ep * recip_shear(i,j)
+           ksq = k * k
+           a   = tnsFac(i,j,bi,bj)
+
+           cyc = 0.5 _d 0 *(1. _d 0 - a )
+C     handle floating point errors when k is negative and very large
+           x = 0.5 _d 0 * (k - 1. _d 0 + a)
+           x = MAX( x, -1. _d 0 + 0.99 _d 0 * a )
+           x = MIN( x, 0.99 _d 0 * a )
+
+#ifdef SEAICE_DELTA_SMOOTHREG
+           zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
+     &          / SIGN( SQRT(ep*ep+smallNbrSq ), ep)
+#else
+           zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
+     &          / SIGN( MAX( ABS(ep),smallNbr ), ep)
+#endif /* SEAICE_DELTA_SMOOTHREG */
+C      original formulation of Zhang 2005
+C          zeta(i,j,bi,bj) = (x + 0.5 _d 0) * press0(i,j,bi,bj)
+C      &        / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
+C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
+
+           eta(i,j,bi,bj) = press0(i,j,bi,bj) * recip_e *
+     &                      SQRT( a - x*x - x*(ONE - a) )
+     &                      * recip_shear(i,j)
+
+C      define the max values for eta and zeta
+           etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
+     &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
+           zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
+     &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
+
+C      apply the max values
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
+C      original formulation of Zhang 2005
+C            zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C            eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+
+C      compute the pressure withour replacement
+           press(i,j,bi,bj) = TWO * cyc * press0(i,j,bi,bj)
+C      compute the replacement pressure
+C            press(i,j,bi,bj) = TWO * cyc * (
+C      &          press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
+C      &         + SEAICEpressReplFac * ep * zeta(i,j,bi,bj)
+C      &         / SIGN(MAX(ABS(x+cyc), smallNbr), x+cyc) )
+
+C      reduce eta according to replacement pressure
+C            etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
+C      &                    * recip_shear(i,j)
+C            etapr = MIN( etapr, etamax_TD )
+C            eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
+C      &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
+
+          ENDDO ! x loop
+         ENDDO ! y loop
+#endif /* SEAICE_ALLOW_EPL*/
 #ifdef SEAICE_ALLOW_MCS
         ELSEIF ( SEAICEuseMCS ) THEN
 C     Full Mohr-Coulomb following IP et al. 1991

@@ -93,7 +93,7 @@ C--   SEAICE parameters
      & SEAICEuseDYNAMICS, SEAICEuseFREEDRIFT, SEAICEuseStrImpCpl,
      & SEAICEuseMCS, SEAICEuseMCE, SEAICEuseTD, SEAICEusePL,
      & SEAICEuseMCE2, SEAICEuseMCTD,SEAICEuseMCPL, SEAICEuseETD,
-     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt,
+     & SEAICEuseTEM, SEAICEuseMetricTerms, SEAICEuseTilt, SEAICEuseEPL,
      & useHB87stressCoupling, SEAICEupdateOceanStress,
      & usePW79thermodynamics, useMaykutSatVapPoly, SEAICEuseFlooding,
      & SEAICErestoreUnderIce, SEAICE_growMeltByConv,

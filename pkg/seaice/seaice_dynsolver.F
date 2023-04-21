@@ -543,8 +543,8 @@ C     PRESS = PRESS(n-1), n = number of sub-cycling steps
      O          sig1, sig2, sig12,
      I          bi, bj, myTime, myIter, myThid )
            CALL DIAGNOSTICS_FILL(sig1 ,'SIsig11  ',0,1,2,bi,bj,myThid)
-           CALL DIAGNOSTICS_FILL(sig2 ,'SIsig12  ',0,1,2,bi,bj,myThid)
-           CALL DIAGNOSTICS_FILL(sig12,'SIsig22  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig12,'SIsig12  ',0,1,2,bi,bj,myThid)
+           CALL DIAGNOSTICS_FILL(sig1 ,'SIsig22  ',0,1,2,bi,bj,myThid)
            DO j=1,sNy
             DO i=1,sNx
              sigp   = sig1(i,j) + sig2(i,j)

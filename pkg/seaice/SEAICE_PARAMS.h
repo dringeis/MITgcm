@@ -518,7 +518,7 @@ C
       _RL SEAICE_strength, SEAICE_cStar, SEAICEpressReplFac
       _RL SEAICE_tensilFac, SEAICE_tensilDepth
       _RL SEAICE_eccen, SEAICE_eccfr
-      _RL SEAICEmcMu, SEAICEtdMU
+      _RL SEAICEmcMu, SEAICEmcMuCap
       _RL SEAICE_lhFusion, SEAICE_lhEvap
       _RL SEAICE_dalton
       _RL SEAICE_iceConduct, SEAICE_snowConduct
@@ -574,7 +574,7 @@ C
      &    SEAICEbasalDragK1, SEAICEbasalDragK2,
      &    SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
      &    SEAICE_strength, SEAICE_cStar, SEAICE_eccen, SEAICE_eccfr,
-     &    SEAICEtdMU, SEAICEmcMu,
+     &    SEAICEmcMu, SEAICEmcMUcap,
      &    SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      &    SEAICE_lhFusion, SEAICE_lhEvap,
      &    SEAICE_dalton, SEAICE_cpAir,

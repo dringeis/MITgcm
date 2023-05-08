@@ -149,7 +149,7 @@ C--   SEAICE parameters
      & SEAICE_cBasalStar, SEAICEbasalDragU0, SEAICEbasalDragK1,
      & SEAICEbasalDragK2, SEAICE_wetAlbTemp, SEAICE_waterAlbedo,
      & SEAICE_strength, SEAICE_cStar, SEAICE_eccen,
-     & SEAICE_eccfr, SEAICEtdMU, SEAICEmcMu,
+     & SEAICE_eccfr, SEAICEmcMU, SEAICEmcMUCap,
      & SEAICEpressReplFac, SEAICE_tensilFac, SEAICE_tensilDepth,
      & SEAICE_lhFusion, SEAICE_lhEvap, SEAICE_dalton,
      & SEAICE_sensHeat, SEAICE_latentWater, SEAICE_latentIce,
@@ -413,8 +413,8 @@ C
       SEAICE_eccfr       = UNSET_RL
       SEAICE_tensilFac   = 0.     _d 0
       SEAICE_tensilDepth = 0.     _d 0
-      SEAICEtdMU         = 1.     _d 0
       SEAICEmcMu         = 1.     _d 0
+      SEAICEmcMuCap      = 4.     _d 0
 C     coefficients for flux computations/bulk formulae
       SEAICE_dalton      = 1.75   _d -03
 #ifdef ALLOW_EXF

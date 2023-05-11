@@ -194,7 +194,7 @@ C     Teardrop yield curve:
 C     capping x at a is probably better that setting it to a for x>1,
 C     but still not ideal (because non-differentiable)
 C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
-           x = MIN( x, a )
+           x = MIN( x, 0.95 _d 0 * a )
 C          x = MAX( x,-1 _d 0 ) ! to be sure
 
 #ifdef SEAICE_DELTA_SMOOTHREG

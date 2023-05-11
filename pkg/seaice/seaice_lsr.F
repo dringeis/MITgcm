@@ -83,9 +83,23 @@ C     i,j,bi,bj  :: Loop counters
       LOGICAL doIterate4u, doIterate4v
       CHARACTER*(MAX_LEN_MBUF) msgBuf
 
+#ifdef ALLOW_DIAGNOSTICS
+      LOGICAL  DIAGNOSTICS_IS_ON, diag_SIlsrRe_isOn
+      EXTERNAL DIAGNOSTICS_IS_ON
+      _RL RTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+#endif /* ALLOW_DIAGNOSTICS */
+
       _RL WFAU, WFAV, WFAU2, WFAV2
       _RL S1, S2, S1A, S2A
       _RL recip_deltaT
+      _RL residini
+
+#ifdef SEAICE_LSR_FLEX
+      _RL LSRflexFac, LSR_ERRORfu, LSR_ERRORfv
+      _RL residkm1, residkm2, residiniFac
+      _RL residUm, residVm
+#endif /* SEAICE_LSR_FLEX */
+
 
 C     diagonals of coefficient matrices
       _RL AU   (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -121,6 +135,8 @@ C     intermediate time level centered (C) between n and n-1
 C     auxillary fields
       _RL uTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL vTmp (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL uTmp2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
+      _RL vTmp2 (1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
 C     auxillary fields to store intermediate FORCEX/Y0
       _RL fxTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
       _RL fyTmp(1-OLx:sNx+OLx,1-OLy:sNy+OLy,nSx,nSy)
@@ -154,10 +170,14 @@ C     tendency due to advection of momentum
 #endif /* SEAICE_ALLOW_FREEDRIFT */
       _RL areaMinLoc
 
+      LOGICAL CompResIni
+
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       printResidual = debugLevel.GE.debLevA
      &  .AND. DIFFERENT_MULTIPLE( SEAICE_monFreq, myTime, deltaTClock )
+
+      CompResIni = .TRUE.
 
 C     extra overlap for (restricted) additive Schwarz method
       jMin = 1   - SEAICE_OLy
@@ -246,6 +266,12 @@ C     As a side effect, this avoids TAF recomputation warnings.
        ENDDO
       ENDDO
 
+#ifdef SEAICE_LSR_FLEX
+      residkm1=1 _d 0
+      residkm2=1 _d 0
+#endif /* SEAICE_LSR_FLEX */
+
+C     Start of non-linear iteration ====================================
       DO ipass=1,nonLinIterLoc
 
 #ifdef ALLOW_AUTODIFF_TAMC
@@ -273,7 +299,11 @@ CADJ &     key = itmpkey
 #endif /* ALLOW_AUTODIFF_TAMC */
 
 C     surface level
-      kSrf = 1
+      IF ( usingPCoords ) THEN
+       kSrf = Nr
+      ELSE
+       kSrf = 1
+      ENDIF
 C--   introduce turning angles
       SINWAT=SIN(SEAICE_waterTurnAngle*deg2rad)
       COSWAT=COS(SEAICE_waterTurnAngle*deg2rad)
@@ -547,7 +577,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 #endif /* ALLOW_DEBUG */
 
 C--   Calculate initial residual of the linearised system
-      IF ( printResidual .OR. LSR_mixIniGuess.GE.1 )
+      IF ( printResidual .OR. LSR_mixIniGuess.GE.1 .OR. CompResIni)
      & CALL SEAICE_RESIDUAL(
      I                  rhsU, rhsV, uRt1, uRt2, vRt1, vRt2,
      I                  AU, BU, CU, AV, BV, CV, uIce, vIce,
@@ -662,6 +692,36 @@ CML#endif /* ALLOW_AUTODIFF_TAMC */
 
       ICOUNT1 = linearIterLoc
       ICOUNT2 = linearIterLoc
+
+      residini = SQRT(residUini*residUini+residVini*residVini)
+
+      IF ( ( residini .LT. SEAICEnonLinTol ) .AND. ipass .GT. 2 ) exit
+
+#ifdef SEAICE_LSR_FLEX
+C     From Lemieux et al. 2010
+C       LSRflexFac = MIN(LSRflexFac/residkm2*0.9,LSRflexFac)
+C     Other possibilities
+      LSRflexFac = 1 _d 0 / (1 _d 0 + ABS( LOG10(residini) ) )
+C       LSRflexFac = ABS(LOG10(residkm2))/ABS(LOG10(residkm1))
+C       LSRflexFac = (residkm1/residkm2)/(1+ABS(LOG10(residini)))
+      LSRflexFac = MIN(LSRflexFac, 0.99 _d 0 )
+C      LSRflexFac = MAX(LSRflexFac, 0.3 _d 0 )
+
+C       IF ( ipass .LE. 3 ) THEN
+C        LSRflexFac = 0.99 _d 0
+C       ENDIF
+
+      IF ( printResidual ) THEN
+       _BEGIN_MASTER( myThid )
+       WRITE(standardMessageUnit,'(A,1X,I9,1X,F10.6)')
+     &    ' SEAICE_LSR: FLEX_FACTOR =', ipass, LSRflexFac
+       _END_MASTER( myThid )
+      ENDIF
+
+      LSR_ERRORfu = residUini*LSRflexFac
+      LSR_ERRORfv = residVini*LSRflexFac
+
+#endif /* SEAICE_LSR_FLEX */
 
       DO m = 1, linearIterLoc
 
@@ -806,6 +866,30 @@ C     end bi,bj-loops
         ENDIF
 #endif /* SEAICE_GLOBAL_3DIAG_SOLVER */
 
+#ifdef SEAICE_LSR_FLEX
+        IF ( MOD(m,SOLV_NCHECK) .EQ. 0 ) THEN
+         CALL SEAICE_RESIDUAL(
+     I       rhsU, rhsV, uRt1, uRt2, vRt1, vRt2,
+     I       AU, BU, CU, AV, BV, CV, uIce, vIce,
+     O       residUm, residVm, uTmp2, vTmp2,
+     I       printResidual, myIter, myThid )
+         IF ( doIterate4u ) THEN
+          IF( (residUm.LT.LSR_ERRORfu) ) THEN
+           ICOUNT1=m
+           doIterate4u = .FALSE.
+          ENDIF
+         ENDIF
+
+         IF ( doIterate4v ) THEN
+          IF( (residVm.LT.LSR_ERRORfv) ) THEN
+           ICOUNT2=m
+           doIterate4v = .FALSE.
+          ENDIF
+         ENDIF
+        ENDIF
+
+#else /* SEAICE_LSR_FLEX */
+
         IF ( doIterate4u.AND.MOD(m,SOLV_NCHECK).EQ.0) THEN
          S1=ZERO
          DO bj=myByLo(myThid),myByHi(myThid)
@@ -853,13 +937,23 @@ C SAFEGUARD AGAINST BAD FORCING ETC
           doIterate4v = .FALSE.
          ENDIF
         ENDIF
+#endif /* SEAICE_LSR_FLEX */
 
         CALL EXCH_UV_XY_RL( uIce, vIce,.TRUE.,myThid)
 
 C--    end doIterate4u or doIterate4v
        ENDIF
       ENDDO
+
+#ifdef SEAICE_LSR_FLEX
+      residkm2 = residkm1
+      residkm1 = residini
+#endif /* SEAICE_LSR_FLEX */
+
 C ITERATION END -----------------------------------------------------
+C       residm=SQRT(residUm*residUm+residVm*residVm)
+
+C       if (residm.LT.SEAICEnonLinTol) exit
 
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
@@ -874,6 +968,7 @@ C--   Calculate final residual of the linearised system
      I                  AU, BU, CU, AV, BV, CV, uIce, vIce,
      O                  residUend, residVend, uTmp, vTmp,
      I                  printResidual, myIter, myThid )
+
         _BEGIN_MASTER( myThid )
         WRITE(standardMessageUnit,'(A,1X,I9,1P3E16.8)')
      &    ' SEAICE_LSR: Residual Initial ipass,Uice,Vice=',
@@ -972,6 +1067,24 @@ C--   Compute residual norm and print
       ENDIF
 C     end outer ipass pseudo-time stepping loop
       ENDDO
+
+#ifdef ALLOW_DIAGNOSTICS
+      diag_SIlsrRe_isOn  = DIAGNOSTICS_IS_ON('SIlsrRe ',myThid)
+
+      IF ( diag_SIlsrRe_isOn ) THEN
+       DO bj = myByLo(myThid), myByHi(myThid)
+        DO bi = myBxLo(myThid), myBxHi(myThid)
+         DO j=1,sNy
+          DO i=1,sNx
+           RTmp(i,j,bi,bj)=SQRT( uTmp(i,j,bi,bj) * uTmp(i,j,bi,bj)
+     &       + vTmp(i,j,bi,bj) * vTmp(i,j,bi,bj) )
+          ENDDO
+         ENDDO
+         CALL DIAGNOSTICS_FILL(RTmp,'SIlsrRe ',0,1,2,bi,bj,myThid)
+        ENDDO
+       ENDDO
+      ENDIF
+#endif   /* ALLOW_DIAGNOSTICS */
 
       IF ( useHB87StressCoupling ) THEN
 # ifdef ALLOW_AUTODIFF_TAMC
@@ -1122,8 +1235,9 @@ C--   Calculate residual of the linearised system
        _GLOBAL_SUM_RL( residU, myThid )
        _GLOBAL_SUM_RL( residV, myThid )
 C     scale residuals by globalArea so that they do not get ridiculously large
-CDR    IF ( residU.GT.0. ) residU = SQRT(residU/globalArea)
-CDR    IF ( residV.GT.0. ) residV = SQRT(residV/globalArea)
+C        IF ( residU.GT.0. ) residU = SQRT(residU/globalArea)
+C        IF ( residV.GT.0. ) residV = SQRT(residV/globalArea)
+CDR   scale residuals by the number of grid cells so that they do not get ridiculously large
        IF ( residU.GT.0. ) residU = SQRT(residU)/(Nx*Ny)
        IF ( residV.GT.0. ) residV = SQRT(residV)/(Nx*Ny)
       ENDIF
@@ -1503,13 +1617,11 @@ C     !LOCAL VARIABLES:
 C     === Local variables ===
 C     i,j  :: Loop counters
       INTEGER i,j
-      INTEGER kSrf
       _RL hFacM
       _RL sig11(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL sig12(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 CEOP
 
-      kSrf = 1
       DO j=1-OLy,sNy+OLy
        DO i=1-OLx,sNx+OLx
         sig11(i,j) = 0. _d 0
@@ -1634,13 +1746,11 @@ C     !LOCAL VARIABLES:
 C     === Local variables ===
 C     i,j  :: Loop counters
       INTEGER i,j
-      INTEGER kSrf
       _RL hFacM
       _RL sig22(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL sig12(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
 CEOP
 
-      kSrf = 1
       DO j=1-OLy,sNy+OLy
        DO i=1-OLx,sNx+OLx
         sig22(i,j) = 0. _d 0

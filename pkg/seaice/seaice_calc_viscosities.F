@@ -69,7 +69,7 @@ C     em            - e11-e22 (abbreviation)
       INTEGER i, j, bi, bj
       _RL recip_e2, deltaCsq, deltaMinSq, tmp, ep, em, smallNbr, efr2
       _RL recip_efr4, recip_efr2, oneThird, oneNinth, smallNbrSq, p
-      _RL lim_eta, lim_zeta, muc
+      _RL lim_eta, lim_zeta, muc, recip_e
       _RL e12Csq     (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL deltaCreg  (1-OLx:sNx+OLx,1-OLy:sNy+OLy)
       _RL recip_shear(1-OLx:sNx+OLx,1-OLy:sNy+OLy)
@@ -95,8 +95,10 @@ C--   basic constants
       p = 0.8 _d 0
 
       recip_e2=0. _d 0
+      recip_e=0. _d 0
       efr2 = SEAICE_eccfr*SEAICE_eccfr
       IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e2=ONE/(SEAICE_eccen**2)
+      IF ( SEAICE_eccen .NE. 0. _d 0 ) recip_e=ONE/SEAICE_eccen
       recip_efr2=0. _d 0
       recip_efr4=0. _d 0
       IF( SEAICE_eccfr .NE. 0. _d 0) THEN
@@ -301,6 +303,88 @@ C     change eta according to replacement pressure
           ENDDO !i loop
          ENDDO !j loop
 #endif /* SEAICE_ALLOW_TEARDROP */
+#ifdef SEAICE_ALLOW_ETD
+        ELSEIF ( SEAICEuseETD ) THEN
+
+         DO j=1-OLy+1,sNy+OLy-1
+          DO i=1-OLx+1,sNx+OLx-1
+           ep = e11(i,j,bi,bj)+e22(i,j,bi,bj)
+           em = e11(i,j,bi,bj)-e22(i,j,bi,bj)
+C            shearDef = SQRT(em*em + 4. _d 0 * e12Csq(i,j))
+
+           k   = ep * recip_shear(i,j)
+           ksq = k * k
+           a   = tnsFac(i,j,bi,bj)
+
+C     cyc: coordinate of the maximum point of the yield curve,
+C     where eI changes sign
+           cyc=( TWO - tnsFac(i,j,bi,bj) ) * oneThird
+           ap1 = a + ONE
+
+C     handle floating point errors when k is negative and very large
+           IF ( k .LT. -1. _d 3 ) THEN
+            x = (3. _d 0 * ap1)
+     &        * ( - 1. _d 0 + 0.125 _d 0 *(3. _d 0 * ap1 ) / ksq )
+           ELSE
+            x = TWO * ksq + TWO *k*SQRT(ksq + 3. _d 0 * ap1 )
+           ENDIF
+           x = (x - (6. _d 0 * ap1) ) * oneNinth + a
+C     original formulation of Zhang 2005:
+C          x = ( TWO * ksq + TWO *k*sqrt(ksq + 3. _d 0 * ap1 )
+C      &          - (6. _d 0 * ap1) ) * oneNinth + a
+
+C     Teardrop yield curve:
+C     capping x at a is probably better that setting it to a for x>1,
+C     but still not ideal (because non-differentiable)
+C     possible alternative: log(exp(rho*x)+exp(rho*a))/rho, with rho=O(100)
+           x = MIN( x, 0.95 _d 0 * a )
+C            x = MIN( x, a )
+C          x = MAX( x,-1 _d 0 ) ! to be sure
+
+#ifdef SEAICE_DELTA_SMOOTHREG
+           zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
+     &          / SIGN( SQRT(ep*ep+smallNbrSq), ep)
+#else
+           zeta(i,j,bi,bj) = (x + cyc) * press0(i,j,bi,bj)
+     &          / SIGN( MAX( ABS(ep),smallNbr ), ep)
+#endif /* SEAICE_DELTA_SMOOTHREG */
+C      original formulation of Zhang 2005
+C          zeta(i,j,bi,bj) = (x + 0.5 _d 0) * press0(i,j,bi,bj)
+C      &        / SIGN( ABS(ep) + SEAICE_deltaMin, ep)
+C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
+
+           eta(i,j,bi,bj) = press0(i,j,bi,bj)*press0(i,j,bi,bj)*
+     &                      recip_e*SQRT(a - x*x - x*(1-a) )
+
+C      define the max values for eta and zeta
+           etamax_TD = ZMAX(i,j,bi,bj) * MIN(eta(i,j,bi,bj)
+     &               /(ABS(zeta(i,j,bi,bj)) + smallNbr), ONE)
+           zetamax_TD =ZMAX(i,j,bi,bj) * MIN(zeta(i,j,bi,bj)
+     &               /(ABS(eta(i,j,bi,bj)) + smallNbr), ONE )
+
+C      apply the max values
+           zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), zetamax_TD)
+           eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj),  etamax_TD)
+C      original formulation of Zhang 2005
+C          zeta(i,j,bi,bj) = MIN(zeta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+C          eta (i,j,bi,bj) = MIN( eta(i,j,bi,bj), ZMAX(i,j,bi,bj))
+
+C      compute the replacement pressure
+           press(i,j,bi,bj) = TWO * cyc * (
+     &          press0(i,j,bi,bj)*( ONE - SEAICEpressReplFac )
+     &         + SEAICEpressReplFac * ep * zeta(i,j,bi,bj)
+     &         / SIGN(MAX(ABS(x+cyc), smallNbr), x+cyc) )
+
+C      reduce eta according to replacement pressure
+           etapr = -(x-a) * SQRT(ONE + x) * press(i,j,bi,bj)/(ONE-a)
+     &                    * recip_shear(i,j)
+           etapr = MIN( etapr, etamax_TD )
+           eta(i,j,bi,bj) =  SEAICEpressReplFac * etapr
+     &          + eta(i,j,bi,bj) * ( ONE - SEAICEpressReplFac )
+
+          ENDDO ! x loop
+         ENDDO ! y loop
+#endif /* SEAICE_ALLOW_ETD*/
 #ifdef SEAICE_ALLOW_MCS
         ELSEIF ( SEAICEuseMCS ) THEN
 C     Full Mohr-Coulomb following IP et al. 1991

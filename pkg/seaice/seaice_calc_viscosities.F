@@ -544,7 +544,7 @@ C      &        / SIGN( MAX( ABS(ep),deltaMinSq ), 0.5 _d 0 * ep)
 
 C      adding a compressive cap
            etaTempCap = SEAICEmcMUcap * ( zeta(i,j,bi,bj)
-     &                *  ep + press0(i,j,bi,bj) (ONE - TWO * cyc ) )
+     &                *  ep + press0(i,j,bi,bj) * (ONE - TWO * cyc ) )
      &                * recip_shear(i,j)
            eta(i,j,bi,bj) = MIN(eta(i,j,bi,bj),etaTempCap)
 
@@ -610,7 +610,7 @@ C     compute eta
 
 C      adding a compressive cap
            etaTempCap = SEAICEmcMUcap * ( zeta(i,j,bi,bj)
-     &                *  ep + press0(i,j,bi,bj) (ONE - TWO * cyc ) )
+     &                *  ep + press0(i,j,bi,bj) * (ONE - TWO * cyc ) )
      &                * recip_shear(i,j)
            eta(i,j,bi,bj) = MIN(eta(i,j,bi,bj),etaTempCap)
 
